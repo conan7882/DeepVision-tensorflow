@@ -15,11 +15,11 @@ class ModelDes(object):
         raise NotImplementedError()
 
     
-    def create_graph(self, input):
-        self._create_graph(input)
+    def create_graph(self, inputs):
+        self._create_graph(inputs)
 
     @abstractmethod
-    def _create_graph(self, input):
+    def _create_graph(self, inputs):
         raise NotImplementedError()
 
 
