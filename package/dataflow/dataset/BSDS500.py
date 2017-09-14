@@ -3,8 +3,8 @@ import os
 import numpy as np 
 import tensorflow as tf
 
-from ..utils.common import get_file_list
-from ..dataflow.base import RNGDataFlow
+from ...utils.common import get_file_list
+from ..base import RNGDataFlow
 
 __all__ = ['BSDS500']
 
@@ -18,6 +18,12 @@ class BSDS500(RNGDataFlow):
 
         assert name in ['train', 'test', 'val']
         self._load(name)
+
+        self._epochs_completed = 0
+
+    @property
+    def epochs_completed(self):
+        return self._epochs_completed 
 
     def _load(self, name):
         im_dir = os.path.join(self.data_dir, 'images', name)
@@ -35,4 +41,4 @@ class BSDS500(RNGDataFlow):
 
 if __name__ == '__main__':
     a = BSDS500('val','D:\\Qian\\Dataset\\Segmentation\\BSR_bsds500\\BSR\\BSDS500\\data\\')
-    print(a.im_list)
+    print(a.epochs_completed)

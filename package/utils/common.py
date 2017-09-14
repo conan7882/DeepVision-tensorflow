@@ -1,4 +1,5 @@
 import scipy.misc
+import os
 import numpy as np
 
 __all__ = ['save_images', 'get_file_list']
@@ -30,6 +31,6 @@ def save_images(images, im_size, save_path):
 
 def get_file_list(file_dir, file_ext):
     assert file_ext in ['.mat', '.png', '.jpg']
-    return file_list = np.array([os.path.join(file_dir, file) 
+    return np.array([os.path.join(file_dir, file) 
         for file in os.listdir(file_dir) 
         if file.endswith(file_ext)])
