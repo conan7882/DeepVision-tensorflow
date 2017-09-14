@@ -22,7 +22,9 @@ class TrainConfig(object):
         self.max_epoch = max_epoch
         assert self.batch_size > 0 and self.max_epoch > 0
 
-        
+        self.model = None
+
+
 
 
 from ..dataflow.dataset.BSDS500 import BSDS500

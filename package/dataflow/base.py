@@ -22,7 +22,7 @@ class DataFlow(object):
 
     @abstractmethod
     def get_data(self):
-        """ t """
+        return
 
     def size(self):
         raise NotImplementedError()
