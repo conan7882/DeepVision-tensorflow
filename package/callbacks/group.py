@@ -24,9 +24,21 @@ class Callbacks(Callback):
 			for cb in self.cbs:
 				cb.setup_graph(self.trainer)
 
+	def _before_run(self):
+		for cb in self.cbs:
+			cb.before_run()
+
+	def _after_run(self):
+		for cb in self.cbs:
+			cb.after_run()
+
 	def _before_train(self):
 		for cb in self.cbs:
 			cb.before_train()
+
+	def _after_train(self):
+		for cb in self.cbs:
+			cb.after_train()
 
 
 	def _before_epoch(self):

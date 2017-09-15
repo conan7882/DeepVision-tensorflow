@@ -5,7 +5,10 @@ from abc import ABCMeta
 import numpy as np
 import tensorflow as tf
 
-__all__ = ['Callback']
+__all__ = ['Callback', 'ProxyCallback']
+
+def assert_type(v, tp):
+    assert isinstance(v, tp), "Expect " + str(tp) + ", but " + str(v.__class__) + " is given!"
 
 class Callback(object):
 	""" base class for callbacks """
@@ -14,13 +17,35 @@ class Callback(object):
 		self.trainer = trainer
 		self._setup_graph()
 
+	@property
+	def global_step(self):
+		return self.trainer.get_global_step
+
 	def _setup_graph(self):
 		pass
+
+    def before_run(self):
+    	self._before_run()
+
+    def _before_run(self):
+    	pass
+
+    def after_run(self):
+    	self._after_run()
+
+    def _after_run(self):
+    	pass
 
 	def before_train(self):
 		self._before_train()
 
 	def _before_train(self):
+		pass
+
+	def after_train(self):
+		self._after_train()
+
+	def _after_train(self):
 		pass
 
 	def before_epoch(self):
@@ -41,6 +66,12 @@ class Callback(object):
 	def _trigger_epoch(self):
 		self.trigger()
 
+	def trigger_step(self):
+		self._trigger_step()
+
+	def _trigger_step(self):
+		pass
+
 	def trigger(self):
 		self._trigger()
 
@@ -48,3 +79,51 @@ class Callback(object):
 		pass
 
 	# def before_run(self):
+
+class ProxyCallback(Callback):
+	def __init__(self, cb):
+		assert_type(cb, Callback)
+		self.cb = cb
+
+	def __str__(self):
+		return "Proxy-" + str(self.cb)
+
+	def _before_train(self):
+		self.cb.before_train()
+
+	def _setup_graph(self):
+		with tf.name_scope(None):
+			self.cb.setup_graph(self.trainer)
+
+	def _trigger_epoch(self):
+		self.cb.trigger_epoch()
+
+	def _trigger(self):
+		self.cb.trigger()
+
+	def _trigger_step(self):
+        self.cb.trigger_step()
+
+    def _after_train(self):
+        self.cb.after_train()
+
+	def _before_epoch(self):
+		self.cb.before_epoch()
+
+	def _after_epoch(self):
+		self.cb.after_epoch()
+
+	def _before_run(self):
+		self.cb.before_run()
+
+	def _after_run(self):
+		self.cb.after_run()
+
+
+
+
+
+	
+
+
+	
