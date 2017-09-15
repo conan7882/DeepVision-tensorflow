@@ -3,6 +3,7 @@ import os
 import numpy as np
 
 from ..dataflow.base import DataFlow
+from ..models.base import ModelDes
 
 __all__ = ['TrainConfig']
 
@@ -12,6 +13,7 @@ def assert_type(v, tp):
 class TrainConfig(object):
     def __init__(self, 
                  dataflow = None, model = None,
+                 callbacks = [],
                  batch_size = 1, max_epoch = 100):
 
         assert dataflow is not None, "dataflow cannot be None!"
@@ -22,7 +24,14 @@ class TrainConfig(object):
         self.max_epoch = max_epoch
         assert self.batch_size > 0 and self.max_epoch > 0
 
-        self.model = None
+        assert model is not None, "model cannot be None!"
+        self.model = model
+        assert_type(self.model, ModelDes)
+
+        # if callbacks is None:
+        #     callbacks = []
+        assert_type(callbacks, list)
+        self._callbacks = callbacks
 
 
 

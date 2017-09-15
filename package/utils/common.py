@@ -2,7 +2,9 @@ import scipy.misc
 import os
 import numpy as np
 
-__all__ = ['save_images', 'get_file_list']
+import tensorflow as tf
+
+__all__ = ['save_images', 'get_file_list', 'apply_mask']
 
 def save_images(images, im_size, save_path):
     
@@ -34,3 +36,6 @@ def get_file_list(file_dir, file_ext):
     return np.array([os.path.join(file_dir, file) 
         for file in os.listdir(file_dir) 
         if file.endswith(file_ext)])
+
+def apply_mask(input_matrix, mask):
+    return tf.dynamic_partition(input_matrix, mask, 2)[1]

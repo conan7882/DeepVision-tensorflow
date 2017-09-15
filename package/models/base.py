@@ -2,24 +2,23 @@ from abc import abstractmethod
 
 import tensorflow as tf
 
-from .config import TrainConfig
 
 __all__ = ['ModelDes', 'BaseModel']
 
 class ModelDes(object):
     """ base model for ModelDes """
-    def create_input(self):
-        return self._creat_placeholder()
+    def get_placeholder(self):
+        return self._get_placeholder()
 
-    def _create_placeholder(self):
+    def _get_placeholder(self):
         raise NotImplementedError()
 
     
-    def create_graph(self, inputs):
-        self._create_graph(inputs)
+    def create_graph(self):
+        self._create_graph()
 
     @abstractmethod
-    def _create_graph(self, inputs):
+    def _create_graph(self):
         raise NotImplementedError()
 
 

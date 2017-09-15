@@ -16,12 +16,13 @@ class DataFlow(object):
     """ base class for dataflow """
     # self._epochs_completed = 0
 
-    # @property
-    # def epochs_completed(self):
-    #     return self._epochs_completed
+
+    @property
+    def epochs_completed(self):
+        return self._epochs_completed 
 
     @abstractmethod
-    def get_data(self):
+    def next_batch(self):
         return
 
     def size(self):

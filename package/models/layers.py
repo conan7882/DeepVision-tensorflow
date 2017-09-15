@@ -19,13 +19,13 @@ def conv(x, filter_height, filter_width, num_filters, name, stride_x = 1, stride
         else:
             return bias
 
-def dconv(x, filter_height, filter_width, name, fuse_x = None, output_shape = [], output_channels = 1, stride_x = 2, stride_y = 2, padding = 'SAME'):
+def dconv(x, filter_height, filter_width, name, fuse_x = None, output_shape = [], output_channels = None, stride_x = 2, stride_y = 2, padding = 'SAME'):
     input_channels = int(x.shape[-1])
     
     if fuse_x is not None:
         output_shape = tf.shape(fuse_x)
         output_channels = int(fuse_x.shape[-1])
-    else:
+    elif output_channels is None:
         output_channels = output_shape[-1]
 
     with tf.variable_scope(name) as scope:
