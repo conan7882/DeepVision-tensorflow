@@ -17,23 +17,27 @@ class TrainConfig(object):
                  batch_size = 1, max_epoch = 100):
 
         assert dataflow is not None, "dataflow cannot be None!"
+        assert_type(dataflow, DataFlow)
         self.dataflow = dataflow
-        assert_type(self.dataflow, DataFlow)
-
+        
+        assert batch_size > 0 and max_epoch > 0
+        self.dataflow.set_batch_size(batch_size)
         self.batch_size = batch_size
         self.max_epoch = max_epoch
-        assert self.batch_size > 0 and self.max_epoch > 0
-
+        
         assert model is not None, "model cannot be None!"
+        assert_type(model, ModelDes)
         self.model = model
-        assert_type(self.model, ModelDes)
-
+        
         # if callbacks is None:
         #     callbacks = []
-        assert_type(callbacks, list)
+        if not isinstance(callbacks, list):
+            callbacks = [callbacks]
         self._callbacks = callbacks
-
-
+        
+    @property
+    def callbacks(self):
+        return self._callbacks
 
 
 from ..dataflow.dataset.BSDS500 import BSDS500

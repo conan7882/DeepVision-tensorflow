@@ -31,11 +31,7 @@ def save_images(images, im_size, save_path):
     
     return scipy.misc.imsave(save_path, merge_img)
 
-def get_file_list(file_dir, file_ext):
-    assert file_ext in ['.mat', '.png', '.jpg']
-    return np.array([os.path.join(file_dir, file) 
-        for file in os.listdir(file_dir) 
-        if file.endswith(file_ext)])
+
 
 def apply_mask(input_matrix, mask):
     return tf.dynamic_partition(input_matrix, mask, 2)[1]

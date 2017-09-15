@@ -31,19 +31,7 @@ class ModelSaver(Callback):
 		self.saver = tf.train.Saver()
 
 	def _trigger(self):
-		self.saver.save(tf.get_default_session(), self.path, global_step = tf.train.get_global_step())
+		self.saver.save(tf.get_default_session(), self.path, 
+			global_step = self.trainer.get_global_step)
 
-
-	# def _before_train(self):
-	# 	pass
-
-
-
-	def _before_epoch(self):
-		pass
-
-
-
-	def _after_epoch(self):
-		pass
 

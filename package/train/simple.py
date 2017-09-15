@@ -5,29 +5,23 @@ import tensorflow as tf
 from .config import TrainConfig
 from .base import Trainer
 from ..dataflow.common import FeedInput
-
-
+from ..models.base import BaseModel
 
 __all__ = ['SimpleFeedTrainer']
 
 def assert_type(v, tp):
     assert isinstance(v, tp), "Expect " + str(tp) + ", but " + str(v.__class__) + " is given!"
 
-    
 class SimpleFeedTrainer(Trainer):
     """ single optimizer """
     def __init__(self, config):
-        assert_type(config, TrainConfig)
-        
+        assert_type(config.model, BaseModel)
         super(SimpleFeedTrainer, self).__init__(config)
 
-    @staticmethod
-    def setup_graph(model):
-        model.create_graph()
-        grads = model.get_grads()
-        opt = model.get_optimizer()
-        train_op = opt.apply_gradients(grads, name = 'train')
-        return train_op
+    def _setup(self):
+        grads = self.model.get_grads()
+        opt = self.model.get_optimizer()
+        self.train_op = opt.apply_gradients(grads, name = 'train')
 
     def _run_step(self):
         feed = FeedInput(self.dataflow, self.model.get_placeholder())
@@ -35,10 +29,9 @@ class SimpleFeedTrainer(Trainer):
         _, loss = self.sess.run([self.train_op, self.model.get_loss()], feed_dict = feed)
         print(loss)
 
-
-    def _setup(self):
-        # inputs = self.model._create_placeholder()
-        self.train_op = SimpleFeedTrainer.setup_graph(self.model)
+    # def _setup(self):
+    #     # inputs = self.model._create_placeholder()
+    #     self.train_op = SimpleFeedTrainer.setup_graph(self.model)
 
 
 

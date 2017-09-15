@@ -16,7 +16,6 @@ def assert_type(v, tp):
 def create_session():
     return tf.InteractiveSession()
     
-
 class Trainer(object):
     """ base class for trainer """
     def __init__(self, config):
@@ -28,8 +27,6 @@ class Trainer(object):
         self._global_step = 0
         self._callbacks = []
 
-        self._setup()
-
     @property
     def epochs_completed(self):
         return self.dataflow.epochs_completed
@@ -40,10 +37,8 @@ class Trainer(object):
 
     def register_callback(self, cb):
         assert_type(cb, Callback)
-        assert not isinstance(self._callbacks, Callbacks)
+        assert not isinstance(self._callbacks, Callbacks), "callbacks have been setup"
         self._callbacks.append(cb)
-
-
 
     def _create_session(self):
         self.sess = create_session()
@@ -51,7 +46,6 @@ class Trainer(object):
     def main_loop(self):
         with self.sess.as_default():
             self._callbacks.before_train()
-
             self.sess.run(tf.global_variables_initializer())
             while self.epochs_completed <= self.config.max_epoch:
                 self._global_step += 1
@@ -71,22 +65,23 @@ class Trainer(object):
         raise NotImplementedError()
 
     def setup(self):
+        # setup graph from model
+        self.setup_graph()
+        # setup callbacks
         for cb in self.config.callbacks:
             self.register_callback(cb)
         self._callbacks = Callbacks(self._callbacks)
         self._callbacks.setup_graph(weakref.proxy(self))
+        # create session
+        self._create_session()
 
-        self.sess = self._create_session()
+    def setup_graph(self):
+        self.model.create_graph()
+        self._setup()
 
     def _setup(self):
         pass
 
-from ..dataflow.dataset.BSDS500 import BSDS500
-if __name__ == '__main__':
-    a = BSDS500('val','D:\\Qian\\Dataset\\Segmentation\\BSR_bsds500\\BSR\\BSDS500\\data\\')
-    t = TrainConfig(a,0)
-    a = Trainer(t)
-    print(a.epochs_completed)
 
 
 

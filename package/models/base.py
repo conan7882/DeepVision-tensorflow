@@ -13,7 +13,6 @@ class ModelDes(object):
     def _get_placeholder(self):
         raise NotImplementedError()
 
-    
     def create_graph(self):
         self._create_graph()
 
@@ -30,7 +29,6 @@ class BaseModel(ModelDes):
 
     def _get_optimizer(self):
         raise NotImplementedError()
-
 
     def get_loss(self):
         return self._get_loss()

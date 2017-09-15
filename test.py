@@ -1,13 +1,14 @@
 import numpy as np
 import tensorflow as tf
 
-from package.dataflow.dataset.BSDS500 import BSDS500
+from package.dataflow.matlab import MatlabMask
 from package.models.layers import *
 from package.models.base import BaseModel
 from package.utils.common import apply_mask
 from package.train.config import TrainConfig
 from package.train.simple import SimpleFeedTrainer
 from package.callbacks.saver import ModelSaver
+from package.callbacks.summery import TrainSummery
 
 
 # a = BSDS500('val','D:\\Qian\\Dataset\\Segmentation\\BSR_bsds500\\BSR\\BSDS500\\data\\')
@@ -70,15 +71,14 @@ class Model(BaseModel):
         return tf.train.AdamOptimizer(learning_rate = self.learning_rate)
 
 def get_config():
-    dataset_train = BSDS500('train','D:\\Qian\\Dataset\\Segmentation\\BSR_bsds500\\BSR\\BSDS500\\data\\')
+    dataset_train = MatlabMask('train', data_dir = 'D:\\GoogleDrive_Qian\\Foram\\Training\\CNN_Image\\')
     return TrainConfig(
                  dataflow = dataset_train, 
-                 model = Model(num_channels = 3, num_class = 2, learning_rate = 0.0001),
-                 callbacks = [ModelSaver(checkpoint_dir = 'D:\\Qian\\GitHub\\workspace\\test\\'),],
+                 model = Model(num_channels = 1, num_class = 2, learning_rate = 0.0001),
+                 callbacks = [ModelSaver(checkpoint_dir = 'D:\\Qian\\GitHub\\workspace\\test\\'),
+                              TrainSummery(summery_dir = 'D:\\Qian\\GitHub\\workspace\\test\\')],
                  batch_size = 1, 
                  max_epoch = 100)
-
-
 
 if __name__ == '__main__':
     config = get_config()
