@@ -10,7 +10,8 @@ __all__ = ['Callback']
 class Callback(object):
 	""" base class for callbacks """
 
-	def setup_graph(self):
+	def setup_graph(self, trainer):
+		self.trainer = trainer
 		self._setup_graph()
 
 	def _setup_graph(self):
@@ -33,6 +34,12 @@ class Callback(object):
 
 	def _after_epoch(self):
 		pass
+
+	def trigger_epoch(self):
+		self._trigger_epoch()
+
+	def _trigger_epoch(self):
+		self.trigger()
 
 	def trigger(self):
 		self._trigger()

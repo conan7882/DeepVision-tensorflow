@@ -6,39 +6,46 @@ import tensorflow as tf
 
 from .base import Callback
 
-__all__ = ['Callback']
+__all__ = ['Callbacks']
 
-class Callback(object):
-	""" base class for callbacks """
+def assert_type(v, tp):
+    assert isinstance(v, tp), "Expect " + str(tp) + ", but " + str(v.__class__) + " is given!"
 
-	def setup_graph(self):
-		self._setup_graph()
+class Callbacks(Callback):
+	""" group all the callback """
+	def __init__(self, cbs):
+		for cb in cbs:
+			assert_type(cb, Callback)
+		self.cbs = cbs
+
 
 	def _setup_graph(self):
-		pass
-
-	def before_train(self):
-		self._before_train()
+		with tf.name_scope(None):
+			for cb in self.cbs:
+				cb.setup_graph(self.trainer)
 
 	def _before_train(self):
-		pass
+		for cb in self.cbs:
+			cb.before_train()
 
-	def before_epoch(self):
-		self._before_epoch()
 
 	def _before_epoch(self):
-		pass
+		for cb in self.cbs:
+			cb.before_epoch()
 
-	def after_epoch(self):
-		self._after_epoch()
 
 	def _after_epoch(self):
-		pass
+		for cb in self.cbs:
+			cb.after_epoch()
 
-	def trigger(self):
-		self._trigger()
+	def _trigger_epoch(self):
+		for cb in self.cbs:
+			cb.trigger_epoch()
 
-	def _trigger(self):
-		pass
+	# def trigger(self):
+	# 	self._trigger()
+
+	# def _trigger(self):
+	# 	pass
 
 	# def before_run(self):
