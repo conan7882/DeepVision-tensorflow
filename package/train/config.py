@@ -55,4 +55,5 @@ if __name__ == '__main__':
     a = BSDS500('val','D:\\Qian\\Dataset\\Segmentation\\BSR_bsds500\\BSR\\BSDS500\\data\\')
     # print(a.epochs_completed)
     t = TrainConfig(a,0)
+    print(t)
 
