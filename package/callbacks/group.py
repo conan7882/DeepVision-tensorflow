@@ -54,6 +54,10 @@ class Callbacks(Callback):
 		for cb in self.cbs:
 			cb.trigger_epoch()
 
+	def _trigger_step(self):
+		for cb in self.cbs:
+			cb.trigger_step()
+
 	# def trigger(self):
 	# 	self._trigger()
 

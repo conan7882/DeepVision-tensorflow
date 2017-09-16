@@ -9,7 +9,7 @@ from package.train.config import TrainConfig
 from package.train.simple import SimpleFeedTrainer
 from package.callbacks.saver import ModelSaver
 from package.callbacks.summery import TrainSummery
-
+from package.callbacks.trigger import PeriodicTrigger
 
 # a = BSDS500('val','D:\\Qian\\Dataset\\Segmentation\\BSR_bsds500\\BSR\\BSDS500\\data\\')
 # print(a.im_list)
@@ -75,7 +75,8 @@ def get_config():
     return TrainConfig(
                  dataflow = dataset_train, 
                  model = Model(num_channels = 1, num_class = 2, learning_rate = 0.0001),
-                 callbacks = [ModelSaver(checkpoint_dir = 'D:\\Qian\\GitHub\\workspace\\test\\'),
+                 callbacks = [PeriodicTrigger(ModelSaver(checkpoint_dir = 'D:\\Qian\\GitHub\\workspace\\test\\'), 
+                                                         every_k_steps = 10),
                               TrainSummery(summery_dir = 'D:\\Qian\\GitHub\\workspace\\test\\')],
                  batch_size = 1, 
                  max_epoch = 100)

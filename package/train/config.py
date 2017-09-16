@@ -4,6 +4,8 @@ import numpy as np
 
 from ..dataflow.base import DataFlow
 from ..models.base import ModelDes
+from ..utils.default import get_default_session_config
+from ..utils.sesscreate import NewSessionCreator
 
 __all__ = ['TrainConfig']
 
@@ -14,6 +16,7 @@ class TrainConfig(object):
     def __init__(self, 
                  dataflow = None, model = None,
                  callbacks = [],
+                 session_creator = None,
                  batch_size = 1, max_epoch = 100):
 
         assert dataflow is not None, "dataflow cannot be None!"
@@ -34,6 +37,12 @@ class TrainConfig(object):
         if not isinstance(callbacks, list):
             callbacks = [callbacks]
         self._callbacks = callbacks
+
+        if session_creator is None:
+            self.session_creator = NewSessionCreator(config = get_default_session_config())
+        else:
+            raise ValueError('custormer session creator is not allow at this time!')
+
         
     @property
     def callbacks(self):

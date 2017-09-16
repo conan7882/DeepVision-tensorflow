@@ -22,6 +22,7 @@ class Trainer(object):
         assert_type(config, TrainConfig)
         self.config = config
         self.model = config.model
+
         self.dataflow = config.dataflow
 
         self._global_step = 0
@@ -41,19 +42,18 @@ class Trainer(object):
         self._callbacks.append(cb)
 
     def _create_session(self):
-        self.sess = create_session()
+        self.sess = self.config.session_creator.create_session()
 
     def main_loop(self):
         with self.sess.as_default():
             self._callbacks.before_train()
-            self.sess.run(tf.global_variables_initializer())
             while self.epochs_completed <= self.config.max_epoch:
                 self._global_step += 1
                 print(self._global_step)
-                self._callbacks.before_epoch()
-                self._run_step() # implemented by subsclass
-                self._callbacks.after_epoch()
-                self._callbacks.trigger_epoch()
+                # self._callbacks.before_epoch()
+                self._run_step() 
+                # self._callbacks.after_epoch()
+                self._callbacks.trigger_step()
             self._callbacks.after_train()
 
     def train(self):
