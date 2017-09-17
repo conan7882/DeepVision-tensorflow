@@ -4,7 +4,7 @@ import tensorflow as tf
 
 from .config import TrainConfig
 from .base import Trainer
-from ..dataflow.common import FeedInput
+from ..callbacks.input import FeedInput
 from ..models.base import BaseModel
 
 __all__ = ['SimpleFeedTrainer']
@@ -20,7 +20,7 @@ class SimpleFeedTrainer(Trainer):
 
     def _setup(self):
         # to be modified
-        cbs = FeedInput(self.dataflow, self.model.placeholders)
+        cbs = FeedInput(self.dataflow, self.model.get_placeholder())
         # to be modified
 
         self.config.callbacks.append(cbs)

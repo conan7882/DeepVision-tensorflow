@@ -59,11 +59,21 @@ class Model(BaseModel):
         shape_X = tf.shape(self.image)
         deconv3_shape = tf.stack([shape_X[0], shape_X[1], shape_X[2], self.num_class])
         dconv3 = dconv(dconv2, 16, 16, 'dconv3', output_channels = self.num_class, output_shape = deconv3_shape, stride_x = 4, stride_y = 4)
-        prediction = tf.argmax(dconv3, name="prediction", dimension = -1)
+        self.prediction = tf.argmax(dconv3, name="prediction", dimension = -1)
 
         with tf.name_scope('loss'):
             self.loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits
-                    (logits = apply_mask(dconv3, self.mask),labels = apply_mask(self.gt, self.mask)))
+                    (logits = apply_mask(dconv3, self.mask),labels = apply_mask(self.gt, self.mask)))      
+
+    def _setup_summary(self):
+        with tf.name_scope('summary'):
+            tf.summary.image("train_Predict", tf.expand_dims(tf.cast(self.prediction, tf.float32), -1))
+            tf.summary.image("im", tf.cast(self.image, tf.float32))
+            tf.summary.image("gt", tf.expand_dims(tf.cast(self.gt, tf.float32), -1))
+            tf.summary.image("mask", tf.expand_dims(tf.cast(self.mask, tf.float32), -1))
+            tf.summary.scalar('loss', self.loss)
+
+            [tf.summary.histogram('gradient/' + var.name, grad) for grad, var in self.get_grads()]
 
     def _get_loss(self):
         return self.loss
@@ -78,7 +88,7 @@ def get_config():
                  model = Model(num_channels = 1, num_class = 2, learning_rate = 0.0001),
                  callbacks = [PeriodicTrigger(ModelSaver(checkpoint_dir = 'D:\\Qian\\GitHub\\workspace\\test\\'), 
                                                          every_k_steps = 10),
-                              TrainSummery(summery_dir = 'D:\\Qian\\GitHub\\workspace\\test\\')],
+                              TrainSummery(summery_dir = 'D:\\Qian\\GitHub\\workspace\\test\\', periodic = 10)],
                  batch_size = 1, 
                  max_epoch = 100)
 

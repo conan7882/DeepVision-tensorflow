@@ -15,10 +15,14 @@ class ModelDes(object):
 
     def create_graph(self):
         self._create_graph()
+        self._setup_summary()
 
     @abstractmethod
     def _create_graph(self):
         raise NotImplementedError()
+
+    def _setup_summary(self):
+        pass
 
 
 class BaseModel(ModelDes):

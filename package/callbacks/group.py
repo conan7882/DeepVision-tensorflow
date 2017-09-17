@@ -5,7 +5,7 @@ import numpy as np
 import tensorflow as tf
 
 from .base import Callback
-from .hooks import Callback2Hook(cb) for cb in self.cbs
+from .hooks import Callback2Hook
 
 __all__ = ['Callbacks']
 

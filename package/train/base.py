@@ -6,6 +6,8 @@ import tensorflow as tf
 from .config import TrainConfig
 from ..callbacks.base import Callback
 from ..callbacks.group import Callbacks
+from ..utils.sesscreate import ReuseSessionCreator
+
 
 
 __all__ = ['Trainer']
@@ -13,8 +15,7 @@ __all__ = ['Trainer']
 def assert_type(v, tp):
     assert isinstance(v, tp), "Expect " + str(tp) + ", but " + str(v.__class__) + " is given!"
 
-def create_session():
-    return tf.InteractiveSession()
+
     
 class Trainer(object):
     """ base class for trainer """
@@ -71,6 +72,7 @@ class Trainer(object):
         # setup graph from model
         self.setup_graph()
         # setup callbacks
+
         for cb in self.config.callbacks:
             self.register_callback(cb)
         self._callbacks = Callbacks(self._callbacks)

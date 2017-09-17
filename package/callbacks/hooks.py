@@ -13,10 +13,10 @@ class Callback2Hook(tf.train.SessionRunHook):
     def __init__(self, cb):
         self.cb = cb
 
-    def _before_run(self, rct):
+    def before_run(self, rct):
         return self.cb.before_run(rct)
 
-    def _after_run(self, rct, val):
+    def after_run(self, rct, val):
         self.cb.after_run(rct, val)
 
     

@@ -60,7 +60,7 @@ class MatlabMask(RNGDataFlow):
             mat = loadmat(file_path)
             image = load_image_from_mat(mat, 'level1Edge', 'float')
             label = load_image_from_mat(mat, 'GT', 'int32')
-            mask = load_image_from_mat(mat, 'GT', 'int32')
+            mask = load_image_from_mat(mat, 'Mask', 'int32')
 
             image = np.reshape(image, [1, image.shape[0], image.shape[1], self._num_channels])
             label = np.reshape(label, [1, label.shape[0], label.shape[1]])

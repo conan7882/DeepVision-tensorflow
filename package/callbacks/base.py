@@ -36,7 +36,7 @@ class Callback(object):
         return fetch
 
     def _before_run(self, rct):
-        pass
+        return None
 
     def after_run(self, rct, val):
         self._after_run(rct, val)

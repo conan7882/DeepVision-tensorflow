@@ -12,16 +12,16 @@ def get_file_list(file_dir, file_ext):
         for file in os.listdir(file_dir) 
         if file.endswith(file_ext)])
 
-def FeedInput(inputs, placeholders):
-    """
-    expects inputs be from package.dataflow.base.DataFlow
-    """
-    assert_type(inputs, DataFlow) 
-    cur_batch = inputs.next_batch()
+# def FeedInput(inputs, placeholders):
+#     """
+#     expects inputs be from package.dataflow.base.DataFlow
+#     """
+#     assert_type(inputs, DataFlow) 
+#     cur_batch = inputs.next_batch()
 
-    assert len(cur_batch) == len(placeholders), "[FeedInput] size different"
-    feed = dict(zip(placeholders, cur_batch))
-    # print(feed)
-    return feed
-    # return tf.train.SessionRunArgs(fetches=[], feed_dict=feed)
+#     assert len(cur_batch) == len(placeholders), "[FeedInput] size different"
+#     feed = dict(zip(placeholders, cur_batch))
+#     # print(feed)
+#     return feed
+#     # return tf.train.SessionRunArgs(fetches=[], feed_dict=feed)
 
