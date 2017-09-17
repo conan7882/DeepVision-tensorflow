@@ -10,6 +10,7 @@ from package.train.simple import SimpleFeedTrainer
 from package.callbacks.saver import ModelSaver
 from package.callbacks.summery import TrainSummery
 from package.callbacks.trigger import PeriodicTrigger
+from package.callbacks.input import FeedInput
 
 # a = BSDS500('val','D:\\Qian\\Dataset\\Segmentation\\BSR_bsds500\\BSR\\BSDS500\\data\\')
 # print(a.im_list)
