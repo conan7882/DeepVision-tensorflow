@@ -75,6 +75,8 @@ class Trainer(object):
         # create session
         self._create_session()
 
+        self.sess.graph.finalize()
+
     def setup_graph(self):
         self.model.create_graph()
         self._setup()
