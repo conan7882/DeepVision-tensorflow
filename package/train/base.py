@@ -42,7 +42,10 @@ class Trainer(object):
         self._callbacks.append(cb)
 
     def _create_session(self):
+        hooks = self._callbacks.get_hooks()
         self.sess = self.config.session_creator.create_session()
+        self.hooked_sess = tf.train.MonitoredSession(
+            session_creator = ReuseSessionCreator(self.sess), hooks = hooks)
 
     def main_loop(self):
         with self.sess.as_default():
@@ -62,7 +65,7 @@ class Trainer(object):
 
     @abstractmethod
     def _run_step(self):
-        raise NotImplementedError()
+        self.hooked_sess.run(self.train_op)
 
     def setup(self):
         # setup graph from model
@@ -72,6 +75,7 @@ class Trainer(object):
             self.register_callback(cb)
         self._callbacks = Callbacks(self._callbacks)
         self._callbacks.setup_graph(weakref.proxy(self))
+
         # create session
         self._create_session()
 

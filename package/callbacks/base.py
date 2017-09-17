@@ -28,16 +28,20 @@ class Callback(object):
     def _setup_graph(self):
         pass
 
-    def before_run(self):
-        self._before_run()
+    def before_run(self, rct):
+        fetch = self._before_run(rct)
+        if fetch is None:
+            return None
+        assert_type(fetch, tf.train.SessionRunArgs)
+        return fetch
 
-    def _before_run(self):
+    def _before_run(self, rct):
         pass
 
-    def after_run(self):
-        self._after_run()
+    def after_run(self, rct, val):
+        self._after_run(rct, val)
 
-    def _after_run(self):
+    def _after_run(self, rct, val):
         pass
 
     def before_train(self):
@@ -117,11 +121,11 @@ class ProxyCallback(Callback):
     def _after_epoch(self):
         self.cb.after_epoch()
 
-    def _before_run(self):
-        self.cb.before_run()
+    def _before_run(self, crt):
+        self.cb.before_run(crt)
 
-    def _after_run(self):
-        self.cb.after_run()
+    def _after_run(self, crt, val):
+        self.cb.after_run(crt, val)
 
 
 

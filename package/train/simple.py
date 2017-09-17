@@ -19,15 +19,22 @@ class SimpleFeedTrainer(Trainer):
         super(SimpleFeedTrainer, self).__init__(config)
 
     def _setup(self):
+        # to be modified
+        cbs = FeedInput(self.dataflow, self.model.placeholders)
+        # to be modified
+
+        self.config.callbacks.append(cbs)
+
         grads = self.model.get_grads()
         opt = self.model.get_optimizer()
         self.train_op = opt.apply_gradients(grads, name = 'train')
 
-    def _run_step(self):
-        feed = FeedInput(self.dataflow, self.model.get_placeholder())
-        # arg = tf.train.SessionRunArgs(fetches= [], feed_dict=feed)
-        _, loss = self.sess.run([self.train_op, self.model.get_loss()], feed_dict = feed)
-        print(loss)
+
+    # def _run_step(self):
+        # feed = FeedInput(self.dataflow, self.model.get_placeholder())
+        # # arg = tf.train.SessionRunArgs(fetches= [], feed_dict=feed)
+        # _, loss = self.sess.run([self.train_op, self.model.get_loss()], feed_dict = feed)
+        # print(loss)
 
     # def _setup(self):
     #     # inputs = self.model._create_placeholder()

@@ -5,6 +5,7 @@ import numpy as np
 import tensorflow as tf
 
 from .base import Callback
+from .hooks import Callback2Hook(cb) for cb in self.cbs
 
 __all__ = ['Callbacks']
 
@@ -24,13 +25,8 @@ class Callbacks(Callback):
 			for cb in self.cbs:
 				cb.setup_graph(self.trainer)
 
-	def _before_run(self):
-		for cb in self.cbs:
-			cb.before_run()
-
-	def _after_run(self):
-		for cb in self.cbs:
-			cb.after_run()
+	def get_hooks(self):
+		return [Callback2Hook(cb) for cb in self.cbs]
 
 	def _before_train(self):
 		for cb in self.cbs:
