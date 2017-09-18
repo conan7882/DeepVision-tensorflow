@@ -1,6 +1,3 @@
-import os
-
-import numpy as np
 import tensorflow as tf
 
 from .default import get_default_session_config

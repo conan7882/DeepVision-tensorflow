@@ -6,6 +6,7 @@ from ..dataflow.base import DataFlow
 from ..models.base import ModelDes
 from ..utils.default import get_default_session_config
 from ..utils.sesscreate import NewSessionCreator
+from ..callbacks.monitors import TFSummaryWriter
 
 __all__ = ['TrainConfig']
 
@@ -17,7 +18,14 @@ class TrainConfig(object):
                  dataflow = None, model = None,
                  callbacks = [],
                  session_creator = None,
+                 monitors = None,
                  batch_size = 1, max_epoch = 100):
+
+        assert_type(monitors, TFSummaryWriter), \
+        "monitors has to be TFSummaryWriter at this point!"
+        if not isinstance(monitors, list):
+            monitors = [monitors]
+        self.monitors = monitors
 
         assert dataflow is not None, "dataflow cannot be None!"
         assert_type(dataflow, DataFlow)

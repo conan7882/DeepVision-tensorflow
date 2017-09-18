@@ -1,7 +1,6 @@
 import scipy.misc
-import os
-import numpy as np
 
+import numpy as np
 import tensorflow as tf
 
 __all__ = ['save_images', 'get_file_list', 'apply_mask']
@@ -30,8 +29,6 @@ def save_images(images, im_size, save_path):
         merge_img[j*h:j*h+h, i*w:i*w+w, :] = image
     
     return scipy.misc.imsave(save_path, merge_img)
-
-
 
 def apply_mask(input_matrix, mask):
     return tf.dynamic_partition(input_matrix, mask, 2)[1]

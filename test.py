@@ -8,13 +8,10 @@ from package.utils.common import apply_mask
 from package.train.config import TrainConfig
 from package.train.simple import SimpleFeedTrainer
 from package.callbacks.saver import ModelSaver
-from package.callbacks.summery import TrainSummery
+from package.callbacks.summary import TrainSummary
 from package.callbacks.trigger import PeriodicTrigger
-<<<<<<< HEAD
-from package.callbacks.input import FeedInput
-=======
->>>>>>> 8bc2f7104c52977c49597e8d16bc3863b7bcf67d
 from package.callbacks.inference import FeedInference
+from package.callbacks.monitors import TFSummaryWriter
 
 # a = BSDS500('val','D:\\Qian\\Dataset\\Segmentation\\BSR_bsds500\\BSR\\BSDS500\\data\\')
 # print(a.im_list)
@@ -25,9 +22,6 @@ class Model(BaseModel):
         self.num_channels = num_channels
         self.num_class = num_class
         self.set_is_training(True)
-        # self._create_placeholder()
-        # self._create_graph(inputs)
-
 
     def _get_placeholder(self):
         return [self.image, self.gt, self.mask]
@@ -76,18 +70,20 @@ class Model(BaseModel):
         
     def _get_inference_list(self):
         return self.accuracy
+        # return []
 
     def _setup_summary(self):
-        with tf.name_scope('summary'):
-            tf.summary.image("train_Predict", tf.expand_dims(tf.cast(self.prediction, tf.float32), -1))
-            tf.summary.image("im", tf.cast(self.image, tf.float32))
-            tf.summary.image("gt", tf.expand_dims(tf.cast(self.gt, tf.float32), -1))
-            tf.summary.image("mask", tf.expand_dims(tf.cast(self.mask, tf.float32), -1))
-            tf.summary.scalar('loss', self.loss)
-            tf.summary.scalar('accuracy', self.accuracy)
-
-            [tf.summary.histogram('gradient/' + var.name, grad) for grad, var in self.get_grads()]
-
+        with tf.name_scope('train_summary'):
+            tf.summary.image("train_Predict", tf.expand_dims(tf.cast(self.prediction, tf.float32), -1), collections = ['train'])
+            tf.summary.image("im", tf.cast(self.image, tf.float32), collections = ['train'])
+            tf.summary.image("gt", tf.expand_dims(tf.cast(self.gt, tf.float32), -1), collections = ['train'])
+            tf.summary.image("mask", tf.expand_dims(tf.cast(self.mask, tf.float32), -1), collections = ['train'])
+            tf.summary.scalar('loss', self.loss, collections = ['train'])
+            tf.summary.scalar('train_accuracy', self.accuracy, collections = ['train'])
+            [tf.summary.histogram('gradient/' + var.name, grad, collections = ['train']) for grad, var in self.get_grads()]
+        with tf.name_scope('test_summary'):
+            tf.summary.scalar('test_accuracy', self.accuracy, collections = ['test'])
+            tf.summary.image("test_Predict", tf.expand_dims(tf.cast(self.prediction, tf.float32), -1), collections = ['test'])
 
 
     def _get_loss(self):
@@ -102,10 +98,11 @@ def get_config():
     return TrainConfig(
                  dataflow = dataset_train, 
                  model = Model(num_channels = 1, num_class = 2, learning_rate = 0.0001),
+                 monitors = TFSummaryWriter(summary_dir = 'D:\\Qian\\GitHub\\workspace\\test\\'),
                  callbacks = [PeriodicTrigger(ModelSaver(checkpoint_dir = 'D:\\Qian\\GitHub\\workspace\\test\\'), 
                                                          every_k_steps = 10),
-                              TrainSummery(summery_dir = 'D:\\Qian\\GitHub\\workspace\\test\\', periodic = 10),
-                              FeedInference(dataset_val),],
+                              TrainSummary(key = 'train', periodic = 10),
+                              FeedInference(dataset_val, periodic = 10, extra_cbs = TrainSummary(key = 'test')),],
                  batch_size = 1, 
                  max_epoch = 100)
 

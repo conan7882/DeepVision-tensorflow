@@ -7,7 +7,7 @@ from .config import TrainConfig
 from ..callbacks.base import Callback
 from ..callbacks.group import Callbacks
 from ..utils.sesscreate import ReuseSessionCreator
-
+from ..callbacks.monitors import TrainingMonitor, Monitors
 
 
 __all__ = ['Trainer']
@@ -15,19 +15,18 @@ __all__ = ['Trainer']
 def assert_type(v, tp):
     assert isinstance(v, tp), "Expect " + str(tp) + ", but " + str(v.__class__) + " is given!"
 
-
-    
 class Trainer(object):
     """ base class for trainer """
     def __init__(self, config):
         assert_type(config, TrainConfig)
         self.config = config
         self.model = config.model
-
         self.dataflow = config.dataflow
+        # self.monitors = self.config.monitors
 
         self._global_step = 0
         self._callbacks = []
+        self.monitors = []
 
     @property
     def epochs_completed(self):
@@ -41,6 +40,13 @@ class Trainer(object):
         assert_type(cb, Callback)
         assert not isinstance(self._callbacks, Callbacks), "callbacks have been setup"
         self._callbacks.append(cb)
+
+    def register_monitor(self, monitor):
+        assert_type(monitor, TrainingMonitor)
+        assert not isinstance(self.monitors, Monitors), "monitors have been setup"
+        self.monitors.append(monitor)
+        self.register_callback(monitor)
+
 
     def _create_session(self):
         hooks = self._callbacks.get_hooks()
@@ -78,8 +84,11 @@ class Trainer(object):
 
         for cb in self.config.callbacks:
             self.register_callback(cb)
+        for monitor in self.config.monitors:
+            self.register_monitor(monitor)
         self._callbacks = Callbacks(self._callbacks)
         self._callbacks.setup_graph(weakref.proxy(self))
+        self.monitors = Monitors(self.monitors)
 
         # create session
         self._create_session()
