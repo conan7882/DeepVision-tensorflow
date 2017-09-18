@@ -28,7 +28,6 @@ class InferenceBase(Callback):
         
     def setup_inference(self):
         self._setup_inference()
-        self._create_infer_sess()
         self.Inference_list = self.model.get_inference_list()
 
     def _setup_inference(self):
@@ -48,6 +47,7 @@ class InferenceBase(Callback):
             session_creator = ReuseSessionCreator(self.sess), hooks = infer_hooks)
 
     def _trigger_step(self):
+        self._create_infer_sess()
         self.inference_step()
 
         # assert len(cur_batch) == len(self.placeholders), \
