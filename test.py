@@ -33,7 +33,7 @@ class Model(BaseModel):
     def _create_graph(self):
 
         self.image = tf.placeholder(tf.float32, [None, None, None, self.num_channels], 'image')
-        self.gt = tf.placeholder(tf.int32, [None, None, None], 'gt')
+        self.gt = tf.placeholder(tf.int64, [None, None, None], 'gt')
         self.mask = tf.placeholder(tf.int32, [None, None, None], 'mask')
 
         conv1 = conv(self.image, 5, 5, 32, 'conv1')

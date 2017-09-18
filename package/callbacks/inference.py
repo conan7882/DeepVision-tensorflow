@@ -30,6 +30,7 @@ class Inference(Callback):
 
     def _setup_graph(self):
         self.placeholders = self.trainer.model.get_placeholder()
+        self.Inference_list = self.trainer.model.get_inference_list()
         # cbs = FeedInput(self.dataflow, self.trainer.model.get_placeholder())
 
 
@@ -42,7 +43,7 @@ class Inference(Callback):
 
         feed = dict(zip(self.placeholders, cur_batch))
         self.trainer.model.set_is_training(False)
-        accuracy = self.trainer.model.get_inference_list().eval(feed_dict = feed)
+        accuracy = self.Inference_list.eval(feed_dict = feed)
         
         print(accuracy)
 

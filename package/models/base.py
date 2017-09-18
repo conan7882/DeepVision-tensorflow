@@ -17,7 +17,7 @@ class ModelDes(object):
         raise NotImplementedError()
 
     def get_inference_list(self):
-        return _get_inference_list()
+        return self._get_inference_list()
 
     def _get_inference_list(self):
         return None
