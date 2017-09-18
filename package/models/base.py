@@ -24,6 +24,7 @@ class ModelDes(object):
 
     def create_graph(self):
         self._create_graph()
+        self._setup_graph()
         self._setup_summary()
 
     @abstractmethod
@@ -31,6 +32,9 @@ class ModelDes(object):
         raise NotImplementedError()
 
     def _setup_summary(self):
+        pass
+
+    def _setup_graph(self):
         pass
 
 
