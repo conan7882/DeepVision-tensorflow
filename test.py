@@ -66,6 +66,12 @@ class Model(BaseModel):
             self.loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits
                     (logits = apply_mask(dconv3, self.mask),labels = apply_mask(self.gt, self.mask)))      
 
+    def _get_inference_list(self):
+        with tf.name_scope('accuracy'):
+            correct_prediction = apply_mask(tf.equal(self.prediction, self.gt), self.mask)
+            accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+        return accuracy
+
     def _setup_summary(self):
         with tf.name_scope('summary'):
             tf.summary.image("train_Predict", tf.expand_dims(tf.cast(self.prediction, tf.float32), -1))
@@ -75,6 +81,8 @@ class Model(BaseModel):
             tf.summary.scalar('loss', self.loss)
 
             [tf.summary.histogram('gradient/' + var.name, grad) for grad, var in self.get_grads()]
+
+
 
     def _get_loss(self):
         return self.loss

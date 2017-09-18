@@ -7,14 +7,20 @@ __all__ = ['ModelDes', 'BaseModel']
 
 class ModelDes(object):
     """ base model for ModelDes """
-    def get_placeholder(self):
-        return self._get_placeholder()
-
     def set_is_training(self, is_training = True):
         self.is_training = is_training
 
+    def get_placeholder(self):
+        return self._get_placeholder()
+
     def _get_placeholder(self):
         raise NotImplementedError()
+
+    def get_inference_list(self):
+        return _get_inference_list()
+
+    def _get_inference_list(self):
+        return None
 
     def create_graph(self):
         self._create_graph()
