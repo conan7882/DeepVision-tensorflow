@@ -11,7 +11,7 @@ from package.callbacks.saver import ModelSaver
 from package.callbacks.summery import TrainSummery
 from package.callbacks.trigger import PeriodicTrigger
 from package.callbacks.input import FeedInput
-from package.callbacks.inference import Inference
+from package.callbacks.inference import FeedInference
 
 # a = BSDS500('val','D:\\Qian\\Dataset\\Segmentation\\BSR_bsds500\\BSR\\BSDS500\\data\\')
 # print(a.im_list)
@@ -100,7 +100,7 @@ def get_config():
                  # PeriodicTrigger(ModelSaver(checkpoint_dir = 'D:\\Qian\\GitHub\\workspace\\test\\'), 
                                                          # every_k_steps = 10),
                               # TrainSummery(summery_dir = 'D:\\Qian\\GitHub\\workspace\\test\\', periodic = 10),
-                              Inference(dataset_val),],
+                              FeedInference(dataset_val),],
                  batch_size = 1, 
                  max_epoch = 100)
 
