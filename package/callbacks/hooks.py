@@ -29,7 +29,7 @@ class Infer2Hook(tf.train.SessionRunHook):
 		return tf.train.SessionRunArgs(fetches = self.infer_term)
 
 	def after_run(self, rct, val):
-		print(val)
+		print(val.results)
 
 
     

@@ -10,7 +10,10 @@ from package.train.simple import SimpleFeedTrainer
 from package.callbacks.saver import ModelSaver
 from package.callbacks.summery import TrainSummery
 from package.callbacks.trigger import PeriodicTrigger
+<<<<<<< HEAD
 from package.callbacks.input import FeedInput
+=======
+>>>>>>> 8bc2f7104c52977c49597e8d16bc3863b7bcf67d
 from package.callbacks.inference import FeedInference
 
 # a = BSDS500('val','D:\\Qian\\Dataset\\Segmentation\\BSR_bsds500\\BSR\\BSDS500\\data\\')
@@ -66,11 +69,13 @@ class Model(BaseModel):
             self.loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits
                     (logits = apply_mask(dconv3, self.mask),labels = apply_mask(self.gt, self.mask)))      
 
-    def _get_inference_list(self):
+    def _setup_graph(self):
         with tf.name_scope('accuracy'):
             correct_prediction = apply_mask(tf.equal(self.prediction, self.gt), self.mask)
-            accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-        return accuracy
+            self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+        
+    def _get_inference_list(self):
+        return self.accuracy
 
     def _setup_summary(self):
         with tf.name_scope('summary'):
@@ -79,6 +84,7 @@ class Model(BaseModel):
             tf.summary.image("gt", tf.expand_dims(tf.cast(self.gt, tf.float32), -1))
             tf.summary.image("mask", tf.expand_dims(tf.cast(self.mask, tf.float32), -1))
             tf.summary.scalar('loss', self.loss)
+            tf.summary.scalar('accuracy', self.accuracy)
 
             [tf.summary.histogram('gradient/' + var.name, grad) for grad, var in self.get_grads()]
 
@@ -91,15 +97,14 @@ class Model(BaseModel):
         return tf.train.AdamOptimizer(learning_rate = self.learning_rate)
 
 def get_config():
-    dataset_train = MatlabMask('train', data_dir = 'E:\\Google Drive\\Foram\\Training\\CNN_Image\\')
-    dataset_val = MatlabMask('val', data_dir = 'E:\\Google Drive\\Foram\\Training\\CNN_Image\\')
+    dataset_train = MatlabMask('train', data_dir = 'D:\\GoogleDrive_Qian\\Foram\\Training\\CNN_Image\\')
+    dataset_val = MatlabMask('val', data_dir = 'D:\\GoogleDrive_Qian\\Foram\\Training\\CNN_Image\\')
     return TrainConfig(
                  dataflow = dataset_train, 
                  model = Model(num_channels = 1, num_class = 2, learning_rate = 0.0001),
-                 callbacks = [
-                 # PeriodicTrigger(ModelSaver(checkpoint_dir = 'D:\\Qian\\GitHub\\workspace\\test\\'), 
-                                                         # every_k_steps = 10),
-                              # TrainSummery(summery_dir = 'D:\\Qian\\GitHub\\workspace\\test\\', periodic = 10),
+                 callbacks = [PeriodicTrigger(ModelSaver(checkpoint_dir = 'D:\\Qian\\GitHub\\workspace\\test\\'), 
+                                                         every_k_steps = 10),
+                              TrainSummery(summery_dir = 'D:\\Qian\\GitHub\\workspace\\test\\', periodic = 10),
                               FeedInference(dataset_val),],
                  batch_size = 1, 
                  max_epoch = 100)

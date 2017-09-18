@@ -4,7 +4,7 @@ import tensorflow as tf
 
 from .config import TrainConfig
 from .base import Trainer
-from ..callbacks.input import FeedInput
+from ..callbacks.inputs import FeedInput
 from ..models.base import BaseModel
 
 __all__ = ['SimpleFeedTrainer']
