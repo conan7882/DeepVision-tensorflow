@@ -10,6 +10,9 @@ class ModelDes(object):
     def get_placeholder(self):
         return self._get_placeholder()
 
+    def set_is_training(self, is_training = True):
+        self.is_training = is_training
+
     def _get_placeholder(self):
         raise NotImplementedError()
 

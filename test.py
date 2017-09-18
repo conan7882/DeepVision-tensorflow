@@ -11,6 +11,7 @@ from package.callbacks.saver import ModelSaver
 from package.callbacks.summery import TrainSummery
 from package.callbacks.trigger import PeriodicTrigger
 from package.callbacks.input import FeedInput
+from package.callbacks.inference import Inference
 
 # a = BSDS500('val','D:\\Qian\\Dataset\\Segmentation\\BSR_bsds500\\BSR\\BSDS500\\data\\')
 # print(a.im_list)
@@ -29,7 +30,6 @@ class Model(BaseModel):
         # image, label, mask 
 
     def _create_graph(self):
-        num_class = 2
 
         self.image = tf.placeholder(tf.float32, [None, None, None, self.num_channels], 'image')
         self.gt = tf.placeholder(tf.int32, [None, None, None], 'gt')
@@ -48,7 +48,7 @@ class Model(BaseModel):
         pool4 = max_pool(conv4, name = 'pool4')
 
         fc1 = conv(pool4, 2, 2, 128, 'fc1', padding = 'SAME')
-        dropout_fc1 = dropout(fc1, 0.5)
+        dropout_fc1 = dropout(fc1, 0.5, self.is_training)
 
         fc2 = conv(dropout_fc1, 1, 1, self.num_class, 'fc2', padding = 'SAME', relu = False)
 
@@ -83,12 +83,14 @@ class Model(BaseModel):
 
 def get_config():
     dataset_train = MatlabMask('train', data_dir = 'D:\\GoogleDrive_Qian\\Foram\\Training\\CNN_Image\\')
+    dataset_val = MatlabMask('val', data_dir = 'D:\\GoogleDrive_Qian\\Foram\\Training\\CNN_Image\\')
     return TrainConfig(
                  dataflow = dataset_train, 
                  model = Model(num_channels = 1, num_class = 2, learning_rate = 0.0001),
                  callbacks = [PeriodicTrigger(ModelSaver(checkpoint_dir = 'D:\\Qian\\GitHub\\workspace\\test\\'), 
                                                          every_k_steps = 10),
-                              TrainSummery(summery_dir = 'D:\\Qian\\GitHub\\workspace\\test\\', periodic = 10)],
+                              TrainSummery(summery_dir = 'D:\\Qian\\GitHub\\workspace\\test\\', periodic = 10),
+                              Inference(dataset_val, Model.prediction)],
                  batch_size = 1, 
                  max_epoch = 100)
 

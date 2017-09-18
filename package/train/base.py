@@ -55,6 +55,9 @@ class Trainer(object):
                 self._global_step += 1
                 print(self._global_step)
                 # self._callbacks.before_epoch()
+                # to be modified
+                self.model.set_is_training(True)
+                # to be modified
                 self._run_step() 
                 # self._callbacks.after_epoch()
                 self._callbacks.trigger_step()
