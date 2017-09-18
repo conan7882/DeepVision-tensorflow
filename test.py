@@ -21,6 +21,7 @@ class Model(BaseModel):
         self.learning_rate = learning_rate
         self.num_channels = num_channels
         self.num_class = num_class
+        self.set_is_training(True)
         # self._create_placeholder()
         # self._create_graph(inputs)
 
@@ -82,15 +83,16 @@ class Model(BaseModel):
         return tf.train.AdamOptimizer(learning_rate = self.learning_rate)
 
 def get_config():
-    dataset_train = MatlabMask('train', data_dir = 'D:\\GoogleDrive_Qian\\Foram\\Training\\CNN_Image\\')
-    dataset_val = MatlabMask('val', data_dir = 'D:\\GoogleDrive_Qian\\Foram\\Training\\CNN_Image\\')
+    dataset_train = MatlabMask('train', data_dir = 'E:\\Google Drive\\Foram\\Training\\CNN_Image\\')
+    dataset_val = MatlabMask('val', data_dir = 'E:\\Google Drive\\Foram\\Training\\CNN_Image\\')
     return TrainConfig(
                  dataflow = dataset_train, 
                  model = Model(num_channels = 1, num_class = 2, learning_rate = 0.0001),
-                 callbacks = [PeriodicTrigger(ModelSaver(checkpoint_dir = 'D:\\Qian\\GitHub\\workspace\\test\\'), 
-                                                         every_k_steps = 10),
-                              TrainSummery(summery_dir = 'D:\\Qian\\GitHub\\workspace\\test\\', periodic = 10),
-                              Inference(dataset_val, Model.prediction)],
+                 callbacks = [
+                 # PeriodicTrigger(ModelSaver(checkpoint_dir = 'D:\\Qian\\GitHub\\workspace\\test\\'), 
+                                                         # every_k_steps = 10),
+                              # TrainSummery(summery_dir = 'D:\\Qian\\GitHub\\workspace\\test\\', periodic = 10),
+                              Inference(dataset_val),],
                  batch_size = 1, 
                  max_epoch = 100)
 

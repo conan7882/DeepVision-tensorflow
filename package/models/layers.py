@@ -65,7 +65,8 @@ def max_pool(x, name, filter_height = 2, filter_width = 2, stride_x = 2, stride_
                           padding = padding, name = name)
 
 def dropout(x, keep_prob, is_training):
-    return tf.nn.dropout(x, keep_prob, is_training = is_training)
+    return tf.layers.dropout(x, rate = keep_prob, training = is_training)
+    # return tf.nn.dropout(x, keep_prob, is_training = is_training)
 
 def batch_norm(x, name, train = True):
     return tf.contrib.layers.batch_norm(x,

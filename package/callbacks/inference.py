@@ -17,11 +17,11 @@ def assert_type(v, tp):
 
 class Inference(Callback):
     """ base class for Inference """
-    def __init__(self, dataflow, test_tensor):
+    def __init__(self, dataflow):
         assert_type(dataflow, DataFlow)
         self.dataflow = dataflow
 
-        self.test_tensor = test_tensor
+        # self.test_tensor = test_tensor
 
     # def setup_graph(self, trainer):
     #     self.trainer = trainer
@@ -41,8 +41,8 @@ class Inference(Callback):
         .format(len(cur_batch), len(self.placeholders))
 
         feed = dict(zip(self.placeholders, cur_batch))
-        self.model.set_is_training(True) = False
-        test_tensor.evl(feed_dict = feed)
+        self.trainer.model.set_is_training(False)
+        self.trainer.model.prediction.eval(feed_dict = feed)
 
     # def trigger(self):
     #     self._trigger()
