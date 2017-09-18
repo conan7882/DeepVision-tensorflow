@@ -42,7 +42,13 @@ class Inference(Callback):
 
         feed = dict(zip(self.placeholders, cur_batch))
         self.trainer.model.set_is_training(False)
-        self.trainer.model.prediction.eval(feed_dict = feed)
+        cur_prediction = self.trainer.model.prediction.eval(feed_dict = feed)
+        correct_prediction = apply_mask(tf.equal(cur_prediction, cur_batch[1]), cur_batch[2])
+        accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+        print(accuracy)
+
+
+
 
     # def trigger(self):
     #     self._trigger()
