@@ -42,15 +42,10 @@ class MatlabMask(RNGDataFlow):
 
         start = self._image_id
         self._image_id += self._batch_size
-        if self._image_id > self._num_image:
-            self._epochs_completed += 1
-            if self.shuffle:
-                self._suffle_file_list()
-            start = 0
-            self._image_id = self._batch_size
         end = self._image_id
         batch_file_path = self.file_list[start:end]
-        if end == self._num_image:
+
+        if self._image_id + self._batch_size > self._num_image:
             self._epochs_completed += 1
             self._image_id = 0
             if self.shuffle:

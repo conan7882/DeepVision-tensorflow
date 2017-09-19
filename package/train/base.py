@@ -59,7 +59,7 @@ class Trainer(object):
             self._callbacks.before_train()
             while self.epochs_completed <= self.config.max_epoch:
                 self._global_step += 1
-                print(self._global_step)
+                print('Epoch: {}. Step: {}'.format(self.epochs_completed, self._global_step))
                 # self._callbacks.before_epoch()
                 # to be modified
                 self.model.set_is_training(True)

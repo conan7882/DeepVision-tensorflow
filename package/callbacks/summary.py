@@ -30,13 +30,4 @@ class TrainSummary(Callback):
 		if val is not None:
 			self.trainer.monitors.process_summary(val.results)
 
-# class InferSummary(Callback):
-# 	""" callback for inference """
-# 	def __init__(self,
-# 		         key = None,
-# 		         periodic = 1):
-# 		self.periodic = periodic
-# 		self._key = key
-# 	def _setup_graph(self):
-# 		self.all_summary(self._key)
 

@@ -97,13 +97,14 @@ class FeedInference(InferenceBase):
         assert_type(inputs, DataFlow)
         super(FeedInference, self).__init__(inputs, periodic = periodic, infers = infers, extra_cbs = extra_cbs)
 
-
     def _setup_inference(self):
         placeholders = self.model.get_placeholder()
         self._extra_cbs.append(FeedInput(self._inputs, placeholders))
 
     def _inference_step(self):
+        cnt = 0
         while self._inputs.epochs_completed <= 0:
+            cnt += 1
             self.hooked_sess.run(fetches = [])
         self._inputs.reset_epochs_completed(0)
 
