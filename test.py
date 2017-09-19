@@ -6,13 +6,15 @@ from package.models.layers import *
 from package.models.base import BaseModel
 from package.utils.common import apply_mask
 from package.train.config import TrainConfig
+from package.predicts.config import PridectConfig
 from package.train.simple import SimpleFeedTrainer
 from package.callbacks.saver import ModelSaver
 from package.callbacks.summary import TrainSummary
-from package.callbacks.trigger import PeriodicTrigger
 from package.callbacks.inference import FeedInference
 from package.callbacks.monitors import TFSummaryWriter
 from package.callbacks.inferencer import BinaryClassificationStats
+from package.predicts.simple import SimpleFeedPredictor
+from package.predicts.predictions import PredictionImage
 
 class Model(BaseModel):
     def __init__(self, num_channels = 3, num_class = 2, learning_rate = 0.0001):
@@ -65,6 +67,9 @@ class Model(BaseModel):
         with tf.name_scope('accuracy'):
             correct_prediction = apply_mask(tf.equal(self.prediction, self.gt), self.mask)
             self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32), name = 'accuracy')
+
+    def _get_prediction_list(self):
+        return PredictionImage(self.prediction, 'test')
         
     def _get_inference_list(self):
         return BinaryClassificationStats(self.accuracy)
@@ -95,16 +100,27 @@ def get_config():
                  dataflow = dataset_train, 
                  model = Model(num_channels = 1, num_class = 2, learning_rate = 0.0001),
                  monitors = TFSummaryWriter(summary_dir = 'D:\\Qian\\GitHub\\workspace\\test\\'),
-                 callbacks = [PeriodicTrigger(ModelSaver(checkpoint_dir = 'D:\\Qian\\GitHub\\workspace\\test\\'), 
-                                                         every_k_steps = 10),
+                 callbacks = [ModelSaver(checkpoint_dir = 'D:\\Qian\\GitHub\\workspace\\test\\', periodic = 10), 
                               TrainSummary(key = 'train', periodic = 10),
                               FeedInference(dataset_val, periodic = 10, extra_cbs = TrainSummary(key = 'test')),
                               ],
                  batch_size = 1, 
                  max_epoch = 100)
 
+def get_predictConfig():
+    dataset_test = MatlabMask('train', data_dir = 'D:\\GoogleDrive_Qian\\Foram\\Training\\CNN_Image\\')
+    return PridectConfig(
+                 dataflow = dataset_test,
+                 model = Model(num_channels = 1, num_class = 2, learning_rate = 0.0001),
+                 model_dir = 'D:\\Qian\\GitHub\\workspace\\test\\', model_name = 'model-2320',
+                 result_dir = 'D:\\Qian\\GitHub\\workspace\\test\\result\\',
+                 session_creator = None,
+                 batch_size = 1)
+
 if __name__ == '__main__':
-    config = get_config()
-    SimpleFeedTrainer(config).train()
+    # config = get_config()
+    # SimpleFeedTrainer(config).train()
+    config = get_predictConfig()
+    SimpleFeedPredictor(config, 1).run_predict()
 
  

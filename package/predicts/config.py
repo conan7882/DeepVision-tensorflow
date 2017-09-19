@@ -6,62 +6,51 @@ from ..dataflow.base import DataFlow
 from ..models.base import ModelDes
 from ..utils.default import get_default_session_config
 from ..utils.sesscreate import NewSessionCreator
-from ..callbacks.monitors import TFSummaryWriter
 
-__all__ = ['TrainConfig']
+__all__ = ['PridectConfig']
 
 def assert_type(v, tp):
     assert isinstance(v, tp), "Expect " + str(tp) + ", but " + str(v.__class__) + " is given!"
 
-class TrainConfig(object):
+class PridectConfig(object):
     def __init__(self, 
                  dataflow = None, model = None,
-                 callbacks = [],
+                 model_dir = None, model_name = '',
+                 result_dir = None,
                  session_creator = None,
-                 monitors = None,
-                 batch_size = 1, max_epoch = 100):
-
-        assert_type(monitors, TFSummaryWriter), \
-        "monitors has to be TFSummaryWriter at this point!"
-        if not isinstance(monitors, list):
-            monitors = [monitors]
-        self.monitors = monitors
+                 batch_size = 1):
 
         assert dataflow is not None, "dataflow cannot be None!"
         assert_type(dataflow, DataFlow)
         self.dataflow = dataflow
         
-        assert batch_size > 0 and max_epoch > 0
+        assert batch_size > 0
         self.dataflow.set_batch_size(batch_size)
         self.batch_size = batch_size
-        self.max_epoch = max_epoch
         
         assert model is not None, "model cannot be None!"
         assert_type(model, ModelDes)
         self.model = model
+
+        assert model_dir is not None, "model_dir cannot be None"
+        assert os.path.isdir(model_dir)
+        self.model_dir = model_dir
+        self.model_name = model_name
+
+        assert result_dir is not None, "result_dir cannot be None"
+        assert os.path.isdir(result_dir)
+        self.result_dir = result_dir
         
-        # if callbacks is None:
-        #     callbacks = []
-        if not isinstance(callbacks, list):
-            callbacks = [callbacks]
-        self._callbacks = callbacks
+        # if not isinstance(callbacks, list):
+        #     callbacks = [callbacks]
+        # self._callbacks = callbacks
 
         if session_creator is None:
             self.session_creator = NewSessionCreator(config = get_default_session_config())
         else:
             raise ValueError('custormer session creator is not allowed at this point!')
-
         
     @property
     def callbacks(self):
         return self._callbacks
-
-
-from ..dataflow.dataset.BSDS500 import BSDS500
-if __name__ == '__main__':
-    
-    a = BSDS500('val','D:\\Qian\\Dataset\\Segmentation\\BSR_bsds500\\BSR\\BSDS500\\data\\')
-    # print(a.epochs_completed)
-    t = TrainConfig(a,0)
-    print(t)
 

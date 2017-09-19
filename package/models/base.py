@@ -17,9 +17,21 @@ class ModelDes(object):
         raise NotImplementedError()
 
     def get_inference_list(self):
-        return self._get_inference_list()
+        infer_list = self._get_inference_list()
+        if not isinstance(infer_list, list):
+            return  [infer_list]
+        return infer_list
 
     def _get_inference_list(self):
+        return []
+
+    def get_prediction_list(self):
+        pred_list = self._get_prediction_list()
+        if not isinstance(pred_list, list):
+            return [pred_list]
+        return pred_list
+
+    def _get_prediction_list(self):
         return []
 
     def create_graph(self):

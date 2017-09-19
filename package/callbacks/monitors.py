@@ -4,7 +4,7 @@ import tensorflow as tf
 
 from .base import Callback
 
-__all__ = ['TrainingMonitor','TrainingMonitor','TFSummaryWriter']
+__all__ = ['TrainingMonitor','Monitors','TFSummaryWriter']
 
 def assert_type(v, tp):
     assert isinstance(v, tp), "Expect " + str(tp) + ", but " + str(v.__class__) + " is given!"

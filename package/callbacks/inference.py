@@ -50,8 +50,8 @@ class InferenceBase(Callback):
         self._setup_inference()
 
         self._inference_list = self.model.get_inference_list()
-        if not isinstance(self._inference_list, list):
-            self._inference_list = [self._inference_list]
+        # if not isinstance(self._inference_list, list):
+        #     self._inference_list = [self._inference_list]
         for infer in self._inference_list:
             assert_type(infer, InferencerBase)
             infer.setup_graph(self.trainer)

@@ -14,6 +14,7 @@ def assert_type(v, tp):
     assert isinstance(v, tp), "Expect " + str(tp) + ", but " + str(v.__class__) + " is given!"
 
 class PeriodicTrigger(ProxyCallback):
+	""" may not need """
 	def __init__(self, trigger_cb, every_k_steps = None, every_k_epochs = None):
 
 		assert_type(trigger_cb, Callback)
