@@ -6,11 +6,10 @@ import os
 import scipy.misc
 
 import tensorflow as tf
-import numpy as np
 
 from .config import PridectConfig 
 
-__all__ = ['PredictionBase']
+__all__ = ['PredictionBase', 'PredictionImage']
 
 def assert_type(v, tp):
     assert isinstance(v, tp), "Expect " + str(tp) + ", but " + str(v.__class__) + " is given!"
@@ -54,7 +53,10 @@ class PredictionBase(object):
     def get_predictions(self):
         return self._predictions
 
-    def save_prediction(self, results):
+    def after_prediction(self, results):
+        """ process after predition
+            default to save predictions
+        """
         self._save_prediction(results)
 
     def _save_prediction(self, results):
@@ -65,13 +67,11 @@ class PredictionImage(PredictionBase):
         super(PredictionImage, self).__init__(prediction_tensors = prediction_image_tensors, save_prefix = save_prefix)
 
     def _save_prediction(self, results):
-
-        for im, prefix in zip(results, self._prefix_list):
-            save_path = os.path.join(self._save_dir, prefix + '_' + str(self._global_ind) + '.png')
-            # to be modified
-            im = np.squeeze(im)
-            scipy.misc.imsave(save_path, im)
-            self._global_ind += 1
+        for re, prefix in zip(results, self._prefix_list):
+            for im in re:
+                save_path = os.path.join(self._save_dir, prefix + '_' + str(self._global_ind) + '.png')
+                scipy.misc.imsave(save_path, im)
+                self._global_ind += 1
 
         
 

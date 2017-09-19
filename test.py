@@ -69,7 +69,7 @@ class Model(BaseModel):
             self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32), name = 'accuracy')
 
     def _get_prediction_list(self):
-        return PredictionImage(self.prediction, 'test')
+        return [PredictionImage([self.prediction], ['test'])]
         
     def _get_inference_list(self):
         return BinaryClassificationStats(self.accuracy)
@@ -108,14 +108,14 @@ def get_config():
                  max_epoch = 100)
 
 def get_predictConfig():
-    dataset_test = MatlabMask('train', data_dir = 'D:\\GoogleDrive_Qian\\Foram\\Training\\CNN_Image\\')
+    dataset_test = MatlabMask('train', data_dir = 'D:\\GoogleDrive_Qian\\Foram\\Training\\CNN_Image\\', shuffle = False)
     return PridectConfig(
                  dataflow = dataset_test,
                  model = Model(num_channels = 1, num_class = 2, learning_rate = 0.0001),
                  model_dir = 'D:\\Qian\\GitHub\\workspace\\test\\', model_name = 'model-2320',
                  result_dir = 'D:\\Qian\\GitHub\\workspace\\test\\result\\',
                  session_creator = None,
-                 batch_size = 1)
+                 batch_size = 10)
 
 if __name__ == '__main__':
     # config = get_config()

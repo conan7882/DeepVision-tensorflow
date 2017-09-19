@@ -2,6 +2,7 @@ import tensorflow as tf
 
 from .base import Callback
 from .inferencer import InferencerBase
+from ..predicts.predictions import PredictionBase
 
 __all__ = ['Callback2Hook', 'Infer2Hook']
 
@@ -31,6 +32,19 @@ class Infer2Hook(tf.train.SessionRunHook):
 
 	def after_run(self, rct, val):
 		self.inferencer.get_fetch(val)
+
+class Prediction2Hook(tf.train.SessionRunHook):
+	def __init__(self, prediction):
+		assert_type(prediction, PredictionBase)
+		self.prediction = prediction
+
+	def before_run(self, rct):
+		
+		return tf.train.SessionRunArgs(fetches = self.prediction.get_predictions())
+
+	def after_run(self, rct, val):
+		self.prediction.after_prediction(val.results)
+		
 
 
     
