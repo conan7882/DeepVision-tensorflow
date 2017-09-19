@@ -27,7 +27,16 @@ class Model(BaseModel):
         return [self.image, self.gt, self.mask]
         # image, label, mask 
 
+    def _get_graph_feed(self):
+        if self.is_training:
+            feed = {self.keep_prob: 0.5}
+        else:
+            feed = {self.keep_prob: 1}
+        return feed
+
     def _create_graph(self):
+
+        self.keep_prob = tf.placeholder(tf.float32, name='keep_prob')
 
         self.image = tf.placeholder(tf.float32, [None, None, None, self.num_channels], 'image')
         self.gt = tf.placeholder(tf.int64, [None, None, None], 'gt')
@@ -46,9 +55,10 @@ class Model(BaseModel):
         pool4 = max_pool(conv4, name = 'pool4')
 
         fc1 = conv(pool4, 2, 2, 128, 'fc1', padding = 'SAME')
-        dropout_fc1 = dropout(fc1, 0.5, self.is_training)
+        dropout_fc1 = dropout(fc1, self.keep_prob, self.is_training)
 
         fc2 = conv(dropout_fc1, 1, 1, self.num_class, 'fc2', padding = 'SAME', relu = False)
+        
 
         # deconv
         dconv1 = dconv(fc2, 4, 4, 'dconv1', fuse_x = pool3)
@@ -58,6 +68,7 @@ class Model(BaseModel):
         deconv3_shape = tf.stack([shape_X[0], shape_X[1], shape_X[2], self.num_class])
         dconv3 = dconv(dconv2, 16, 16, 'dconv3', output_channels = self.num_class, output_shape = deconv3_shape, stride_x = 4, stride_y = 4)
         self.prediction = tf.argmax(dconv3, name="prediction", dimension = -1)
+        self.prediction2 = tf.argmax(dropout(dconv3, self.keep_prob, self.is_training), name="prediction_2", dimension = -1)
 
         with tf.name_scope('loss'):
             self.loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits
@@ -69,7 +80,7 @@ class Model(BaseModel):
             self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32), name = 'accuracy')
 
     def _get_prediction_list(self):
-        return [PredictionImage([self.prediction], ['test'])]
+        return [PredictionImage([self.prediction2], ['mid'])]
         
     def _get_inference_list(self):
         return BinaryClassificationStats(self.accuracy)
@@ -85,6 +96,7 @@ class Model(BaseModel):
             [tf.summary.histogram('gradient/' + var.name, grad, collections = ['train']) for grad, var in self.get_grads()]
         with tf.name_scope('test_summary'):
             tf.summary.image("test_Predict", tf.expand_dims(tf.cast(self.prediction, tf.float32), -1), collections = ['test'])
+            tf.summary.image("test_Predict2", tf.expand_dims(tf.cast(self.prediction2, tf.float32), -1), collections = ['test'])
 
 
     def _get_loss(self):
@@ -118,10 +130,10 @@ def get_predictConfig():
     return PridectConfig(
                  dataflow = dataset_test,
                  model = Model(num_channels = 1, num_class = 2, learning_rate = 0.0001),
-                 model_dir = 'D:\\Qian\\GitHub\\workspace\\test\\', model_name = 'model-470',
+                 model_dir = 'D:\\Qian\\GitHub\\workspace\\test\\bk\\', model_name = 'model-4060',
                  result_dir = 'D:\\Qian\\GitHub\\workspace\\test\\result\\',
                  session_creator = None,
-                 batch_size = 10)
+                 batch_size = 1)
 
 if __name__ == '__main__':
     # config = get_config()

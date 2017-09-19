@@ -61,9 +61,8 @@ class Trainer(object):
                 self._global_step += 1
                 print('Epoch: {}. Step: {}'.format(self.epochs_completed, self._global_step))
                 # self._callbacks.before_epoch()
-                # to be modified
+                # TODO to be modified
                 self.model.set_is_training(True)
-                # to be modified
                 self._run_step() 
                 # self._callbacks.after_epoch()
                 self._callbacks.trigger_step()
@@ -75,7 +74,8 @@ class Trainer(object):
 
     @abstractmethod
     def _run_step(self):
-        self.hooked_sess.run(self.train_op)
+        model_feed = self.model.get_graph_feed()
+        self.hooked_sess.run(self.train_op, feed_dict = model_feed)
 
     def setup(self):
         # setup graph from model

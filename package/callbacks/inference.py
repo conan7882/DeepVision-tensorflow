@@ -86,11 +86,12 @@ class InferenceBase(Callback):
                 infer.after_inference()
 
     def inference_step(self):
+        # TODO to be modified
         self.model.set_is_training(False)
         self._inference_step()
 
-    def _inference_step(self):
-        self.hooked_sess.run(fetches = [])
+    def _inference_step(self, extra_feed):
+        self.hooked_sess.run(fetches = [], feed_dict = extra_feed)
         
 class FeedInference(InferenceBase):
     def __init__(self, inputs, periodic = 1, infers = [], extra_cbs = None):
@@ -102,9 +103,8 @@ class FeedInference(InferenceBase):
         self._extra_cbs.append(FeedInput(self._inputs, placeholders))
 
     def _inference_step(self):
-        cnt = 0
+        model_feed = self.model.get_graph_feed()
         while self._inputs.epochs_completed <= 0:
-            cnt += 1
-            self.hooked_sess.run(fetches = [])
+            self.hooked_sess.run(fetches = [], feed_dict = model_feed)
         self._inputs.reset_epochs_completed(0)
 

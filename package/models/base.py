@@ -16,6 +16,25 @@ class ModelDes(object):
     def _get_placeholder(self):
         raise NotImplementedError()
 
+    def get_graph_feed(self):
+        return self._get_graph_feed()
+
+    def _get_graph_feed(self):
+        return []
+
+    def create_graph(self):
+        self._create_graph()
+        self._setup_graph()
+        self._setup_summary()
+
+    @abstractmethod
+    def _create_graph(self):
+        raise NotImplementedError()
+
+    def _setup_graph(self):
+        pass
+
+    # TDDO move to outside class
     def get_inference_list(self):
         infer_list = self._get_inference_list()
         if not isinstance(infer_list, list):
@@ -34,22 +53,10 @@ class ModelDes(object):
     def _get_prediction_list(self):
         return []
 
-    def create_graph(self):
-        self._create_graph()
-        self._setup_graph()
-        self._setup_summary()
-
-    @abstractmethod
-    def _create_graph(self):
-        raise NotImplementedError()
-
     def _setup_summary(self):
         pass
 
-    def _setup_graph(self):
-        pass
-
-
+    
 class BaseModel(ModelDes):
     """ Model with single loss and single optimizer """
 

@@ -24,6 +24,7 @@ class Predictor(object):
         self.input = config.dataflow
         self.result_dir = config.result_dir
 
+        # TODO to be modified
         self.model.set_is_training(False)
         self.model.create_graph()
         predictions = self.model.get_prediction_list()
@@ -46,7 +47,8 @@ class Predictor(object):
         self._predict_step()
 
     def _predict_step(self):
-        self.hooked_sess.run(fetches = [])
+        model_feed = self.model.get_graph_feed()
+        self.hooked_sess.run(fetches = [], feed_dict = model_feed)
 
     # # def after_predict(self):
     # #     self._after_predict()
