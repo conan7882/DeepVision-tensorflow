@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 
-from package.dataflow.matlab import MatlabMask
+from package.dataflow.matlab import MatlabData
 from package.models.layers import *
 from package.models.base import BaseModel
 from package.utils.common import apply_mask
@@ -94,8 +94,11 @@ class Model(BaseModel):
         return tf.train.AdamOptimizer(learning_rate = self.learning_rate)
 
 def get_config():
-    dataset_train = MatlabMask('train', data_dir = 'D:\\GoogleDrive_Qian\\Foram\\Training\\CNN_Image\\')
-    dataset_val = MatlabMask('val', data_dir = 'D:\\GoogleDrive_Qian\\Foram\\Training\\CNN_Image\\')
+    mat_name_list = ['level1Edge', 'GT', 'Mask']
+    dataset_train = MatlabData('train', data_dir = 'D:\\GoogleDrive_Qian\\Foram\\Training\\CNN_Image\\', 
+                               mat_name_list = mat_name_list)
+    dataset_val = MatlabData('val', data_dir = 'D:\\GoogleDrive_Qian\\Foram\\Training\\CNN_Image\\', 
+                              mat_name_list = mat_name_list)
     return TrainConfig(
                  dataflow = dataset_train, 
                  model = Model(num_channels = 1, num_class = 2, learning_rate = 0.0001),
@@ -105,14 +108,17 @@ def get_config():
                               FeedInference(dataset_val, periodic = 10, extra_cbs = TrainSummary(key = 'test')),
                               ],
                  batch_size = 1, 
-                 max_epoch = 100)
+                 max_epoch = 57)
 
 def get_predictConfig():
-    dataset_test = MatlabMask('train', data_dir = 'D:\\GoogleDrive_Qian\\Foram\\Training\\CNN_Image\\', shuffle = False)
+    mat_name_list = ['level1Edge']
+    dataset_test = MatlabData('train', data_dir = 'D:\\GoogleDrive_Qian\\Foram\\Training\\CNN_Image\\', 
+                               mat_name_list = mat_name_list,
+                               shuffle = False)
     return PridectConfig(
                  dataflow = dataset_test,
                  model = Model(num_channels = 1, num_class = 2, learning_rate = 0.0001),
-                 model_dir = 'D:\\Qian\\GitHub\\workspace\\test\\', model_name = 'model-2320',
+                 model_dir = 'D:\\Qian\\GitHub\\workspace\\test\\', model_name = 'model-470',
                  result_dir = 'D:\\Qian\\GitHub\\workspace\\test\\result\\',
                  session_creator = None,
                  batch_size = 10)
@@ -121,6 +127,6 @@ if __name__ == '__main__':
     # config = get_config()
     # SimpleFeedTrainer(config).train()
     config = get_predictConfig()
-    SimpleFeedPredictor(config, 1).run_predict()
+    SimpleFeedPredictor(config, len_input = 1).run_predict()
 
  

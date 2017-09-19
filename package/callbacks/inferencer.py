@@ -58,7 +58,7 @@ class BinaryClassificationStats(InferencerBase):
 
     def _after_inference(self):
         """ process after get_fetch """
-        return {"accuracy_sum": np.mean(self.result_list)}
+        return {"test_accuracy": np.mean(self.result_list)}
 
     
 

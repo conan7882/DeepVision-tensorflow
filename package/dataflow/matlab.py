@@ -2,32 +2,45 @@ import os
 from scipy.io import loadmat
 
 import numpy as np 
-import tensorflow as tf
 
 from .base import RNGDataFlow
 from .common import get_file_list
 
+__all__ = ['MatlabData']
 
-__all__ = ['MatlabMask']
-
-class MatlabMask(RNGDataFlow):
+class MatlabData(RNGDataFlow):
     """ dataflow from .mat file with mask """
-    def __init__(self, name, num_channels = 1, data_dir = '', shuffle = True):
+    def __init__(self, name, 
+                 num_channels = 1, 
+                 data_dir = '',
+                 mat_name_list = None, 
+                 mat_type_list = None,
+                 shuffle = True):
+
+        self.setup(epoch_val = 0, batch_size = 1)
 
         self._num_channels = num_channels
+        self.shuffle = shuffle
 
         assert os.path.isdir(data_dir)
         self.data_dir = data_dir
 
-        self.shuffle = shuffle
+        assert mat_name_list is not None, 'mat_name_list cannot be None'
+        if not isinstance(mat_name_list, list):
+            mat_name_list = [mat_name_list]
+        self._mat_name_list = mat_name_list
+        if mat_type_list is None:
+            mat_type_list = ['float']*len(self._mat_name_list)
+        assert len(self._mat_name_list) == len(mat_type_list),\
+        'Length of mat_name_list and mat_type_list has to be the same!'
+        self._mat_type_list = mat_type_list
+
 
         assert name in ['train', 'test', 'val']
-
-        self.setup(epoch_val = 0, batch_size = 1)
         self._load_file_list(name)
         self._num_image = self.size()
         self._image_id = 0
-
+        
     def _load_file_list(self, name):
         data_dir = os.path.join(self.data_dir, name)
 
@@ -53,23 +66,20 @@ class MatlabMask(RNGDataFlow):
         return self._load_data(batch_file_path)
 
     def _load_data(self, batch_file_path):
-        image_list = []
-        label_list = []
-        mask_list = []
+        # TODO deal with num_channels
+        input_data = [[] for i in range(len(self._mat_name_list))]
+
         for file_path in batch_file_path:
             mat = loadmat(file_path)
-            image = load_image_from_mat(mat, 'level1Edge', 'float')
-            label = load_image_from_mat(mat, 'GT', 'int64')
-            mask = load_image_from_mat(mat, 'Mask', 'int32')
+            cur_data = load_image_from_mat(mat, self._mat_name_list[0], self._mat_type_list[0])
+            cur_data = np.reshape(cur_data, [1, cur_data.shape[0], cur_data.shape[1], self._num_channels])
+            input_data[0].extend(cur_data)
 
-            image = np.reshape(image, [1, image.shape[0], image.shape[1], self._num_channels])
-            label = np.reshape(label, [1, label.shape[0], label.shape[1]])
-            mask = np.reshape(mask, [1, mask.shape[0], mask.shape[1]])
-
-            image_list.extend(image)
-            label_list.extend(label)
-            mask_list.extend(mask)
-        return np.array(image_list), np.array(label_list), np.array(mask_list)
+            for k in range(1, len(self._mat_name_list)):
+                cur_data = load_image_from_mat(mat, self._mat_name_list[k], self._mat_type_list[k])
+                cur_data = np.reshape(cur_data, [1, cur_data.shape[0], cur_data.shape[1]])
+                input_data[k].extend(cur_data)
+        return input_data
 
     def size(self):
         return len(self.file_list)

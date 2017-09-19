@@ -1,3 +1,6 @@
+# File: predictions.py
+# Author: Qian Ge <geqian1001@gmail.com>
+
 import tensorflow as tf
 
 from .base import Predictor 
@@ -12,6 +15,7 @@ class SimpleFeedPredictor(Predictor):
     # set_is_training
     def __init__(self, config, len_input):
         super(SimpleFeedPredictor, self).__init__(config)
+        # TODO change len_input to other
         self.len_input = len_input
         self.placeholder = self.model.get_placeholder()
         assert self.len_input <= len(self.placeholder)
@@ -24,8 +28,6 @@ class SimpleFeedPredictor(Predictor):
             self.hooked_sess.run(fetches = [], feed_dict = feed)
         self.input.reset_epochs_completed(0)
 
-    # def _after_predict(self, self.result_list):
-    #     pass
  
 
 
