@@ -30,16 +30,6 @@ class SimpleFeedTrainer(Trainer):
         self.train_op = opt.apply_gradients(grads, name = 'train')
 
 
-    # def _run_step(self):
-        # feed = FeedInput(self.dataflow, self.model.get_placeholder())
-        # # arg = tf.train.SessionRunArgs(fetches= [], feed_dict=feed)
-        # _, loss = self.sess.run([self.train_op, self.model.get_loss()], feed_dict = feed)
-        # print(loss)
-
-    # def _setup(self):
-    #     # inputs = self.model._create_placeholder()
-    #     self.train_op = SimpleFeedTrainer.setup_graph(self.model)
-
 
 
 

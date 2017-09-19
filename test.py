@@ -12,6 +12,7 @@ from package.callbacks.summary import TrainSummary
 from package.callbacks.trigger import PeriodicTrigger
 from package.callbacks.inference import FeedInference
 from package.callbacks.monitors import TFSummaryWriter
+from package.callbacks.inferencer import BinaryClassificationStats
 
 # a = BSDS500('val','D:\\Qian\\Dataset\\Segmentation\\BSR_bsds500\\BSR\\BSDS500\\data\\')
 # print(a.im_list)
@@ -66,10 +67,12 @@ class Model(BaseModel):
     def _setup_graph(self):
         with tf.name_scope('accuracy'):
             correct_prediction = apply_mask(tf.equal(self.prediction, self.gt), self.mask)
-            self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+            self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32), name = 'accuracy')
         
     def _get_inference_list(self):
-        return self.accuracy
+        # return []
+        return BinaryClassificationStats(self.accuracy)
+         
         # return []
 
     def _setup_summary(self):
@@ -82,7 +85,6 @@ class Model(BaseModel):
             tf.summary.scalar('train_accuracy', self.accuracy, collections = ['train'])
             [tf.summary.histogram('gradient/' + var.name, grad, collections = ['train']) for grad, var in self.get_grads()]
         with tf.name_scope('test_summary'):
-            tf.summary.scalar('test_accuracy', self.accuracy, collections = ['test'])
             tf.summary.image("test_Predict", tf.expand_dims(tf.cast(self.prediction, tf.float32), -1), collections = ['test'])
 
 
@@ -101,8 +103,9 @@ def get_config():
                  monitors = TFSummaryWriter(summary_dir = 'D:\\Qian\\GitHub\\workspace\\test\\'),
                  callbacks = [PeriodicTrigger(ModelSaver(checkpoint_dir = 'D:\\Qian\\GitHub\\workspace\\test\\'), 
                                                          every_k_steps = 10),
-                              TrainSummary(key = 'train', periodic = 10),
-                              FeedInference(dataset_val, periodic = 10, extra_cbs = TrainSummary(key = 'test')),],
+                              TrainSummary(key = 'train', periodic = 1),
+                              FeedInference(dataset_val, periodic = 1, extra_cbs = TrainSummary(key = 'test')),
+                              ],
                  batch_size = 1, 
                  max_epoch = 100)
 

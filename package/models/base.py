@@ -20,7 +20,7 @@ class ModelDes(object):
         return self._get_inference_list()
 
     def _get_inference_list(self):
-        return None
+        return []
 
     def create_graph(self):
         self._create_graph()

@@ -53,6 +53,8 @@ class MatlabMask(RNGDataFlow):
         if end == self._num_image:
             self._epochs_completed += 1
             self._image_id = 0
+            if self.shuffle:
+                self._suffle_file_list()
         return self._load_data(batch_file_path)
 
     def _load_data(self, batch_file_path):
