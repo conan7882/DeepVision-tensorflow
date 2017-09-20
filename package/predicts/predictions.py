@@ -71,10 +71,12 @@ class PredictionImage(PredictionBase):
 
     def _save_prediction(self, results):
         for re, prefix in zip(results, self._prefix_list):
+            cur_global_ind = self._global_ind
             for im in re:
-                save_path = os.path.join(self._save_dir, prefix + '_' + str(self._global_ind) + '.png')
+                save_path = os.path.join(self._save_dir, str(cur_global_ind) + '_' + prefix + '.png')
                 scipy.misc.imsave(save_path, im)
-                self._global_ind += 1
+                cur_global_ind += 1
+        self._global_ind = cur_global_ind
 
         
 

@@ -35,8 +35,7 @@ class MatlabData(RNGDataFlow):
         'Length of mat_name_list and mat_type_list has to be the same!'
         self._mat_type_list = mat_type_list
 
-
-        assert name in ['train', 'test', 'val']
+        # assert name in ['train', 'test', 'val']
         self._load_file_list(name)
         self._num_image = self.size()
         self._image_id = 0

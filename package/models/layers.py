@@ -36,6 +36,9 @@ def dconv(x, filter_height, filter_width, name, fuse_x = None, output_shape = []
 
         dconv = tf.nn.conv2d_transpose(x, weights, output_shape = output_shape, strides=[1, stride_y, stride_x, 1], padding = padding, name = scope.name)
         bias = tf.nn.bias_add(dconv, biases)
+
+        bias = tf.reshape(bias, output_shape)
+
         if fuse_x is not None:
             fuse = tf.add(bias, fuse_x, name = 'fuse')
             return fuse

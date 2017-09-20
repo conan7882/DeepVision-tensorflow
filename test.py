@@ -59,7 +59,6 @@ class Model(BaseModel):
 
         fc2 = conv(dropout_fc1, 1, 1, self.num_class, 'fc2', padding = 'SAME', relu = False)
         
-
         # deconv
         dconv1 = dconv(fc2, 4, 4, 'dconv1', fuse_x = pool3)
         dconv2 = dconv(dconv1, 4, 4, 'dconv2', fuse_x = pool2)
@@ -68,6 +67,9 @@ class Model(BaseModel):
         deconv3_shape = tf.stack([shape_X[0], shape_X[1], shape_X[2], self.num_class])
         dconv3 = dconv(dconv2, 16, 16, 'dconv3', output_channels = self.num_class, output_shape = deconv3_shape, stride_x = 4, stride_y = 4)
         self.prediction = tf.argmax(dconv3, name="prediction", dimension = -1)
+        prediction_pro = tf.nn.softmax(dconv3)
+        prediction_pro = tf.identity(prediction_pro[:,:,:,1], name = "prediction_pro")
+
         # self.prediction2 = tf.argmax(dropout(dconv3, self.keep_prob, self.is_training), name="prediction_2", dimension = -1)
 
         with tf.name_scope('loss'):
@@ -78,12 +80,6 @@ class Model(BaseModel):
         correct_prediction = apply_mask(tf.equal(self.prediction, self.gt), self.mask)
         self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32), name = 'accuracy')
         t = tf.reduce_mean(tf.cast(correct_prediction, tf.float32), name = 'accuracy2')
-
-    # def _get_prediction_list(self):
-    #     return [PredictionImage([self.prediction2], ['mid'])]
-        
-    # def _get_inference_list(self):
-    #     return BinaryClassificationStats(self.accuracy)
          
     def _setup_summary(self):
         with tf.name_scope('train_summary'):
@@ -96,7 +92,6 @@ class Model(BaseModel):
             [tf.summary.histogram('gradient/' + var.name, grad, collections = ['train']) for grad, var in self.get_grads()]
         with tf.name_scope('test_summary'):
             tf.summary.image("test_Predict", tf.expand_dims(tf.cast(self.prediction, tf.float32), -1), collections = ['test'])
-
 
     def _get_loss(self):
         return self.loss
@@ -126,10 +121,10 @@ def get_config():
 
 def get_predictConfig():
     mat_name_list = ['level1Edge']
-    dataset_test = MatlabData('train', data_dir = 'D:\\GoogleDrive_Qian\\Foram\\Training\\CNN_Image\\', 
+    dataset_test = MatlabData('test57', data_dir = 'D:\\Qian\\TestData\\', 
                                mat_name_list = mat_name_list,
                                shuffle = False)
-    prediction_list = PredictionImage('prediction', 'test')
+    prediction_list = PredictionImage(['prediction', 'prediction_pro'], ['test','test_pro'])
 
     return PridectConfig(
                  dataflow = dataset_test,
@@ -141,10 +136,10 @@ def get_predictConfig():
                  batch_size = 1)
 
 if __name__ == '__main__':
-    config = get_config()
-    SimpleFeedTrainer(config).train()
-    # config = get_predictConfig()
-    # SimpleFeedPredictor(config, len_input = 1).run_predict()
+    # config = get_config()
+    # SimpleFeedTrainer(config).train()
+    config = get_predictConfig()
+    SimpleFeedPredictor(config, len_input = 1).run_predict()
 
 
  

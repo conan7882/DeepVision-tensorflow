@@ -16,6 +16,7 @@ class DataFlow(object):
         self.reset_epochs_completed(epoch_val)
         self.set_batch_size(batch_size)
         self.reset_state()
+        self._setup()
 
     def _setup(self):
         pass

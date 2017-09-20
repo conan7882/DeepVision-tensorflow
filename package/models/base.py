@@ -16,10 +16,10 @@ class ModelDes(object):
     def _get_placeholder(self):
         raise NotImplementedError()
 
-    def get_graph_feed(self):
-        return self._get_graph_feed()
+    def get_graph_feed(self, val = None):
+        return self._get_graph_feed(val = val)
 
-    def _get_graph_feed(self):
+    def _get_graph_feed(self, val = None):
         return []
 
     def create_graph(self):
@@ -34,25 +34,7 @@ class ModelDes(object):
     def _setup_graph(self):
         pass
 
-    # TDDO move to outside class
-    def get_inference_list(self):
-        infer_list = self._get_inference_list()
-        if not isinstance(infer_list, list):
-            return  [infer_list]
-        return infer_list
-
-    def _get_inference_list(self):
-        return []
-
-    def get_prediction_list(self):
-        pred_list = self._get_prediction_list()
-        if not isinstance(pred_list, list):
-            return [pred_list]
-        return pred_list
-
-    def _get_prediction_list(self):
-        return []
-
+    # TDDO move outside of class
     def _setup_summary(self):
         pass
 
@@ -79,6 +61,57 @@ class BaseModel(ModelDes):
         return grads
 
 
+class GANBaseModel(ModelDes):
+    """ Base model for GANs """
+
+
+    def get_discriminator_optimizer(self):
+        return self._get_discriminator_optimizer()
+
+    def get_generator_optimizer(self):
+        return self._get_generator_optimizer()
+
+    def _get_discriminator_optimizer(self):
+        raise NotImplementedError()
+
+    def _get_generator_optimizer(self):
+        raise NotImplementedError()
+
+    def get_discriminator_loss(self):
+        return self._get_discriminator_loss()
+
+    def get_generator_loss(self):
+        return self._get_generator_loss()
+
+    def _get_discriminator_loss(self):
+        raise NotImplementedError()
+
+    def _get_generator_loss(self):
+        raise NotImplementedError()
+
+    def get_discriminator_grads(self):
+        optimizer = self.get_discriminator_optimizer()
+        loss = self.get_discriminator_loss()
+        grads = optimizer.compute_gradients(loss)
+        return grads
+
+    def get_generator_grads(self):
+        optimizer = self.get_generator_optimizer()
+        loss = self.get_generator_loss()
+        grads = optimizer.compute_gradients(loss)
+        return grads
+
+    @staticmethod
+    def comp_loss_fake(discrim_output):
+        return tf.reduce_mean(
+                tf.nn.sigmoid_cross_entropy_with_logits(logits = discrim_output, 
+                    labels = tf.zeros_like(discrim_output)))
+
+    @staticmethod
+    def comp_loss_real(discrim_output):
+        return tf.reduce_mean(
+                tf.nn.sigmoid_cross_entropy_with_logits(logits = discrim_output, 
+                    labels = tf.ones_like(discrim_output)))
 
 
 

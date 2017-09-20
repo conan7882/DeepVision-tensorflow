@@ -2,6 +2,7 @@
 # Author: Qian Ge <geqian1001@gmail.com>
 
 import scipy.misc
+import math
 
 import numpy as np
 import tensorflow as tf
@@ -48,4 +49,7 @@ def get_tensors_by_names(names):
         tensor_list += graph.get_tensor_by_name(tensor_name),
 
     return tensor_list
+
+def deconv_size(input_height, input_width, stride = 2):
+    return int(math.ceil(float(input_height) / float(stride))), int(math.ceil(float(input_height) / float(stride)))
     
