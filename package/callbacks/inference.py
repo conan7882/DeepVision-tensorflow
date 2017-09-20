@@ -23,13 +23,23 @@ def assert_type(v, tp):
 
 class InferenceBase(Callback):
     """ base class for Inference """
-    def __init__(self, inputs, periodic = 1, infers = None, extra_cbs = None):
+    def __init__(self, inputs, periodic = 1, inferencers = None, extra_cbs = None):
         """
         Args:
             extra_cbs (list[Callback])
         """
         self._inputs = inputs
         self._periodic = periodic
+
+        assert inferencers is not None and extra_cbs is not None,\
+        "Inferencers and extra_cbs cannot be both None!"
+
+        if not isinstance(inferencers, list):
+            inferencers = [inferencers]
+        for infer in inferencers:
+            assert_type(infer, InferencerBase)
+        self._inference_list = inferencers
+
         if extra_cbs is None:
             self._extra_cbs = []
         elif not isinstance(extra_cbs, list):
@@ -45,11 +55,15 @@ class InferenceBase(Callback):
         self.register_cbs()
         self._cbs = Callbacks(self._cbs)
         self._cbs.setup_graph(self.trainer)
+
+        for infer in self._inference_list:
+            print('ok0000000000000000000000000')
+            infer.setup_inferencer()
    
     def setup_inference(self):
         self._setup_inference()
 
-        self._inference_list = self.model.get_inference_list()
+        # self._inference_list = self.model.get_inference_list()
         # if not isinstance(self._inference_list, list):
         #     self._inference_list = [self._inference_list]
         for infer in self._inference_list:
@@ -77,7 +91,7 @@ class InferenceBase(Callback):
     def _trigger_step(self):
         if self.global_step % self._periodic == 0:
             for infer in self._inference_list:
-                infer.setup_inferencer()
+                infer.before_inference()
 
             self._create_infer_sess()
             self.inference_step()
@@ -94,9 +108,9 @@ class InferenceBase(Callback):
         self.hooked_sess.run(fetches = [], feed_dict = extra_feed)
         
 class FeedInference(InferenceBase):
-    def __init__(self, inputs, periodic = 1, infers = [], extra_cbs = None):
+    def __init__(self, inputs, periodic = 1, inferencers = None, extra_cbs = None):
         assert_type(inputs, DataFlow)
-        super(FeedInference, self).__init__(inputs, periodic = periodic, infers = infers, extra_cbs = extra_cbs)
+        super(FeedInference, self).__init__(inputs, periodic = periodic, inferencers = inferencers, extra_cbs = extra_cbs)
 
     def _setup_inference(self):
         placeholders = self.model.get_placeholder()

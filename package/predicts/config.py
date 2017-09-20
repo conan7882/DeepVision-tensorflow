@@ -6,6 +6,7 @@ from ..dataflow.base import DataFlow
 from ..models.base import ModelDes
 from ..utils.default import get_default_session_config
 from ..utils.sesscreate import NewSessionCreator
+from .predictions import PredictionBase
 
 __all__ = ['PridectConfig']
 
@@ -17,6 +18,7 @@ class PridectConfig(object):
                  dataflow = None, model = None,
                  model_dir = None, model_name = '',
                  result_dir = None,
+                 predictions = None,
                  session_creator = None,
                  batch_size = 1):
 
@@ -40,6 +42,13 @@ class PridectConfig(object):
         assert result_dir is not None, "result_dir cannot be None"
         assert os.path.isdir(result_dir)
         self.result_dir = result_dir
+
+        assert predictions is not None, "predictions cannot be None"
+        if not isinstance(predictions, list):
+            predictions = [predictions]
+        for pred in predictions:
+            assert_type(pred, PredictionBase)
+        self.predictions = predictions
         
         # if not isinstance(callbacks, list):
         #     callbacks = [callbacks]

@@ -27,12 +27,11 @@ class Predictor(object):
         # TODO to be modified
         self.model.set_is_training(False)
         self.model.create_graph()
-        predictions = self.model.get_prediction_list()
-        for pred in predictions:
-            assert_type(pred, PredictionBase)
+        # predictions = self.model.get_prediction_list()
+        for pred in self.config.predictions:
             pred.setup(self.result_dir)
             
-        hooks = [Prediction2Hook(pred) for pred in predictions]
+        hooks = [Prediction2Hook(pred) for pred in self.config.predictions]
 
         self.sess = self.config.session_creator.create_session()
         self.hooked_sess = tf.train.MonitoredSession(

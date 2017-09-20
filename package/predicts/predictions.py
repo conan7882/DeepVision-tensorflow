@@ -7,7 +7,7 @@ import scipy.misc
 
 import tensorflow as tf
 
-from .config import PridectConfig 
+from ..utils.common import get_tensors_by_names
 
 __all__ = ['PredictionBase', 'PredictionImage']
 
@@ -30,18 +30,19 @@ class PredictionBase(object):
         each tensors
 
         Args:
-            prediction_tensors: A tensor or list of tensors
-            save_prefix: A string or list of strings
+            prediction_tensors : list[string] A tensor name or list of tensor names
+            save_prefix: list[string] A string or list of strings
             Length of prediction_tensors and save_prefix have 
             to be the same
         """
-        # to be modified assert type 
         if not isinstance(prediction_tensors, list):
             prediction_tensors = [prediction_tensors]
         if not isinstance(save_prefix, list):
             save_prefix = [save_prefix]
         assert len(prediction_tensors) == len(save_prefix), \
-        'Length of prediction_tensors and save_prefix have to be the same'
+        'Length of prediction_tensors {} and save_prefix {} have to be the same'.\
+        format(len(prediction_tensors), len(save_prefix))
+
         self._predictions = prediction_tensors
         self._prefix_list = save_prefix
         self._global_ind = 0
@@ -49,6 +50,8 @@ class PredictionBase(object):
     def setup(self, result_dir):
         assert os.path.isdir(result_dir)
         self._save_dir = result_dir
+
+        self._predictions = get_tensors_by_names(self._predictions)
 
     def get_predictions(self):
         return self._predictions

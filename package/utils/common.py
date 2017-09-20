@@ -1,3 +1,6 @@
+# File: inference.py
+# Author: Qian Ge <geqian1001@gmail.com>
+
 import scipy.misc
 
 import numpy as np
@@ -32,3 +35,17 @@ def save_images(images, im_size, save_path):
 
 def apply_mask(input_matrix, mask):
     return tf.dynamic_partition(input_matrix, mask, 2)[1]
+
+def get_tensors_by_names(names):
+    # TODO assume there is no repeativie names
+    if not isinstance(names, list):
+        names = [names]
+
+    graph = tf.get_default_graph()
+    tensor_list = []
+    for name in names:
+        tensor_name = name + ':0'
+        tensor_list += graph.get_tensor_by_name(tensor_name),
+
+    return tensor_list
+    
