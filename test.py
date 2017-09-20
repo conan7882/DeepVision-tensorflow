@@ -12,7 +12,7 @@ from package.callbacks.saver import ModelSaver
 from package.callbacks.summary import TrainSummary
 from package.callbacks.inference import FeedInference
 from package.callbacks.monitors import TFSummaryWriter
-from package.callbacks.inferencer import BinaryClassificationStats
+from package.callbacks.inferencer import InferScalars
 from package.predicts.simple import SimpleFeedPredictor
 from package.predicts.predictions import PredictionImage
 
@@ -77,6 +77,7 @@ class Model(BaseModel):
     def _setup_graph(self):
         correct_prediction = apply_mask(tf.equal(self.prediction, self.gt), self.mask)
         self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32), name = 'accuracy')
+        t = tf.reduce_mean(tf.cast(correct_prediction, tf.float32), name = 'accuracy2')
 
     # def _get_prediction_list(self):
     #     return [PredictionImage([self.prediction2], ['mid'])]
@@ -109,8 +110,7 @@ def get_config():
                                mat_name_list = mat_name_list)
     dataset_val = MatlabData('val', data_dir = 'D:\\GoogleDrive_Qian\\Foram\\Training\\CNN_Image\\', 
                               mat_name_list = mat_name_list)
-
-    inference_list = BinaryClassificationStats('accuracy')
+    inference_list = [InferScalars('accuracy', 'test_accuracy')]
     
     return TrainConfig(
                  dataflow = dataset_train, 
@@ -129,7 +129,8 @@ def get_predictConfig():
     dataset_test = MatlabData('train', data_dir = 'D:\\GoogleDrive_Qian\\Foram\\Training\\CNN_Image\\', 
                                mat_name_list = mat_name_list,
                                shuffle = False)
-    prediction_list = PredictionImage('prediction', 'mid')
+    prediction_list = PredictionImage('prediction', 'test')
+
     return PridectConfig(
                  dataflow = dataset_test,
                  model = Model(num_channels = 1, num_class = 2, learning_rate = 0.0001),

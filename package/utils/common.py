@@ -1,4 +1,4 @@
-# File: inference.py
+# File: common.py
 # Author: Qian Ge <geqian1001@gmail.com>
 
 import scipy.misc

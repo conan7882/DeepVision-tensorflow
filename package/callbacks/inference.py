@@ -57,7 +57,6 @@ class InferenceBase(Callback):
         self._cbs.setup_graph(self.trainer)
 
         for infer in self._inference_list:
-            print('ok0000000000000000000000000')
             infer.setup_inferencer()
    
     def setup_inference(self):

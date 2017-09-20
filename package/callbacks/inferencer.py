@@ -9,14 +9,14 @@ import tensorflow as tf
 from .base import Callback
 from ..utils.common import get_tensors_by_names
 
-__all__ = ['InferencerBase', 'BinaryClassificationStats']
+__all__ = ['InferencerBase', 'InferScalars']
 
 class InferencerBase(Callback):
 
     def setup_inferencer(self):
-        if not isinstance(self.names, list):
-            self.names = [self.names]
-        self.names = get_tensors_by_names(self.names)
+        if not isinstance(self._names, list):
+            self._names = [self._names]
+        self._names = get_tensors_by_names(self._names)
         self._setup_inference()
 
     def _setup_inference(self):
@@ -53,23 +53,53 @@ class InferencerBase(Callback):
     def _after_inference(self):
         return None
 
-class BinaryClassificationStats(InferencerBase):
-    def __init__(self, accuracy):
-        self.names = accuracy
+class InferScalars(InferencerBase):
+    def __init__(self, scaler_names, summary_names = None):
+        if not isinstance(scaler_names, list): 
+            scaler_names = [scaler_names]
+        self._names = scaler_names
+        if summary_names is None:
+            self._summary_names = scaler_names
+        else:
+            if not isinstance(summary_names, list): 
+                summary_names = [summary_names]
+            assert len(self._names) == len(summary_names), \
+            "length of scaler_names and summary_names has to be the same!"
+            self._summary_names = summary_names 
         
     def _before_inference(self):
-        self.result_list = []
+        self.result_list = [[] for i in range(0, len(self._names))]
 
     def _put_fetch(self):
         # fetch_list = self.names
-        return self.names
+        return self._names
 
     def _get_fetch(self, val):
-        self.result_list += val.results,
+        for i,v in enumerate(val.results):
+            self.result_list[i] += v,
 
     def _after_inference(self):
         """ process after get_fetch """
-        return {"test_accuracy": np.mean(self.result_list)}
+        return {name: np.mean(val) for name, val in zip(self._summary_names, self.result_list)}
+
+# TODO to be modified
+# class BinaryClassificationStats(InferencerBase):
+#     def __init__(self, accuracy):
+#         self._names = accuracy
+        
+#     def _before_inference(self):
+#         self.result_list = []
+
+#     def _put_fetch(self):
+#         # fetch_list = self.names
+#         return self._names
+
+#     def _get_fetch(self, val):
+#         self.result_list += val.results,
+
+#     def _after_inference(self):
+#         """ process after get_fetch """
+#         return {"test_accuracy": np.mean(self.result_list)}
 
     
 
