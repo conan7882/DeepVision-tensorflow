@@ -8,7 +8,7 @@ from ..utils.default import get_default_session_config
 from ..utils.sesscreate import NewSessionCreator
 from ..callbacks.monitors import TFSummaryWriter
 
-__all__ = ['TrainConfig']
+__all__ = ['TrainConfig', 'GANTrainConfig']
 
 def assert_type(v, tp):
     assert isinstance(v, tp), "Expect " + str(tp) + ", but " + str(v.__class__) + " is given!"
@@ -50,18 +50,39 @@ class TrainConfig(object):
             self.session_creator = NewSessionCreator(config = get_default_session_config())
         else:
             raise ValueError('custormer session creator is not allowed at this point!')
-
-        
+  
     @property
     def callbacks(self):
         return self._callbacks
 
 
-from ..dataflow.dataset.BSDS500 import BSDS500
-if __name__ == '__main__':
-    
-    a = BSDS500('val','D:\\Qian\\Dataset\\Segmentation\\BSR_bsds500\\BSR\\BSDS500\\data\\')
-    # print(a.epochs_completed)
-    t = TrainConfig(a,0)
-    print(t)
+class GANTrainConfig(TrainConfig):
+    def __init__(self, 
+                 dataflow = None, model = None,
+                 discriminator_callbacks = [],
+                 generator_callbacks = [],
+                 session_creator = None,
+                 monitors = None,
+                 batch_size = 1, max_epoch = 100):
+
+        if not isinstance(discriminator_callbacks, list):
+            discriminator_callbacks = [discriminator_callbacks]
+        self._dis_callbacks = discriminator_callbacks
+        if not isinstance(generator_callbacks, list):
+            generator_callbacks = [generator_callbacks]
+        self._gen_callbacks = generator_callbacks
+
+        callbacks = self._dis_callbacks + self._gen_callbacks
+
+        super(GANTrainConfig, self).__init__(dataflow = dataflow, model = model,
+                                             callbacks = callbacks,
+                                             session_creator = session_creator,
+                                             monitors = monitors,
+                                             batch_size = batch_size, max_epoch = max_epoch)
+    @property
+    def dis_callbacks(self):
+        return self._dis_callbacks
+    @property
+    def gen_callbacks(self):
+        return self._gen_callbacks
 

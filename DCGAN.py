@@ -5,7 +5,7 @@ from package.dataflow.dataset.MNIST import MNIST
 from package.models.layers import *
 from package.models.base import GANBaseModel
 from package.utils.common import get_tensors_by_names, deconv_size
-from package.train.config import TrainConfig
+from package.train.config import GANTrainConfig
 from package.predicts.config import PridectConfig
 from package.train.simple import GANFeedTrainer
 from package.callbacks.saver import ModelSaver
@@ -62,7 +62,6 @@ class Model(GANBaseModel):
         d_loss_fake = self.comp_loss_fake(self.discrim_gen)
         self.d_loss = d_loss_real + d_loss_fake
         self.d_loss = tf.identity(self.d_loss, name = 'd_loss_test')
-        
         return self.d_loss
 
     def _get_generator_loss(self):
@@ -150,91 +149,50 @@ class Model(GANBaseModel):
         return fc5
 
     def setup_summary(self):
-        with tf.name_scope('train_summary'):
-            tf.summary.image("generate_im", tf.cast(self.sample_image, tf.float32), collections = ['train'])
+        with tf.name_scope('real_im'):
             tf.summary.image("real_im", tf.cast(self.image, tf.float32), collections = ['train'])
-            # tf.summary.image("gt", tf.expand_dims(tf.cast(self.gt, tf.float32), -1), collections = ['train'])
-        #     tf.summary.image("mask", tf.expand_dims(tf.cast(self.mask, tf.float32), -1), collections = ['train'])
+        with tf.name_scope('generate_im'):
+            tf.summary.image("generate_im", tf.cast(self.sample_image, tf.float32), collections = ['train'])          
+        with tf.name_scope('train_summary'):
             tf.summary.scalar('d_loss', self.d_loss, collections = ['train'])
             tf.summary.scalar('g_loss', self.g_loss, collections = ['train'])
-            # tf.summary.histogram('discrim_real', tf.nn.sigmoid(self.discrim_real), collections = ['train'])
-            # tf.summary.histogram('discrim_gen', tf.nn.sigmoid(self.discrim_gen), collections = ['train'])
+            tf.summary.histogram('discrim_real', tf.nn.sigmoid(self.discrim_real), collections = ['train'])
+            tf.summary.histogram('discrim_gen', tf.nn.sigmoid(self.discrim_gen), collections = ['train'])
+        with tf.name_scope('gradient'):
+            [tf.summary.histogram('dis_gradient/' + var.name, grad, collections = ['train']) for grad, var in self.get_discriminator_grads()]
+            [tf.summary.histogram('gen_gradient/' + var.name, grad, collections = ['train']) for grad, var in self.get_generator_grads()]
 
-
-        #     tf.summary.scalar('train_accuracy', self.accuracy, collections = ['train'])
-        #     [tf.summary.histogram('gradient/' + var.name, grad, collections = ['train']) for grad, var in self.get_grads()]
-        # with tf.name_scope('test_summary'):
-        #     tf.summary.image("test_Predict", tf.expand_dims(tf.cast(self.prediction, tf.float32), -1), collections = ['test'])
-
-
-
-
-
-    #     conv1 = conv(self.image, 5, 5, 32, 'conv1')
-    #     pool1 = max_pool(conv1, name = 'pool1')
-
-    #     conv2 = conv(pool1, 3, 3, 48, 'conv2')
-    #     pool2 = max_pool(conv2, name = 'pool2')
-
-    #     conv3 = conv(pool2, 3, 3, 64, 'conv3')
-    #     pool3 = max_pool(conv3, name = 'pool3')
-
-    #     conv4 = conv(pool3, 3, 3, 128, 'conv4')
-    #     pool4 = max_pool(conv4, name = 'pool4')
-
-    #     fc1 = conv(pool4, 2, 2, 128, 'fc1', padding = 'SAME')
-    #     dropout_fc1 = dropout(fc1, self.keep_prob, self.is_training)
-
-    #     fc2 = conv(dropout_fc1, 1, 1, self.num_class, 'fc2', padding = 'SAME', relu = False)
-        
-    #     # deconv
-    #     dconv1 = dconv(fc2, 4, 4, 'dconv1', fuse_x = pool3)
-    #     dconv2 = dconv(dconv1, 4, 4, 'dconv2', fuse_x = pool2)
-
-    #     shape_X = tf.shape(self.image)
-    #     deconv3_shape = tf.stack([shape_X[0], shape_X[1], shape_X[2], self.num_class])
-    #     dconv3 = dconv(dconv2, 16, 16, 'dconv3', output_channels = self.num_class, output_shape = deconv3_shape, stride_x = 4, stride_y = 4)
-    #     self.prediction = tf.argmax(dconv3, name="prediction", dimension = -1)
-    #     prediction_pro = tf.nn.softmax(dconv3)
-    #     prediction_pro = tf.identity(prediction_pro[:,:,:,1], name = "prediction_pro")
-
-    #     # self.prediction2 = tf.argmax(dropout(dconv3, self.keep_prob, self.is_training), name="prediction_2", dimension = -1)
-
-    #     with tf.name_scope('loss'):
-    #         self.loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits
-    #                 (logits = apply_mask(dconv3, self.mask),labels = apply_mask(self.gt, self.mask)))      
 
     # def _setup_graph(self):
     #     correct_prediction = apply_mask(tf.equal(self.prediction, self.gt), self.mask)
     #     self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32), name = 'accuracy')
     #     t = tf.reduce_mean(tf.cast(correct_prediction, tf.float32), name = 'accuracy2')
          
-    
-    # def _get_loss(self):
-    #     return self.loss
-
-    # def _get_optimizer(self):
-    #     return tf.train.AdamOptimizer(learning_rate = self.learning_rate)
 
 def get_config():
     dataset_train = MNIST('train', data_dir = 'D:\\Qian\\GitHub\\workspace\\tensorflow-DCGAN\\MNIST_data\\')
     # dataset_train = MNIST('train', data_dir = 'E:\\GITHUB\\workspace\\tensorflow\\MNIST_data\\')
     
     # inference_list = [InferScalars('loss_test', 'test_loss')]
-    return TrainConfig(
+    return GANTrainConfig(
                  dataflow = dataset_train, 
                  model = Model(input_vec_length = 100, num_channels = 1, 
                          im_size = [28, 28], 
                          learning_rate = [0.0002, 0.0002]),
                  monitors = TFSummaryWriter(summary_dir = 'D:\\Qian\\GitHub\\workspace\\test\\'),
+                 discriminator_callbacks = [
+                                            TrainSummary(key = 'train', periodic = 10),
+                                            CheckScalar(['d_loss_test','g_loss_test'], periodic = 10),
+                                           ],
+                 generator_callbacks = [],
                  # monitors = TFSummaryWriter(summary_dir = 'E:\\GITHUB\\workspace\\tensorflow\\test\\'), 
-                 callbacks = [
-                 # ModelSaver(checkpoint_dir = 'D:\\Qian\\GitHub\\workspace\\test\\', periodic = 10), 
-                              TrainSummary(key = 'train', periodic = 10),
-                              CheckScalar(['d_loss_test','g_loss_test']),
-                              # FeedInference(dataset_val, periodic = 10),
-                              #   inferencers = inference_list),
-                              ],               
+                 # callbacks = [
+                 # # ModelSaver(checkpoint_dir = 'D:\\Qian\\GitHub\\workspace\\test\\', periodic = 10), 
+                 #              TrainSummary(key = 'train', periodic = 10),
+                 #              CheckScalar(['d_loss_test','g_loss_test']),
+                 #              # FeedInference(dataset_val, periodic = 10),
+                 #              #   inferencers = inference_list),
+                 #              ],               
                  batch_size = 32, 
                  max_epoch = 57)
 

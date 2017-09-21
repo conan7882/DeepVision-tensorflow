@@ -17,7 +17,7 @@ class CheckScalar(Callback):
         _tensors
         _names
     """
-    def __init__(self, tensors):
+    def __init__(self, tensors, periodic = 1):
         """ init CheckScalar object
         Args:
             tensors : list[string] A tensor name or list of tensor names
@@ -26,15 +26,19 @@ class CheckScalar(Callback):
             tensors = [tensors]
         self._tensors = tensors
         self._names = tensors
+
+        self._periodic = periodic
         
     def _setup_graph(self):
         self._tensors = get_tensors_by_names(self._tensors)
 
     def _before_run(self, rct):
-        return tf.train.SessionRunArgs(fetches = self._tensors)
+        if self.global_step % self._periodic == 0:
+            return tf.train.SessionRunArgs(fetches = self._tensors)
    
     def _after_run(self, rct, val):
-        print([name + ': ' + str(v) for name, v in zip(self._names, val.results)])
+        if val is not None:
+            print([name + ': ' + str(v) for name, v in zip(self._names, val.results)])
 
 
 

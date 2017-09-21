@@ -90,15 +90,17 @@ class GANBaseModel(ModelDes):
         raise NotImplementedError()
 
     def get_discriminator_grads(self):
+        d_training_vars = [v for v in tf.trainable_variables() if v.name.startswith('discriminator/')]
         optimizer = self.get_discriminator_optimizer()
         loss = self.get_discriminator_loss()
-        grads = optimizer.compute_gradients(loss)
+        grads = optimizer.compute_gradients(loss, var_list = d_training_vars)
         return grads
 
     def get_generator_grads(self):
+        g_training_vars = [v for v in tf.trainable_variables() if v.name.startswith('generator/')]
         optimizer = self.get_generator_optimizer()
         loss = self.get_generator_loss()
-        grads = optimizer.compute_gradients(loss)
+        grads = optimizer.compute_gradients(loss, var_list = g_training_vars)
         return grads
 
     @staticmethod
