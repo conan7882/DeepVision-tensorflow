@@ -121,3 +121,19 @@ class FeedInference(InferenceBase):
             self.hooked_sess.run(fetches = [], feed_dict = model_feed)
         self._inputs.reset_epochs_completed(0)
 
+
+class GANInference(InferenceBase):
+    def __init__(self, inputs, periodic = 1, inferencers = None, extra_cbs = None):
+        assert_type(inputs, DataFlow)
+        super(GANInference, self).__init__(inputs, periodic = periodic, inferencers = inferencers, extra_cbs = extra_cbs)
+
+    # def _setup_inference(self):
+        # placeholders = self.model.get_placeholder()
+        # self._extra_cbs.append(FeedInput(self._inputs, placeholders))
+
+    def _inference_step(self):
+        model_feed = self.model.get_graph_feed()
+        # while self._inputs.epochs_completed <= 0:
+        self.hooked_sess.run(fetches = [], feed_dict = model_feed)
+        # self._inputs.reset_epochs_completed(0)
+

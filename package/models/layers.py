@@ -84,7 +84,7 @@ def batch_norm(x, name, train = True):
 def leaky_relu(x, leak = 0.2):
     return tf.maximum(x, leak*x)
 
-def new_normal_variable(name, shape = None, trainable = True, stddev = 0.02):
+def new_normal_variable(name, shape = None, trainable = True, stddev = 0.002):
     return tf.get_variable(name, shape = shape, trainable = trainable, initializer = tf.random_normal_initializer(stddev = stddev))
 
 

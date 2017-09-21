@@ -7,9 +7,9 @@ import numpy as np
 import tensorflow as tf
 
 from .base import Callback
-from ..utils.common import get_tensors_by_names
+from ..utils.common import get_tensors_by_names, check_dir, save_merge_images, match_tensor_save_name
 
-__all__ = ['InferencerBase', 'InferScalars']
+__all__ = ['InferencerBase', 'InferImages', 'InferScalars']
 
 class InferencerBase(Callback):
 
@@ -26,7 +26,8 @@ class InferencerBase(Callback):
         return self._put_fetch()
 
     def _put_fetch(self):
-        pass
+        return self._names
+        # pass
 
     def get_fetch(self, val):
         self._get_fetch(val)
@@ -53,6 +54,27 @@ class InferencerBase(Callback):
     def _after_inference(self):
         return None
 
+class InferImages(InferencerBase):
+    def __init__(self, gen_name, save_dir = None, prefix = None):
+        check_dir(save_dir)
+        self._save_dir = save_dir
+        # TODO get global step
+        self._save_id = 0
+
+        self._names, self._prefix = match_tensor_save_name(gen_name, prefix)
+
+    def _get_fetch(self, val):
+        self._result_im = val.results
+
+    def _after_inference(self):
+        # TODO add process_image to monitors
+        batch_size = len(self._result_im[0])
+        grid_size = [8, 8] if batch_size == 64 else [6, 6]
+        for im, save_name in zip(self._result_im, self._prefix): 
+            save_merge_images(im, grid_size, self._save_dir + save_name + '_' + str(self.global_step) + '.png')
+        self._save_id += 1
+        return None
+
 class InferScalars(InferencerBase):
     def __init__(self, scaler_names, summary_names = None):
         if not isinstance(scaler_names, list): 
@@ -69,10 +91,6 @@ class InferScalars(InferencerBase):
         
     def _before_inference(self):
         self.result_list = [[] for i in range(0, len(self._names))]
-
-    def _put_fetch(self):
-        # fetch_list = self.names
-        return self._names
 
     def _get_fetch(self, val):
         for i,v in enumerate(val.results):
@@ -100,6 +118,10 @@ class InferScalars(InferencerBase):
 #     def _after_inference(self):
 #         """ process after get_fetch """
 #         return {"test_accuracy": np.mean(self.result_list)}
+
+if __name__ == '__main__':
+    t = InferGANGenerator('gen_name', save_dir = 'D:\\Qian\\GitHub\\workspace\\test\\result\\', prefix = 1)
+    print(t._prefix)
 
     
 

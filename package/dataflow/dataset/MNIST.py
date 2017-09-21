@@ -65,5 +65,7 @@ class MNIST(RNGDataFlow):
    
 
 if __name__ == '__main__':
-    a = MNIST('train','D:\\Qian\\GitHub\\workspace\\tensorflow-DCGAN\\MNIST_data\\')
-    print(a.next_batch())
+    a = MNIST('train','E:\\GITHUB\\workspace\\tensorflow\\MNIST_data\\')
+    t = a.next_batch()[0]
+    print(a.next_batch()[0])
+    print(a.next_batch()[0])

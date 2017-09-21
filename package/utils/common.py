@@ -3,13 +3,15 @@
 
 import scipy.misc
 import math
+import inspect
+import os
 
 import numpy as np
 import tensorflow as tf
 
-__all__ = ['save_images', 'get_file_list', 'apply_mask']
+__all__ = ['save_merge_images', 'get_file_list', 'apply_mask']
 
-def save_images(images, im_size, save_path):
+def save_merge_images(images, im_size, save_path):
     
     """
     Save the samples images
@@ -52,4 +54,22 @@ def get_tensors_by_names(names):
 
 def deconv_size(input_height, input_width, stride = 2):
     return int(math.ceil(float(input_height) / float(stride))), int(math.ceil(float(input_height) / float(stride)))
+
+def check_dir(input_dir):
+    # print(inspect.stack())
+    assert input_dir is not None, "dir cannot be None!"
+    assert os.path.isdir(input_dir), 'dir does not exist!'
+
+def match_tensor_save_name(tensor_names, save_names):
+    if not isinstance(tensor_names, list):
+        tensor_names = [tensor_names]
+    if save_names is None:
+        return tensor_names, tensor_names
+    elif not isinstance(save_names, list):
+        save_names = [save_names]
+    if len(save_names) < len(tensor_names):
+        return tensor_names, tensor_names
+    else:
+        return tensor_names, save_names
+
     

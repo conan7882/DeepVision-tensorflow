@@ -87,11 +87,12 @@ class BaseModel(ModelDes):
 class GANBaseModel(ModelDes):
     """ Base model for GANs """
 
-    # def set_batch_size(self, val):
-    #     self._batch_size = val
-
-    # def get_batch_size(self):
-    #     return self._batch_size
+    def get_random_vec_placeholder(self):
+        try:
+            return self.Z
+        except AttributeError:
+            self.Z = tf.placeholder(tf.float32, [None, self.input_vec_length])
+        return self.Z
 
     def get_graph_feed(self):
         default_feed = self._get_graph_feed()
