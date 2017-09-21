@@ -41,11 +41,6 @@ class Model(GANBaseModel):
         feed = {self.Z: np.random.normal(size = (self.get_batch_size(), self.input_vec_length))}
         return feed
 
-    # def _get_graph_feed(self):
-    #     batch_size = self.get_batch_size()
-    #     feed = {self.Z: np.random.normal(size = (batch_size, self.input_vec_length))}
-    #     return feed
-
     def _create_graph(self):
         self.Z = tf.placeholder(tf.float32, [None, self.input_vec_length])
         self.image = tf.placeholder(tf.float32, [None, self.im_height, self.im_width, self.num_channels], 'image')
@@ -60,10 +55,12 @@ class Model(GANBaseModel):
             scope.reuse_variables()
             self.discrim_gen = self._discriminator(self.gen_image)
 
+
     def _get_discriminator_loss(self):
         print('------------- _get_discriminator_loss -----------------')
         d_loss_real = self.comp_loss_real(self.discrim_real)
         d_loss_fake = self.comp_loss_fake(self.discrim_gen)
+
         # self.d_loss = d_loss_real + d_loss_fake
         return tf.identity(d_loss_real + d_loss_fake, name = 'd_loss')
         
@@ -152,28 +149,19 @@ class Model(GANBaseModel):
         return fc5
 
     def _setup_summary(self):
-        with tf.name_scope('train_summary'):
-            tf.summary.image("generate_im", tf.cast(self.sample_image, tf.float32), collections = ['train'])
-            tf.summary.image("real_im", tf.cast(self.image, tf.float32), collections = ['train'])
-            # tf.summary.image("gt", tf.expand_dims(tf.cast(self.gt, tf.float32), -1), collections = ['train'])
-        #     tf.summary.image("mask", tf.expand_dims(tf.cast(self.mask, tf.float32), -1), collections = ['train'])
-            tf.summary.scalar('d_loss', self.get_discriminator_loss(), collections = ['train'])
-            tf.summary.scalar('g_loss', self.get_generator_loss(), collections = ['train'])
-            # tf.summary.histogram('discrim_real', tf.nn.sigmoid(self.discrim_real), collections = ['train'])
-            # tf.summary.histogram('discrim_gen', tf.nn.sigmoid(self.discrim_gen), collections = ['train'])
-
-
-        #     tf.summary.scalar('train_accuracy', self.accuracy, collections = ['train'])
-        #     [tf.summary.histogram('gradient/' + var.name, grad, collections = ['train']) for grad, var in self.get_grads()]
-        # with tf.name_scope('test_summary'):
-        #     tf.summary.image("test_Predict", tf.expand_dims(tf.cast(self.prediction, tf.float32), -1), collections = ['test'])
-
+        with tf.name_scope('discriminator_summary'):
+            tf.summary.image("generate_im", tf.cast(self.sample_image, tf.float32), collections = ['train_d'])
+            tf.summary.image("real_im", tf.cast(self.image, tf.float32), collections = ['train_d'])
+            tf.summary.scalar('d_loss', self.get_discriminator_loss(), collections = ['train_d'])
+            tf.summary.histogram('discrim_real', tf.nn.sigmoid(self.discrim_real), collections = ['train_d'])
+            tf.summary.histogram('discrim_gen', tf.nn.sigmoid(self.discrim_gen), collections = ['train_d'])
+        with tf.name_scope('generator_summary'):
+            tf.summary.scalar('g_loss', self.get_generator_loss(), collections = ['train_g'])
 
 def get_config():
     dataset_train = MNIST('train', data_dir = 'D:\\Qian\\GitHub\\workspace\\tensorflow-DCGAN\\MNIST_data\\')
     # dataset_train = MNIST('train', data_dir = 'E:\\GITHUB\\workspace\\tensorflow\\MNIST_data\\')
     
-    inference_list = [InferScalars('d_loss', 'test_loss')]
     return GANTrainConfig(
                  dataflow = dataset_train, 
                  model = Model(input_vec_length = 100, num_channels = 1, 
@@ -181,20 +169,11 @@ def get_config():
                          learning_rate = [0.0002, 0.0002]),
                  monitors = TFSummaryWriter(summary_dir = 'D:\\Qian\\GitHub\\workspace\\test\\'),
                  discriminator_callbacks = [
-                                            TrainSummary(key = 'train', periodic = 10),
+                                            # ModelSaver(checkpoint_dir = 'D:\\Qian\\GitHub\\workspace\\test\\', periodic = 10), 
+                                            TrainSummary(key = 'train_d', periodic = 10),
                                             CheckScalar(['d_loss','g_loss'], periodic = 10),
-                                            # FeedInference(dataset_train, periodic = 10,
-                                            #              inferencers = inference_list),
                                            ],
-                 generator_callbacks = [],
-                 # monitors = TFSummaryWriter(summary_dir = 'E:\\GITHUB\\workspace\\tensorflow\\test\\'), 
-                 # callbacks = [
-                 # # ModelSaver(checkpoint_dir = 'D:\\Qian\\GitHub\\workspace\\test\\', periodic = 10), 
-                 #              TrainSummary(key = 'train', periodic = 10),
-                 #              CheckScalar(['d_loss_test','g_loss_test']),
-                 #              # FeedInference(dataset_val, periodic = 10),
-                 #              #   inferencers = inference_list),
-                 #              ],               
+                 generator_callbacks = [TrainSummary(key = 'train_g', periodic = 10),],              
                  batch_size = 32, 
                  max_epoch = 57)
 

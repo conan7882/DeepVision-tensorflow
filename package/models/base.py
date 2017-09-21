@@ -93,8 +93,14 @@ class GANBaseModel(ModelDes):
     # def get_batch_size(self):
     #     return self._batch_size
 
-    def get_random_input_feed(self):
-        return self._get_random_input_feed()
+    def get_graph_feed(self):
+        default_feed = self._get_graph_feed()
+        random_input_feed = self._get_random_input_feed()
+        default_feed.update(random_input_feed)
+        return default_feed
+
+    # def get_random_input_feed(self):
+    #     return self._get_random_input_feed()
 
     def _get_random_input_feed(self):
         return {}
