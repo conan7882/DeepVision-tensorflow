@@ -80,6 +80,7 @@ class Trainer(object):
     def setup(self):
         # setup graph from model
         self.setup_graph()
+        self.model.setup_summary()
         # setup callbacks
         for cb in self.config.callbacks:
             self.register_callback(cb)
@@ -92,6 +93,8 @@ class Trainer(object):
         self._create_session()
 
         self.sess.graph.finalize()
+
+
 
     def setup_graph(self):
         self.model.create_graph()

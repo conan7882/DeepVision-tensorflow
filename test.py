@@ -67,34 +67,28 @@ class Model(BaseModel):
         deconv3_shape = tf.stack([shape_X[0], shape_X[1], shape_X[2], self.num_class])
         dconv3 = dconv(dconv2, 16, 16, 'dconv3', output_channels = self.num_class, output_shape = deconv3_shape, stride_x = 4, stride_y = 4)
         self.prediction = tf.argmax(dconv3, name="prediction", dimension = -1)
-        prediction_pro = tf.nn.softmax(dconv3)
-        prediction_pro = tf.identity(prediction_pro[:,:,:,1], name = "prediction_pro")
-
-        # self.prediction2 = tf.argmax(dropout(dconv3, self.keep_prob, self.is_training), name="prediction_2", dimension = -1)
-
-        with tf.name_scope('loss'):
-            self.loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits
-                    (logits = apply_mask(dconv3, self.mask),labels = apply_mask(self.gt, self.mask)))      
-
+        self.softmax_dconv3 = tf.nn.softmax(dconv3)
+        prediction_pro = tf.identity(self.softmax_dconv3[:,:,:,1], name = "prediction_pro")
+            
     def _setup_graph(self):
         correct_prediction = apply_mask(tf.equal(self.prediction, self.gt), self.mask)
         self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32), name = 'accuracy')
-        t = tf.reduce_mean(tf.cast(correct_prediction, tf.float32), name = 'accuracy2')
          
-    def setup_summary(self):
+    def _setup_summary(self):
         with tf.name_scope('train_summary'):
             tf.summary.image("train_Predict", tf.expand_dims(tf.cast(self.prediction, tf.float32), -1), collections = ['train'])
             tf.summary.image("im", tf.cast(self.image, tf.float32), collections = ['train'])
             tf.summary.image("gt", tf.expand_dims(tf.cast(self.gt, tf.float32), -1), collections = ['train'])
             tf.summary.image("mask", tf.expand_dims(tf.cast(self.mask, tf.float32), -1), collections = ['train'])
-            tf.summary.scalar('loss', self.loss, collections = ['train'])
+            tf.summary.scalar('loss', self.get_loss(), collections = ['train'])
             tf.summary.scalar('train_accuracy', self.accuracy, collections = ['train'])
             [tf.summary.histogram('gradient/' + var.name, grad, collections = ['train']) for grad, var in self.get_grads()]
         with tf.name_scope('test_summary'):
             tf.summary.image("test_Predict", tf.expand_dims(tf.cast(self.prediction, tf.float32), -1), collections = ['test'])
 
     def _get_loss(self):
-        return self.loss
+        return tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits
+                    (logits = apply_mask(self.softmax_dconv3, self.mask),labels = apply_mask(self.gt, self.mask)), name = 'loss')  
 
     def _get_optimizer(self):
         return tf.train.AdamOptimizer(learning_rate = self.learning_rate)

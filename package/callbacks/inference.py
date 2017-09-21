@@ -31,7 +31,7 @@ class InferenceBase(Callback):
         self._inputs = inputs
         self._periodic = periodic
 
-        assert inferencers is not None and extra_cbs is not None,\
+        assert inferencers is not None or extra_cbs is not None,\
         "Inferencers and extra_cbs cannot be both None!"
 
         if not isinstance(inferencers, list):

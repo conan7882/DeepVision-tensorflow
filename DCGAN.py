@@ -33,15 +33,18 @@ class Model(GANBaseModel):
         self.num_channels = num_channels
         self.set_is_training(True)
 
-
     def _get_placeholder(self):
         # image
         return [self.image]
 
-    def _get_graph_feed(self, val = None):
-        batch_size = val
-        feed = {self.Z: np.random.normal(size = (batch_size, self.input_vec_length))}
+    def _get_random_input_feed(self):
+        feed = {self.Z: np.random.normal(size = (self.get_batch_size(), self.input_vec_length))}
         return feed
+
+    # def _get_graph_feed(self):
+    #     batch_size = self.get_batch_size()
+    #     feed = {self.Z: np.random.normal(size = (batch_size, self.input_vec_length))}
+    #     return feed
 
     def _create_graph(self):
         self.Z = tf.placeholder(tf.float32, [None, self.input_vec_length])
@@ -56,18 +59,20 @@ class Model(GANBaseModel):
             self.discrim_real = self._discriminator(self.image)
             scope.reuse_variables()
             self.discrim_gen = self._discriminator(self.gen_image)
-       
+
     def _get_discriminator_loss(self):
         print('------------- _get_discriminator_loss -----------------')
         d_loss_real = self.comp_loss_real(self.discrim_real)
         d_loss_fake = self.comp_loss_fake(self.discrim_gen)
-        return tf.identity(d_loss_real + d_loss_fake, name = 'd_loss_test')
+        # self.d_loss = d_loss_real + d_loss_fake
+        return tf.identity(d_loss_real + d_loss_fake, name = 'd_loss')
         
-
     def _get_generator_loss(self):
         print('------------- _get_generator_loss -----------------')
-        g_loss = self.comp_loss_real(self.discrim_gen)
-        return tf.identity(g_loss, name = 'g_loss_test')
+        # self.g_loss = self.comp_loss_real(self.discrim_gen)
+        return tf.identity(self.comp_loss_real(self.discrim_gen), name = 'g_loss')
+        # return self.g_loss
+
 
     def _get_discriminator_optimizer(self):
         return tf.train.AdamOptimizer(learning_rate = self.dis_learning_rate, beta1=0.5)
@@ -146,32 +151,29 @@ class Model(GANBaseModel):
 
         return fc5
 
-    def setup_summary(self):
-        with tf.name_scope('real_im'):
-            tf.summary.image("real_im", tf.cast(self.image, tf.float32), collections = ['train'])
-        with tf.name_scope('generate_im'):
-            tf.summary.image("generate_im", tf.cast(self.sample_image, tf.float32), collections = ['train'])          
+    def _setup_summary(self):
         with tf.name_scope('train_summary'):
-            tf.summary.scalar('d_loss', self.d_loss, collections = ['train'])
-            tf.summary.scalar('g_loss', self.g_loss, collections = ['train'])
-            tf.summary.histogram('discrim_real', tf.nn.sigmoid(self.discrim_real), collections = ['train'])
-            tf.summary.histogram('discrim_gen', tf.nn.sigmoid(self.discrim_gen), collections = ['train'])
-        with tf.name_scope('gradient'):
-            [tf.summary.histogram('dis_gradient/' + var.name, grad, collections = ['train']) for grad, var in self.get_discriminator_grads()]
-            [tf.summary.histogram('gen_gradient/' + var.name, grad, collections = ['train']) for grad, var in self.get_generator_grads()]
+            tf.summary.image("generate_im", tf.cast(self.sample_image, tf.float32), collections = ['train'])
+            tf.summary.image("real_im", tf.cast(self.image, tf.float32), collections = ['train'])
+            # tf.summary.image("gt", tf.expand_dims(tf.cast(self.gt, tf.float32), -1), collections = ['train'])
+        #     tf.summary.image("mask", tf.expand_dims(tf.cast(self.mask, tf.float32), -1), collections = ['train'])
+            tf.summary.scalar('d_loss', self.get_discriminator_loss(), collections = ['train'])
+            tf.summary.scalar('g_loss', self.get_generator_loss(), collections = ['train'])
+            # tf.summary.histogram('discrim_real', tf.nn.sigmoid(self.discrim_real), collections = ['train'])
+            # tf.summary.histogram('discrim_gen', tf.nn.sigmoid(self.discrim_gen), collections = ['train'])
 
 
-    # def _setup_graph(self):
-    #     correct_prediction = apply_mask(tf.equal(self.prediction, self.gt), self.mask)
-    #     self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32), name = 'accuracy')
-    #     t = tf.reduce_mean(tf.cast(correct_prediction, tf.float32), name = 'accuracy2')
-         
+        #     tf.summary.scalar('train_accuracy', self.accuracy, collections = ['train'])
+        #     [tf.summary.histogram('gradient/' + var.name, grad, collections = ['train']) for grad, var in self.get_grads()]
+        # with tf.name_scope('test_summary'):
+        #     tf.summary.image("test_Predict", tf.expand_dims(tf.cast(self.prediction, tf.float32), -1), collections = ['test'])
+
 
 def get_config():
     dataset_train = MNIST('train', data_dir = 'D:\\Qian\\GitHub\\workspace\\tensorflow-DCGAN\\MNIST_data\\')
     # dataset_train = MNIST('train', data_dir = 'E:\\GITHUB\\workspace\\tensorflow\\MNIST_data\\')
     
-    # inference_list = [InferScalars('loss_test', 'test_loss')]
+    inference_list = [InferScalars('d_loss', 'test_loss')]
     return GANTrainConfig(
                  dataflow = dataset_train, 
                  model = Model(input_vec_length = 100, num_channels = 1, 
@@ -180,7 +182,9 @@ def get_config():
                  monitors = TFSummaryWriter(summary_dir = 'D:\\Qian\\GitHub\\workspace\\test\\'),
                  discriminator_callbacks = [
                                             TrainSummary(key = 'train', periodic = 10),
-                                            CheckScalar(['d_loss_test','g_loss_test'], periodic = 10),
+                                            CheckScalar(['d_loss','g_loss'], periodic = 10),
+                                            # FeedInference(dataset_train, periodic = 10,
+                                            #              inferencers = inference_list),
                                            ],
                  generator_callbacks = [],
                  # monitors = TFSummaryWriter(summary_dir = 'E:\\GITHUB\\workspace\\tensorflow\\test\\'), 

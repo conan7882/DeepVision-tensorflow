@@ -7,6 +7,13 @@ __all__ = ['ModelDes', 'BaseModel']
 
 class ModelDes(object):
     """ base model for ModelDes """
+
+    def set_batch_size(self, val):
+        self._batch_size = val
+
+    def get_batch_size(self):
+        return self._batch_size
+
     def set_is_training(self, is_training = True):
         self.is_training = is_training
 
@@ -16,11 +23,11 @@ class ModelDes(object):
     def _get_placeholder(self):
         raise NotImplementedError()
 
-    def get_graph_feed(self, val = None):
-        return self._get_graph_feed(val = val)
+    def get_graph_feed(self):
+        return self._get_graph_feed()
 
-    def _get_graph_feed(self, val = None):
-        return []
+    def _get_graph_feed(self):
+        return {}
 
     def create_graph(self):
         self._create_graph()
@@ -35,7 +42,12 @@ class ModelDes(object):
         pass
 
     # TDDO move outside of class
+    # summary will be created before prediction
+    # which is unnecessary
     def setup_summary(self):
+        self._setup_summary()
+
+    def _setup_summary(self):
         pass
 
     
@@ -53,7 +65,11 @@ class BaseModel(ModelDes):
         raise NotImplementedError()
 
     def get_loss(self):
-        return self._get_loss()
+        try:
+            return self._loss
+        except AttributeError:
+            self._loss = self._get_loss()
+        return self._loss
 
     def _get_loss(self):
         raise NotImplementedError()
@@ -71,6 +87,17 @@ class BaseModel(ModelDes):
 class GANBaseModel(ModelDes):
     """ Base model for GANs """
 
+    # def set_batch_size(self, val):
+    #     self._batch_size = val
+
+    # def get_batch_size(self):
+    #     return self._batch_size
+
+    def get_random_input_feed(self):
+        return self._get_random_input_feed()
+
+    def _get_random_input_feed(self):
+        return {}
 
     def get_discriminator_optimizer(self):
         try:

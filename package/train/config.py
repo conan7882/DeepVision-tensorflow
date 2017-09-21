@@ -30,15 +30,16 @@ class TrainConfig(object):
         assert dataflow is not None, "dataflow cannot be None!"
         assert_type(dataflow, DataFlow)
         self.dataflow = dataflow
-        
-        assert batch_size > 0 and max_epoch > 0
-        self.dataflow.set_batch_size(batch_size)
-        self.batch_size = batch_size
-        self.max_epoch = max_epoch
-        
+
         assert model is not None, "model cannot be None!"
         assert_type(model, ModelDes)
         self.model = model
+        
+        assert batch_size > 0 and max_epoch > 0
+        self.dataflow.set_batch_size(batch_size)
+        self.model.set_batch_size(batch_size)
+        self.batch_size = batch_size
+        self.max_epoch = max_epoch        
         
         # if callbacks is None:
         #     callbacks = []
