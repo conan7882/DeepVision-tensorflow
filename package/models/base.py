@@ -25,7 +25,7 @@ class ModelDes(object):
     def create_graph(self):
         self._create_graph()
         self._setup_graph()
-        self._setup_summary()
+        # self._setup_summary()
 
     @abstractmethod
     def _create_graph(self):
@@ -35,7 +35,7 @@ class ModelDes(object):
         pass
 
     # TDDO move outside of class
-    def _setup_summary(self):
+    def setup_summary(self):
         pass
 
     

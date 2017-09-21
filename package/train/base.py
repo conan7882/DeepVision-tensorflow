@@ -81,7 +81,6 @@ class Trainer(object):
         # setup graph from model
         self.setup_graph()
         # setup callbacks
-
         for cb in self.config.callbacks:
             self.register_callback(cb)
         for monitor in self.config.monitors:
@@ -89,7 +88,6 @@ class Trainer(object):
         self._callbacks = Callbacks(self._callbacks)
         self._callbacks.setup_graph(weakref.proxy(self))
         self.monitors = Monitors(self.monitors)
-
         # create session
         self._create_session()
 

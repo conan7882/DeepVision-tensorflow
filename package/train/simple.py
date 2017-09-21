@@ -31,14 +31,13 @@ class SimpleFeedTrainer(Trainer):
 class GANFeedTrainer(Trainer):
     def __init__(self, config):
         assert_type(config.model, GANBaseModel)
-        super(GANTrainer, self).__init__(config)
+        super(GANFeedTrainer, self).__init__(config)
 
     def _setup(self):
         # TODO to be modified
         cbs = FeedInput(self.dataflow, self.model.get_placeholder())
 
         self.config.callbacks.append(cbs)
-
         dis_grads = self.model.get_discriminator_grads()
         dis_opt = self.model.get_discriminator_optimizer()
         self.dis_train_op = dis_opt.apply_gradients(dis_grads, name = 'discriminator_train')
@@ -48,11 +47,10 @@ class GANFeedTrainer(Trainer):
         self.gen_train_op = gen_opt.apply_gradients(gen_grads, name = 'generator_train')
 
     def _run_step(self):
-        model_feed = self.model.get_graph_feed(_)
+        model_feed = self.model.get_graph_feed(val = self.config.batch_size)
 
-        self.hooked_sess.run(self.dis_opt, feed_dict = model_feed)
-
-        self.hooked_sess.run(self.gen_opt, feed_dict = model_feed)
+        self.hooked_sess.run(self.dis_train_op, feed_dict = model_feed)
+        self.hooked_sess.run(self.gen_train_op, feed_dict = model_feed)
 
 
 

@@ -33,6 +33,7 @@ class MNIST(RNGDataFlow):
             for image, label in zip(mnist_data.train.images, mnist_data.train.labels):
                 # TODO to be modified
                 image = image*2.-1.
+                image = np.reshape(image, [28, 28, 1])
                 self.im_list.append(image)
         self.im_list = np.array(self.im_list)
         if self.shuffle:
@@ -60,7 +61,7 @@ class MNIST(RNGDataFlow):
             self._image_id = 0
             if self.shuffle:
                 self._suffle_files()
-        return batch_files
+        return [batch_files]
    
 
 if __name__ == '__main__':

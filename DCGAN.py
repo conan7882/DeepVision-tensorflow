@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 
-from package.dataflow.matlab import MatlabData
+from package.dataflow.dataset.MNIST import MNIST
 from package.models.layers import *
 from package.models.base import GANBaseModel
 from package.utils.common import get_tensors_by_names, deconv_size
@@ -13,6 +13,7 @@ from package.callbacks.summary import TrainSummary
 from package.callbacks.inference import FeedInference
 from package.callbacks.monitors import TFSummaryWriter
 from package.callbacks.inferencer import InferScalars
+from package.callbacks.debug import CheckScalar
 from package.predicts.simple import SimpleFeedPredictor
 from package.predicts.predictions import PredictionImage
 
@@ -36,7 +37,8 @@ class Model(GANBaseModel):
         # image
         return [self.image]
 
-    def _get_graph_feed(self, batch_size):
+    def _get_graph_feed(self, val = None):
+        batch_size = val
         feed = {self.Z: np.random.normal(size = (batch_size, self.input_vec_length))}
         return feed
 
@@ -55,12 +57,20 @@ class Model(GANBaseModel):
             self.discrim_gen = self._discriminator(self.gen_image)
 
     def _get_discriminator_loss(self):
-        d_loss_real = comp_loss_real(self.discrim_real)
-        d_loss_fake = comp_loss_fake(self.disrim_gen)
-        return d_loss_real + d_loss_fake
+        print('------------- _get_discriminator_loss -----------------')
+        d_loss_real = self.comp_loss_real(self.discrim_real)
+        d_loss_fake = self.comp_loss_fake(self.discrim_gen)
+        self.d_loss = d_loss_real + d_loss_fake
+        self.d_loss = tf.identity(self.d_loss, name = 'd_loss_test')
+        
+        return self.d_loss
 
     def _get_generator_loss(self):
-        return comp_loss_real(self.disrim_gen)
+        print('------------- _get_generator_loss -----------------')
+        self.g_loss = self.comp_loss_real(self.discrim_gen)
+        self.g_loss = tf.identity(self.g_loss, name = 'g_loss_test')
+        return self.g_loss
+
 
     def _get_discriminator_optimizer(self):
         return tf.train.AdamOptimizer(learning_rate = self.dis_learning_rate, beta1=0.5)
@@ -139,6 +149,23 @@ class Model(GANBaseModel):
 
         return fc5
 
+    def setup_summary(self):
+        with tf.name_scope('train_summary'):
+            tf.summary.image("generate_im", tf.cast(self.sample_image, tf.float32), collections = ['train'])
+            tf.summary.image("real_im", tf.cast(self.image, tf.float32), collections = ['train'])
+            # tf.summary.image("gt", tf.expand_dims(tf.cast(self.gt, tf.float32), -1), collections = ['train'])
+        #     tf.summary.image("mask", tf.expand_dims(tf.cast(self.mask, tf.float32), -1), collections = ['train'])
+            tf.summary.scalar('d_loss', self.d_loss, collections = ['train'])
+            tf.summary.scalar('g_loss', self.g_loss, collections = ['train'])
+            # tf.summary.histogram('discrim_real', tf.nn.sigmoid(self.discrim_real), collections = ['train'])
+            # tf.summary.histogram('discrim_gen', tf.nn.sigmoid(self.discrim_gen), collections = ['train'])
+
+
+        #     tf.summary.scalar('train_accuracy', self.accuracy, collections = ['train'])
+        #     [tf.summary.histogram('gradient/' + var.name, grad, collections = ['train']) for grad, var in self.get_grads()]
+        # with tf.name_scope('test_summary'):
+        #     tf.summary.image("test_Predict", tf.expand_dims(tf.cast(self.prediction, tf.float32), -1), collections = ['test'])
+
 
 
 
@@ -182,43 +209,34 @@ class Model(GANBaseModel):
     #     self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32), name = 'accuracy')
     #     t = tf.reduce_mean(tf.cast(correct_prediction, tf.float32), name = 'accuracy2')
          
-    # def _setup_summary(self):
-    #     with tf.name_scope('train_summary'):
-    #         tf.summary.image("train_Predict", tf.expand_dims(tf.cast(self.prediction, tf.float32), -1), collections = ['train'])
-    #         tf.summary.image("im", tf.cast(self.image, tf.float32), collections = ['train'])
-    #         tf.summary.image("gt", tf.expand_dims(tf.cast(self.gt, tf.float32), -1), collections = ['train'])
-    #         tf.summary.image("mask", tf.expand_dims(tf.cast(self.mask, tf.float32), -1), collections = ['train'])
-    #         tf.summary.scalar('loss', self.loss, collections = ['train'])
-    #         tf.summary.scalar('train_accuracy', self.accuracy, collections = ['train'])
-    #         [tf.summary.histogram('gradient/' + var.name, grad, collections = ['train']) for grad, var in self.get_grads()]
-    #     with tf.name_scope('test_summary'):
-    #         tf.summary.image("test_Predict", tf.expand_dims(tf.cast(self.prediction, tf.float32), -1), collections = ['test'])
-
+    
     # def _get_loss(self):
     #     return self.loss
 
     # def _get_optimizer(self):
     #     return tf.train.AdamOptimizer(learning_rate = self.learning_rate)
 
-# def get_config():
-#     mat_name_list = ['level1Edge', 'GT', 'Mask']
-#     dataset_train = MatlabData('train', data_dir = 'D:\\GoogleDrive_Qian\\Foram\\Training\\CNN_Image\\', 
-#                                mat_name_list = mat_name_list)
-#     dataset_val = MatlabData('val', data_dir = 'D:\\GoogleDrive_Qian\\Foram\\Training\\CNN_Image\\', 
-#                               mat_name_list = mat_name_list)
-#     inference_list = [InferScalars('accuracy', 'test_accuracy')]
+def get_config():
+    dataset_train = MNIST('train', data_dir = 'D:\\Qian\\GitHub\\workspace\\tensorflow-DCGAN\\MNIST_data\\')
+    # dataset_train = MNIST('train', data_dir = 'E:\\GITHUB\\workspace\\tensorflow\\MNIST_data\\')
     
-#     return TrainConfig(
-#                  dataflow = dataset_train, 
-#                  model = Model(num_channels = 1, num_class = 2, learning_rate = 0.0001),
-#                  monitors = TFSummaryWriter(summary_dir = 'D:\\Qian\\GitHub\\workspace\\test\\'),
-#                  callbacks = [ModelSaver(checkpoint_dir = 'D:\\Qian\\GitHub\\workspace\\test\\', periodic = 10), 
-#                               TrainSummary(key = 'train', periodic = 10),
-#                               FeedInference(dataset_val, periodic = 10, extra_cbs = TrainSummary(key = 'test'),
-#                                 inferencers = inference_list),
-#                               ],
-#                  batch_size = 1, 
-#                  max_epoch = 57)
+    # inference_list = [InferScalars('loss_test', 'test_loss')]
+    return TrainConfig(
+                 dataflow = dataset_train, 
+                 model = Model(input_vec_length = 100, num_channels = 1, 
+                         im_size = [28, 28], 
+                         learning_rate = [0.0002, 0.0002]),
+                 monitors = TFSummaryWriter(summary_dir = 'D:\\Qian\\GitHub\\workspace\\test\\'),
+                 # monitors = TFSummaryWriter(summary_dir = 'E:\\GITHUB\\workspace\\tensorflow\\test\\'), 
+                 callbacks = [
+                 # ModelSaver(checkpoint_dir = 'D:\\Qian\\GitHub\\workspace\\test\\', periodic = 10), 
+                              TrainSummary(key = 'train', periodic = 10),
+                              CheckScalar(['d_loss_test','g_loss_test']),
+                              # FeedInference(dataset_val, periodic = 10),
+                              #   inferencers = inference_list),
+                              ],               
+                 batch_size = 32, 
+                 max_epoch = 57)
 
 # def get_predictConfig():
 #     mat_name_list = ['level1Edge']
@@ -237,16 +255,11 @@ class Model(GANBaseModel):
 #                  batch_size = 1)
 
 if __name__ == '__main__':
-    # config = get_config()
-    # SimpleFeedTrainer(config).train()
+    config = get_config()
+    GANFeedTrainer(config).train()
     # config = get_predictConfig()
     # SimpleFeedPredictor(config, len_input = 1).run_predict()
-    model = Model(
-                 input_vec_length = 100, num_channels = 3, 
-                 im_size = [28, 28], 
-                 learning_rate = [0.0002, 0.0002])
-    model.set_is_training(False)
-    model.create_graph()
+
 
 
  

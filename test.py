@@ -27,7 +27,7 @@ class Model(BaseModel):
         return [self.image, self.gt, self.mask]
         # image, label, mask 
 
-    def _get_graph_feed(self):
+    def _get_graph_feed(self, val):
         if self.is_training:
             feed = {self.keep_prob: 0.5}
         else:
@@ -81,7 +81,7 @@ class Model(BaseModel):
         self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32), name = 'accuracy')
         t = tf.reduce_mean(tf.cast(correct_prediction, tf.float32), name = 'accuracy2')
          
-    def _setup_summary(self):
+    def setup_summary(self):
         with tf.name_scope('train_summary'):
             tf.summary.image("train_Predict", tf.expand_dims(tf.cast(self.prediction, tf.float32), -1), collections = ['train'])
             tf.summary.image("im", tf.cast(self.image, tf.float32), collections = ['train'])
@@ -136,10 +136,10 @@ def get_predictConfig():
                  batch_size = 1)
 
 if __name__ == '__main__':
-    # config = get_config()
-    # SimpleFeedTrainer(config).train()
-    config = get_predictConfig()
-    SimpleFeedPredictor(config, len_input = 1).run_predict()
+    config = get_config()
+    SimpleFeedTrainer(config).train()
+    # config = get_predictConfig()
+    # SimpleFeedPredictor(config, len_input = 1).run_predict()
 
 
  
