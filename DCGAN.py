@@ -33,6 +33,7 @@ class Model(GANBaseModel):
         self.num_channels = num_channels
         self.set_is_training(True)
 
+
     def _get_placeholder(self):
         # image
         return [self.image]
@@ -55,21 +56,18 @@ class Model(GANBaseModel):
             self.discrim_real = self._discriminator(self.image)
             scope.reuse_variables()
             self.discrim_gen = self._discriminator(self.gen_image)
-
+       
     def _get_discriminator_loss(self):
         print('------------- _get_discriminator_loss -----------------')
         d_loss_real = self.comp_loss_real(self.discrim_real)
         d_loss_fake = self.comp_loss_fake(self.discrim_gen)
-        self.d_loss = d_loss_real + d_loss_fake
-        self.d_loss = tf.identity(self.d_loss, name = 'd_loss_test')
-        return self.d_loss
+        return tf.identity(d_loss_real + d_loss_fake, name = 'd_loss_test')
+        
 
     def _get_generator_loss(self):
         print('------------- _get_generator_loss -----------------')
-        self.g_loss = self.comp_loss_real(self.discrim_gen)
-        self.g_loss = tf.identity(self.g_loss, name = 'g_loss_test')
-        return self.g_loss
-
+        g_loss = self.comp_loss_real(self.discrim_gen)
+        return tf.identity(g_loss, name = 'g_loss_test')
 
     def _get_discriminator_optimizer(self):
         return tf.train.AdamOptimizer(learning_rate = self.dis_learning_rate, beta1=0.5)

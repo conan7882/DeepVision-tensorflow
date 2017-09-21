@@ -43,7 +43,11 @@ class BaseModel(ModelDes):
     """ Model with single loss and single optimizer """
 
     def get_optimizer(self):
-        return self._get_optimizer()
+        try:
+            return self.optimizer
+        except AttributeError:
+            self.optimizer = self._get_optimizer()
+        return self.optimizer
 
     def _get_optimizer(self):
         raise NotImplementedError()
@@ -55,9 +59,12 @@ class BaseModel(ModelDes):
         raise NotImplementedError()
 
     def get_grads(self):
-        optimizer = self.get_optimizer()
-        loss = self.get_loss()
-        grads = optimizer.compute_gradients(loss)
+        try:
+            return self.grads
+        except AttributeError:
+            optimizer = self.get_optimizer()
+            loss = self.get_loss()
+            grads = optimizer.compute_gradients(loss)
         return grads
 
 
@@ -66,10 +73,18 @@ class GANBaseModel(ModelDes):
 
 
     def get_discriminator_optimizer(self):
-        return self._get_discriminator_optimizer()
+        try:
+            return self.d_optimizer
+        except AttributeError:
+            self.d_optimizer = self._get_discriminator_optimizer()
+            return self.d_optimizer
 
     def get_generator_optimizer(self):
-        return self._get_generator_optimizer()
+        try:
+            return self.g_optimizer
+        except AttributeError:
+            self.g_optimizer = self._get_generator_optimizer()
+            return self.g_optimizer
 
     def _get_discriminator_optimizer(self):
         raise NotImplementedError()
@@ -78,10 +93,18 @@ class GANBaseModel(ModelDes):
         raise NotImplementedError()
 
     def get_discriminator_loss(self):
-        return self._get_discriminator_loss()
+        try: 
+            return self.d_loss
+        except AttributeError:
+            self.d_loss = self._get_discriminator_loss()
+            return self.d_loss
 
     def get_generator_loss(self):
-        return self._get_generator_loss()
+        try: 
+            return self.g_loss
+        except AttributeError:
+            self.g_loss = self._get_generator_loss()
+            return self.g_loss
 
     def _get_discriminator_loss(self):
         raise NotImplementedError()
@@ -90,18 +113,24 @@ class GANBaseModel(ModelDes):
         raise NotImplementedError()
 
     def get_discriminator_grads(self):
-        d_training_vars = [v for v in tf.trainable_variables() if v.name.startswith('discriminator/')]
-        optimizer = self.get_discriminator_optimizer()
-        loss = self.get_discriminator_loss()
-        grads = optimizer.compute_gradients(loss, var_list = d_training_vars)
-        return grads
+        try:
+            return self.d_grads
+        except AttributeError:
+            d_training_vars = [v for v in tf.trainable_variables() if v.name.startswith('discriminator/')]
+            optimizer = self.get_discriminator_optimizer()
+            loss = self.get_discriminator_loss()
+            self.d_grads = optimizer.compute_gradients(loss, var_list = d_training_vars)
+            return self.d_grads
 
     def get_generator_grads(self):
-        g_training_vars = [v for v in tf.trainable_variables() if v.name.startswith('generator/')]
-        optimizer = self.get_generator_optimizer()
-        loss = self.get_generator_loss()
-        grads = optimizer.compute_gradients(loss, var_list = g_training_vars)
-        return grads
+        try:
+            return self.g_grads
+        except AttributeError:
+            g_training_vars = [v for v in tf.trainable_variables() if v.name.startswith('generator/')]
+            optimizer = self.get_generator_optimizer()
+            loss = self.get_generator_loss()
+            self.g_grads = optimizer.compute_gradients(loss, var_list = g_training_vars)
+            return self.g_grads
 
     @staticmethod
     def comp_loss_fake(discrim_output):

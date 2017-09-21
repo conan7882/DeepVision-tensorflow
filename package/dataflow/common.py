@@ -1,3 +1,6 @@
+# File: common.py
+# Author: Qian Ge <geqian1001@gmail.com>
+
 import os
 import tensorflow as tf
 from .base import DataFlow

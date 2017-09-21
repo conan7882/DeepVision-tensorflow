@@ -30,7 +30,7 @@ class TrainSummary(Callback):
 			None
 
 	def _after_run(self, _, val):
-		if val is not None:
+		if val.results is not None:
 			self.trainer.monitors.process_summary(val.results)
 
 

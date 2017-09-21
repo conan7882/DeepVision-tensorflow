@@ -1,12 +1,12 @@
+# File: MNIST.py
+# Author: Qian Ge <geqian1001@gmail.com>
+
 import os
 from scipy.io import loadmat
 
-import cv2
 import numpy as np 
-import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
-from ..common import get_file_list
 from ..base import RNGDataFlow
 
 __all__ = ['MNIST']

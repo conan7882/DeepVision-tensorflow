@@ -1,3 +1,6 @@
+# File: matlab.py
+# Author: Qian Ge <geqian1001@gmail.com>
+
 import os
 from scipy.io import loadmat
 

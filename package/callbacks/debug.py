@@ -32,12 +32,14 @@ class CheckScalar(Callback):
     def _setup_graph(self):
         self._tensors = get_tensors_by_names(self._tensors)
 
-    def _before_run(self, rct):
+    def _before_run(self, _):
         if self.global_step % self._periodic == 0:
             return tf.train.SessionRunArgs(fetches = self._tensors)
+        else:
+            return None
    
-    def _after_run(self, rct, val):
-        if val is not None:
+    def _after_run(self, _, val):
+        if val.results is not None:
             print([name + ': ' + str(v) for name, v in zip(self._names, val.results)])
 
 
