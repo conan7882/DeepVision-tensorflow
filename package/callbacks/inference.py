@@ -12,6 +12,7 @@ from .base import Callback
 from .group import Callbacks
 from .inputs import FeedInput
 from ..dataflow.base import DataFlow
+from ..dataflow.randoms import RandomVec
 from .hooks import Callback2Hook, Infer2Hook
 from ..utils.sesscreate import ReuseSessionCreator
 from .inferencer import InferencerBase
@@ -19,11 +20,13 @@ from .inferencer import InferencerBase
 __all__ = ['InferenceBase', 'FeedInference']
 
 def assert_type(v, tp):
-    assert isinstance(v, tp), "Expect " + str(tp) + ", but " + str(v.__class__) + " is given!"
+    assert isinstance(v, tp), \
+    "Expect " + str(tp) + ", but " + str(v.__class__) + " is given!"
 
 class InferenceBase(Callback):
     """ base class for Inference """
-    def __init__(self, inputs, periodic = 1, inferencers = None, extra_cbs = None):
+    def __init__(self, inputs = None, periodic = 1, 
+                 inferencers = None, extra_cbs = None):
         """
         Args:
             extra_cbs (list[Callback])
@@ -62,9 +65,6 @@ class InferenceBase(Callback):
     def setup_inference(self):
         self._setup_inference()
 
-        # self._inference_list = self.model.get_inference_list()
-        # if not isinstance(self._inference_list, list):
-        #     self._inference_list = [self._inference_list]
         for infer in self._inference_list:
             assert_type(infer, InferencerBase)
             infer.setup_graph(self.trainer)
@@ -79,7 +79,8 @@ class InferenceBase(Callback):
             self._cbs.append(cb)
         
     def get_infer_hooks(self):
-        return self._cbs.get_hooks() + [Infer2Hook(infer) for infer in self._inference_list]
+        return (self._cbs.get_hooks() 
+                + [Infer2Hook(infer) for infer in self._inference_list])
         
     def _create_infer_sess(self):
         self.sess = self.trainer.sess
@@ -107,9 +108,13 @@ class InferenceBase(Callback):
         self.hooked_sess.run(fetches = [], feed_dict = extra_feed)
         
 class FeedInference(InferenceBase):
-    def __init__(self, inputs, periodic = 1, inferencers = None, extra_cbs = None):
+    def __init__(self, inputs, periodic = 1, 
+                 inferencers = None, extra_cbs = None):
         assert_type(inputs, DataFlow)
-        super(FeedInference, self).__init__(inputs, periodic = periodic, inferencers = inferencers, extra_cbs = extra_cbs)
+        super(FeedInference, self).__init__(inputs = inputs, 
+                                            periodic = periodic, 
+                                            inferencers = inferencers,
+                                            extra_cbs = extra_cbs)
 
     def _setup_inference(self):
         placeholders = self.model.get_placeholder()
@@ -123,16 +128,26 @@ class FeedInference(InferenceBase):
 
 
 class GANInference(InferenceBase):
-    def __init__(self, inputs, periodic = 1, inferencers = None, extra_cbs = None):
-        assert_type(inputs, DataFlow)
-        super(GANInference, self).__init__(inputs, periodic = periodic, inferencers = inferencers, extra_cbs = extra_cbs)
+    def __init__(self, inputs = None, periodic = 1, 
+                 inferencers = None, extra_cbs = None):
+        if inputs is not None:
+            assert_type(inputs, RandomVec)
+        super(GANInference, self).__init__(inputs = inputs, 
+                                           periodic = periodic, 
+                                           inferencers = inferencers, 
+                                           extra_cbs = extra_cbs)
 
-    # def _setup_inference(self):
-        # placeholders = self.model.get_placeholder()
-        # self._extra_cbs.append(FeedInput(self._inputs, placeholders))
+    def _setup_inference(self):
+        if self._inputs is not None:
+            self._inputs.set_batch_size(self.trainer.config.batch_size)
+            rand_vec_phs = self.model.get_random_vec_placeholder()
+            self._extra_cbs.append(FeedInput(self._inputs, rand_vec_phs))
 
     def _inference_step(self):
-        model_feed = self.model.get_graph_feed()
+        if self._inputs is None:
+            model_feed = self.model.get_graph_feed()
+        else:
+            model_feed = {}
         # while self._inputs.epochs_completed <= 0:
         self.hooked_sess.run(fetches = [], feed_dict = model_feed)
         # self._inputs.reset_epochs_completed(0)

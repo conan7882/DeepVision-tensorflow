@@ -1,5 +1,6 @@
 # File: randoms.py
 # Author: Qian Ge <geqian1001@gmail.com>
+
 import numpy as np
 
 from .base import DataFlow
@@ -17,7 +18,7 @@ class RandomVec(DataFlow):
 
     def next_batch(self):
         self._epochs_completed += 1
-        return np.random.normal(size = (self._batch_size, self._len_vec))
+        return [np.random.normal(size = (self._batch_size, self._len_vec))]
         
     def size(self):
         return self._batch_size

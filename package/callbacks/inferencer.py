@@ -71,7 +71,8 @@ class InferImages(InferencerBase):
         batch_size = len(self._result_im[0])
         grid_size = [8, 8] if batch_size == 64 else [6, 6]
         for im, save_name in zip(self._result_im, self._prefix): 
-            save_merge_images(im, grid_size, self._save_dir + save_name + '_' + str(self.global_step) + '.png')
+            save_merge_images(im, grid_size, 
+                self._save_dir + save_name + '_' + str(self.global_step) + '.png')
         self._save_id += 1
         return None
 
@@ -98,7 +99,8 @@ class InferScalars(InferencerBase):
 
     def _after_inference(self):
         """ process after get_fetch """
-        return {name: np.mean(val) for name, val in zip(self._summary_names, self.result_list)}
+        return {name: np.mean(val) for name, 
+                val in zip(self._summary_names, self.result_list)}
 
 # TODO to be modified
 # class BinaryClassificationStats(InferencerBase):
