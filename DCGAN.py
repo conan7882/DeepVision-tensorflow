@@ -47,8 +47,8 @@ class Model(GANBaseModel):
     def _create_graph(self):
         # self.Z = tf.placeholder(tf.float32, [None, self.input_vec_length])
         self.image = tf.placeholder(tf.float32, 
-                        [None, self.im_height, self.im_width, self.num_channels], 
-                        'image')
+                [None, self.im_height, self.im_width, self.num_channels], 
+                'image')
 
         with tf.variable_scope('generator') as scope:
             self.gen_image = self._generator()
@@ -73,14 +73,13 @@ class Model(GANBaseModel):
         return tf.identity(self.comp_loss_real(self.discrim_gen), 
                            name = 'g_loss')
 
-
     def _get_discriminator_optimizer(self):
-        return tf.train.AdamOptimizer(learning_rate = self.dis_learning_rate, 
-                                      beta1=0.5)
+        return tf.train.AdamOptimizer(beta1=0.5,
+                        learning_rate = self.dis_learning_rate)
 
     def _get_generator_optimizer(self):
-        return tf.train.AdamOptimizer(learning_rate = self.gen_learning_rate, 
-                                      beta1=0.5)
+        return tf.train.AdamOptimizer(beta1=0.5,
+                        learning_rate = self.gen_learning_rate)      
 
     def _generator(self, train = True):
 
@@ -155,7 +154,7 @@ class Model(GANBaseModel):
             bn_conv4 = leaky_relu((batch_norm(conv4, 'c_bn')))
             bn_conv4_shape = bn_conv4.get_shape().as_list()
             bn_conv4_flatten = tf.reshape(bn_conv4, 
-                                [batch_size, bn_conv4_shape[1]*bn_conv4_shape[2]*bn_conv4_shape[3]])
+                [batch_size, bn_conv4_shape[1]*bn_conv4_shape[2]*bn_conv4_shape[3]])
 
         with tf.variable_scope('fc5') as scope:
             fc5 = fc(bn_conv4_flatten, 0, 1, 'fc', relu = False)  
@@ -164,8 +163,9 @@ class Model(GANBaseModel):
 
     def _setup_summary(self):
         with tf.name_scope('generator_im'):
-            tf.summary.image('generate_im', tf.cast(self.sample_image, tf.float32), 
-                             collections = ['train_d'])
+            tf.summary.image('generate_im', 
+                    tf.cast(self.sample_image, tf.float32), 
+                    collections = ['train_d'])
         with tf.name_scope('real_im'):
             tf.summary.image('real_im', tf.cast(self.image, tf.float32), 
                              collections = ['train_d'])
@@ -175,63 +175,66 @@ class Model(GANBaseModel):
             tf.summary.scalar('g_loss', self.get_generator_loss(), 
                               collections = ['train_g'])
         with tf.name_scope('discriminator_out'):
-            tf.summary.histogram('discrim_real', tf.nn.sigmoid(self.discrim_real), 
+            tf.summary.histogram('discrim_real', 
+                                 tf.nn.sigmoid(self.discrim_real), 
                                  collections = ['train_d'])
-            tf.summary.histogram('discrim_gen', tf.nn.sigmoid(self.discrim_gen), 
-                                 collections = ['train_d'])
-        [tf.summary.histogram('d_gradient/' + var.name, grad, collections = ['train_d']) 
+            tf.summary.histogram('discrim_gen', 
+                                  tf.nn.sigmoid(self.discrim_gen), 
+                                  collections = ['train_d'])
+        [tf.summary.histogram('d_gradient/' + var.name, grad, 
+                        collections = ['train_d']) 
                         for grad, var in self.get_discriminator_grads()]
-        [tf.summary.histogram('g_gradient/' + var.name, grad, collections = ['train_g']) 
+        [tf.summary.histogram('g_gradient/' + var.name, grad, 
+                        collections = ['train_g']) 
                         for grad, var in self.get_generator_grads()]
 
 def get_config():
     dataset_train = MNIST('train', 
                           data_dir = 'D:\\Qian\\GitHub\\workspace\\tensorflow-DCGAN\\MNIST_data\\')
-    
-    inference_list = [InferImages(['generator/gen_image'], prefix = ['gen'],
+    inference_list = InferImages('generator/gen_image', prefix = 'gen',
                                   save_dir = 'D:\\Qian\\GitHub\\workspace\\test\\result\\'),
-                      ]
     random_feed = RandomVec(len_vec = 100)
     return GANTrainConfig(
-                 dataflow = dataset_train, 
+            dataflow = dataset_train, 
+            model = Model(input_vec_length = 100, num_channels = 1, 
+                          im_size = [28, 28], 
+                          learning_rate = [0.0002, 0.0002]),
+            monitors = TFSummaryWriter(summary_dir = 'D:\\Qian\\GitHub\\workspace\\test\\'),
+            discriminator_callbacks = [
+                ModelSaver(periodic = 100,
+                           checkpoint_dir = 'D:\\Qian\\GitHub\\workspace\\test\\'), 
+                TrainSummary(key = 'train_d', periodic = 10),
+                CheckScalar(['d_loss','g_loss'], periodic = 10),
+                GANInference(inputs = random_feed, periodic = 100, 
+                              inferencers = inference_list),
+              ],
+            generator_callbacks = [
+                       TrainSummary(key = 'train_g', periodic = 10),
+                    ],              
+            batch_size = 64, 
+            max_epoch = 57)
+
+def get_predictConfig():
+    random_feed = RandomVec(len_vec = 100)
+    prediction_list = PredictionImage('generator/gen_image', 
+                                      'test', merge_im = True)
+    return PridectConfig(
+                 dataflow = random_feed,
                  model = Model(input_vec_length = 100, num_channels = 1, 
                          im_size = [28, 28], 
                          learning_rate = [0.0002, 0.0002]),
-                 monitors = TFSummaryWriter(summary_dir = 'D:\\Qian\\GitHub\\workspace\\test\\'),
-                 discriminator_callbacks = [
-                                            # ModelSaver(checkpoint_dir = 'D:\\Qian\\GitHub\\workspace\\test\\', periodic = 100), 
-                                            TrainSummary(key = 'train_d', periodic = 10),
-                                            CheckScalar(['d_loss','g_loss'], periodic = 10),
-                                            GANInference(inputs = random_feed, periodic = 100, 
-                                                         inferencers = inference_list),
-                                           ],
-                 generator_callbacks = [
-                                        TrainSummary(key = 'train_g', periodic = 10),
-                                        ],              
-                 batch_size = 64, 
-                 max_epoch = 57)
-
-# def get_predictConfig():
-#     mat_name_list = ['level1Edge']
-#     dataset_test = MatlabData('test57', data_dir = 'D:\\Qian\\TestData\\', 
-#                                mat_name_list = mat_name_list,
-#                                shuffle = False)
-#     prediction_list = PredictionImage(['prediction', 'prediction_pro'], ['test','test_pro'])
-
-#     return PridectConfig(
-#                  dataflow = dataset_test,
-#                  model = Model(num_channels = 1, num_class = 2, learning_rate = 0.0001),
-#                  model_dir = 'D:\\Qian\\GitHub\\workspace\\test\\bk\\', model_name = 'model-4060',
-#                  result_dir = 'D:\\Qian\\GitHub\\workspace\\test\\result\\',
-#                  predictions = prediction_list,
-#                  session_creator = None,
-#                  batch_size = 1)
+                 model_name = 'model-300',
+                 model_dir = 'D:\\Qian\\GitHub\\workspace\\test\\', 
+                 result_dir = 'D:\\Qian\\GitHub\\workspace\\test\\2\\',
+                 predictions = prediction_list,
+                 session_creator = None,
+                 batch_size = 64)
 
 if __name__ == '__main__':
-    config = get_config()
-    GANFeedTrainer(config).train()
-    # config = get_predictConfig()
-    # SimpleFeedPredictor(config, len_input = 1).run_predict()
+    # config = get_config()
+    # GANFeedTrainer(config).train()
+    config = get_predictConfig()
+    SimpleFeedPredictor(config).run_predict()
 
 
 

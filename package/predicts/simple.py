@@ -13,18 +13,21 @@ def assert_type(v, tp):
 class SimpleFeedPredictor(Predictor):
     """ predictor with feed input """
     # set_is_training
-    def __init__(self, config, len_input):
+    def __init__(self, config):
         super(SimpleFeedPredictor, self).__init__(config)
         # TODO change len_input to other
-        self.len_input = len_input
-        self.placeholder = self.model.get_placeholder()
-        assert self.len_input <= len(self.placeholder)
-        self.placeholder = self.placeholder[0:self.len_input]
+        placeholders = self.model.get_prediction_placeholder()
+        if not isinstance(placeholders, list):
+            placeholders = [placeholders]
+        self._plhs = placeholders
+        # self.placeholder = self.model.get_random_vec_placeholder()
+        # assert self.len_input <= len(self.placeholder)
+        # self.placeholder = self.placeholder[0:self.len_input]
 
     def _predict_step(self):
         while self.input.epochs_completed < 1:
-            cur_batch = self.input.next_batch()[0:self.len_input]
-            feed = dict(zip(self.placeholder, cur_batch))
+            cur_batch = self.input.next_batch()
+            feed = dict(zip(self._plhs, cur_batch))
             self.hooked_sess.run(fetches = [], feed_dict = feed)
         self.input.reset_epochs_completed(0)
 

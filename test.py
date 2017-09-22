@@ -15,9 +15,11 @@ from package.callbacks.monitors import TFSummaryWriter
 from package.callbacks.inferencer import InferScalars
 from package.predicts.simple import SimpleFeedPredictor
 from package.predicts.predictions import PredictionImage
+from package.callbacks.debug import CheckScalar
 
 class Model(BaseModel):
-    def __init__(self, num_channels = 3, num_class = 2, learning_rate = 0.0001):
+    def __init__(self, num_channels = 3, num_class = 2, 
+                learning_rate = 0.0001):
         self.learning_rate = learning_rate
         self.num_channels = num_channels
         self.num_class = num_class
@@ -27,7 +29,10 @@ class Model(BaseModel):
         return [self.image, self.gt, self.mask]
         # image, label, mask 
 
-    def _get_graph_feed(self, val):
+    def _get_prediction_placeholder(self):
+        return self.image
+
+    def _get_graph_feed(self):
         if self.is_training:
             feed = {self.keep_prob: 0.5}
         else:
@@ -38,7 +43,8 @@ class Model(BaseModel):
 
         self.keep_prob = tf.placeholder(tf.float32, name='keep_prob')
 
-        self.image = tf.placeholder(tf.float32, [None, None, None, self.num_channels], 'image')
+        self.image = tf.placeholder(tf.float32, name = 'image',
+                            shape = [None, None, None, self.num_channels])
         self.gt = tf.placeholder(tf.int64, [None, None, None], 'gt')
         self.mask = tf.placeholder(tf.int32, [None, None, None], 'mask')
 
@@ -57,83 +63,115 @@ class Model(BaseModel):
         fc1 = conv(pool4, 2, 2, 128, 'fc1', padding = 'SAME')
         dropout_fc1 = dropout(fc1, self.keep_prob, self.is_training)
 
-        fc2 = conv(dropout_fc1, 1, 1, self.num_class, 'fc2', padding = 'SAME', relu = False)
+        fc2 = conv(dropout_fc1, 1, 1, self.num_class, 'fc2', 
+                   padding = 'SAME', relu = False)
         
         # deconv
         dconv1 = dconv(fc2, 4, 4, 'dconv1', fuse_x = pool3)
         dconv2 = dconv(dconv1, 4, 4, 'dconv2', fuse_x = pool2)
 
         shape_X = tf.shape(self.image)
-        deconv3_shape = tf.stack([shape_X[0], shape_X[1], shape_X[2], self.num_class])
-        dconv3 = dconv(dconv2, 16, 16, 'dconv3', output_channels = self.num_class, output_shape = deconv3_shape, stride_x = 4, stride_y = 4)
+        deconv3_shape = tf.stack([shape_X[0], shape_X[1], 
+                                  shape_X[2], self.num_class])
+        dconv3 = dconv(dconv2, 16, 16, 'dconv3', 
+                       output_channels = self.num_class, 
+                       output_shape = deconv3_shape, 
+                       stride_x = 4, stride_y = 4)
         self.prediction = tf.argmax(dconv3, name="prediction", dimension = -1)
         self.softmax_dconv3 = tf.nn.softmax(dconv3)
-        prediction_pro = tf.identity(self.softmax_dconv3[:,:,:,1], name = "prediction_pro")
+        prediction_pro = tf.identity(
+                       self.softmax_dconv3[:,:,:,1],
+                       name = "prediction_pro")
             
     def _setup_graph(self):
-        correct_prediction = apply_mask(tf.equal(self.prediction, self.gt), self.mask)
-        self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32), name = 'accuracy')
-         
-    def _setup_summary(self):
-        with tf.name_scope('train_summary'):
-            tf.summary.image("train_Predict", tf.expand_dims(tf.cast(self.prediction, tf.float32), -1), collections = ['train'])
-            tf.summary.image("im", tf.cast(self.image, tf.float32), collections = ['train'])
-            tf.summary.image("gt", tf.expand_dims(tf.cast(self.gt, tf.float32), -1), collections = ['train'])
-            tf.summary.image("mask", tf.expand_dims(tf.cast(self.mask, tf.float32), -1), collections = ['train'])
-            tf.summary.scalar('loss', self.get_loss(), collections = ['train'])
-            tf.summary.scalar('train_accuracy', self.accuracy, collections = ['train'])
-            [tf.summary.histogram('gradient/' + var.name, grad, collections = ['train']) for grad, var in self.get_grads()]
-        with tf.name_scope('test_summary'):
-            tf.summary.image("test_Predict", tf.expand_dims(tf.cast(self.prediction, tf.float32), -1), collections = ['test'])
+        correct_prediction = apply_mask(
+             tf.equal(self.prediction, self.gt), self.mask)
+        self.accuracy = tf.reduce_mean(
+                tf.cast(correct_prediction, tf.float32), 
+                name = 'accuracy')
 
     def _get_loss(self):
         return tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits
-                    (logits = apply_mask(self.softmax_dconv3, self.mask),labels = apply_mask(self.gt, self.mask)), name = 'loss')  
+                    (logits = apply_mask(self.softmax_dconv3, self.mask),
+                    labels = apply_mask(self.gt, self.mask)), name = 'loss')  
 
     def _get_optimizer(self):
         return tf.train.AdamOptimizer(learning_rate = self.learning_rate)
+         
+    def _setup_summary(self):
+        with tf.name_scope('train_summary'):
+            tf.summary.image("train_Predict",
+                    tf.expand_dims(tf.cast(self.prediction, tf.float32), -1), 
+                    collections = ['train'])
+            tf.summary.image("im",tf.cast(self.image, tf.float32),
+                             collections = ['train'])
+            tf.summary.image("gt", 
+                       tf.expand_dims(tf.cast(self.gt, tf.float32), -1), 
+                       collections = ['train'])
+            tf.summary.image("mask", 
+                       tf.expand_dims(tf.cast(self.mask, tf.float32), -1),
+                       collections = ['train'])
+            tf.summary.scalar('loss', self.get_loss(), 
+                              collections = ['train'])
+            tf.summary.scalar('train_accuracy', self.accuracy, 
+                              collections = ['train'])
+            [tf.summary.histogram('gradient/' + var.name, grad, 
+              collections = ['train']) for grad, var in self.get_grads()]
+        with tf.name_scope('test_summary'):
+            tf.summary.image("test_Predict", 
+                      tf.expand_dims(tf.cast(self.prediction, tf.float32), -1),
+                      collections = ['test'])
 
 def get_config():
     mat_name_list = ['level1Edge', 'GT', 'Mask']
-    dataset_train = MatlabData('train', data_dir = 'D:\\GoogleDrive_Qian\\Foram\\Training\\CNN_Image\\', 
-                               mat_name_list = mat_name_list)
-    dataset_val = MatlabData('val', data_dir = 'D:\\GoogleDrive_Qian\\Foram\\Training\\CNN_Image\\', 
-                              mat_name_list = mat_name_list)
+    dataset_train = MatlabData('train', mat_name_list = mat_name_list,
+                data_dir = 'D:\\GoogleDrive_Qian\\Foram\\Training\\CNN_Image\\')
+    dataset_val = MatlabData('val', mat_name_list = mat_name_list, 
+                data_dir = 'D:\\GoogleDrive_Qian\\Foram\\Training\\CNN_Image\\')
     inference_list = [InferScalars('accuracy', 'test_accuracy')]
     
     return TrainConfig(
                  dataflow = dataset_train, 
-                 model = Model(num_channels = 1, num_class = 2, learning_rate = 0.0001),
+                 model = Model(num_channels = 1, num_class = 2, 
+                               learning_rate = 0.0001),
                  monitors = TFSummaryWriter(summary_dir = 'D:\\Qian\\GitHub\\workspace\\test\\'),
-                 callbacks = [ModelSaver(checkpoint_dir = 'D:\\Qian\\GitHub\\workspace\\test\\', periodic = 10), 
-                              TrainSummary(key = 'train', periodic = 10),
-                              FeedInference(dataset_val, periodic = 10, extra_cbs = TrainSummary(key = 'test'),
-                                inferencers = inference_list),
-                              ],
+                 callbacks = [
+                    ModelSaver(periodic = 10,
+                               checkpoint_dir = 'D:\\Qian\\GitHub\\workspace\\test\\'),
+                    TrainSummary(key = 'train', periodic = 10),
+                    FeedInference(dataset_val, periodic = 10, 
+                                  extra_cbs = TrainSummary(key = 'test'),
+                                  inferencers = inference_list),
+                              # CheckScalar(['accuracy'], periodic = 10),
+                  ],
                  batch_size = 1, 
                  max_epoch = 57)
 
 def get_predictConfig():
     mat_name_list = ['level1Edge']
-    dataset_test = MatlabData('test57', data_dir = 'D:\\Qian\\TestData\\', 
+    dataset_test = MatlabData('test57', shuffle = False,
                                mat_name_list = mat_name_list,
-                               shuffle = False)
-    prediction_list = PredictionImage(['prediction', 'prediction_pro'], ['test','test_pro'])
+                               data_dir = 'D:\\Qian\\TestData\\')
+    prediction_list = PredictionImage(['prediction', 'prediction_pro'], 
+                                      ['test','test_pro'], 
+                                      merge_im = True)
 
     return PridectConfig(
                  dataflow = dataset_test,
-                 model = Model(num_channels = 1, num_class = 2, learning_rate = 0.0001),
-                 model_dir = 'D:\\Qian\\GitHub\\workspace\\test\\bk\\', model_name = 'model-4060',
-                 result_dir = 'D:\\Qian\\GitHub\\workspace\\test\\result\\',
-                 predictions = prediction_list,
-                 session_creator = None,
-                 batch_size = 1)
+                 model = Model(num_channels = 1, num_class = 2, 
+                        learning_rate = 0.0001),
+                        model_name = 'model-4060',
+                        model_dir = 'D:\\Qian\\GitHub\\workspace\\fcn_edge_foram\\bk\\',    
+                        result_dir = 'D:\\Qian\\GitHub\\workspace\\test\\2\\',
+                        predictions = prediction_list,
+                        session_creator = None,
+                        batch_size = 4)
 
 if __name__ == '__main__':
-    config = get_config()
-    SimpleFeedTrainer(config).train()
-    # config = get_predictConfig()
-    # SimpleFeedPredictor(config, len_input = 1).run_predict()
+    # config = get_config()
+    # SimpleFeedTrainer(config).train()
+    config = get_predictConfig()
+    SimpleFeedPredictor(config).run_predict()
 
 
  

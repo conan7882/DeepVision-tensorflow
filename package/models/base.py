@@ -21,7 +21,14 @@ class ModelDes(object):
         return self._get_placeholder()
 
     def _get_placeholder(self):
-        raise NotImplementedError()
+        return []
+
+    # TODO to be modified
+    def get_prediction_placeholder(self):
+        return self._get_prediction_placeholder()
+
+    def _get_prediction_placeholder(self):
+        return []
 
     def get_graph_feed(self):
         return self._get_graph_feed()
@@ -94,6 +101,9 @@ class GANBaseModel(ModelDes):
             self.Z = tf.placeholder(tf.float32, [None, self.input_vec_length])
         return self.Z
 
+    def _get_prediction_placeholder(self):
+        return self.get_random_vec_placeholder()
+
     def get_graph_feed(self):
         default_feed = self._get_graph_feed()
         random_input_feed = self._get_random_input_feed()
@@ -150,33 +160,37 @@ class GANBaseModel(ModelDes):
         try:
             return self.d_grads
         except AttributeError:
-            d_training_vars = [v for v in tf.trainable_variables() if v.name.startswith('discriminator/')]
+            d_training_vars = [v for v in tf.trainable_variables() 
+                               if v.name.startswith('discriminator/')]
             optimizer = self.get_discriminator_optimizer()
             loss = self.get_discriminator_loss()
-            self.d_grads = optimizer.compute_gradients(loss, var_list = d_training_vars)
+            self.d_grads = optimizer.compute_gradients(loss, 
+                                              var_list = d_training_vars)
             return self.d_grads
 
     def get_generator_grads(self):
         try:
             return self.g_grads
         except AttributeError:
-            g_training_vars = [v for v in tf.trainable_variables() if v.name.startswith('generator/')]
+            g_training_vars = [v for v in tf.trainable_variables() 
+                               if v.name.startswith('generator/')]
             optimizer = self.get_generator_optimizer()
             loss = self.get_generator_loss()
-            self.g_grads = optimizer.compute_gradients(loss, var_list = g_training_vars)
+            self.g_grads = optimizer.compute_gradients(loss, 
+                                             var_list = g_training_vars)
             return self.g_grads
 
     @staticmethod
     def comp_loss_fake(discrim_output):
         return tf.reduce_mean(
-                tf.nn.sigmoid_cross_entropy_with_logits(logits = discrim_output, 
-                    labels = tf.zeros_like(discrim_output)))
+            tf.nn.sigmoid_cross_entropy_with_logits(logits = discrim_output, 
+                                    labels = tf.zeros_like(discrim_output)))
 
     @staticmethod
     def comp_loss_real(discrim_output):
         return tf.reduce_mean(
-                tf.nn.sigmoid_cross_entropy_with_logits(logits = discrim_output, 
-                    labels = tf.ones_like(discrim_output)))
+            tf.nn.sigmoid_cross_entropy_with_logits(logits = discrim_output, 
+                                     labels = tf.ones_like(discrim_output)))
 
 
 

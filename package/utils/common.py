@@ -24,12 +24,15 @@ def save_merge_images(images, im_size, save_path):
 
     # normalization of tanh output
     img = (images + 1.0) / 2.0
+    if len(img.shape) == 2:
+        img = np.expand_dims(img, 0)
     # img = images
     h, w = img.shape[1], img.shape[2]
-
     merge_img = np.zeros((h * im_size[0], w * im_size[1], 3))
+    if len(img.shape) < 4:
+        img = np.expand_dims(img, -1)
 
-    for idx, image in enumerate(images):
+    for idx, image in enumerate(img):
         i = idx % im_size[1]
         j = idx // im_size[1]
         merge_img[j*h:j*h+h, i*w:i*w+w, :] = image
