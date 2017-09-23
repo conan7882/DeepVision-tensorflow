@@ -11,7 +11,8 @@ from ..callbacks.monitors import TFSummaryWriter
 __all__ = ['TrainConfig', 'GANTrainConfig']
 
 def assert_type(v, tp):
-    assert isinstance(v, tp), "Expect " + str(tp) + ", but " + str(v.__class__) + " is given!"
+    assert isinstance(v, tp),\
+    "Expect " + str(tp) + ", but " + str(v.__class__) + " is given!"
 
 class TrainConfig(object):
     def __init__(self, 
@@ -48,7 +49,8 @@ class TrainConfig(object):
         self._callbacks = callbacks
 
         if session_creator is None:
-            self.session_creator = NewSessionCreator(config = get_default_session_config())
+            self.session_creator = \
+               NewSessionCreator(config = get_default_session_config())
         else:
             raise ValueError('custormer session creator is not allowed at this point!')
   
@@ -69,17 +71,19 @@ class GANTrainConfig(TrainConfig):
         if not isinstance(discriminator_callbacks, list):
             discriminator_callbacks = [discriminator_callbacks]
         self._dis_callbacks = discriminator_callbacks
+        
         if not isinstance(generator_callbacks, list):
             generator_callbacks = [generator_callbacks]
         self._gen_callbacks = generator_callbacks
 
         callbacks = self._dis_callbacks + self._gen_callbacks
 
-        super(GANTrainConfig, self).__init__(dataflow = dataflow, model = model,
-                                             callbacks = callbacks,
-                                             session_creator = session_creator,
-                                             monitors = monitors,
-                                             batch_size = batch_size, max_epoch = max_epoch)
+        super(GANTrainConfig, self).__init__(
+                    dataflow = dataflow, model = model,
+                    callbacks = callbacks,
+                    session_creator = session_creator,
+                    monitors = monitors,
+                    batch_size = batch_size, max_epoch = max_epoch)
     @property
     def dis_callbacks(self):
         return self._dis_callbacks

@@ -50,7 +50,8 @@ class MNIST(RNGDataFlow):
 
     def next_batch(self):
         assert self._batch_size <= self.size(), \
-        "batch_size {} cannot be larger than data size {}".format(self._batch_size, self.size())
+          "batch_size {} cannot be larger than data size {}".\
+           format(self._batch_size, self.size())
         start = self._image_id
         self._image_id += self._batch_size
         end = self._image_id

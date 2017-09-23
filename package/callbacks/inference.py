@@ -86,7 +86,8 @@ class InferenceBase(Callback):
         self.sess = self.trainer.sess
         infer_hooks = self.get_infer_hooks()
         self.hooked_sess = tf.train.MonitoredSession(
-            session_creator = ReuseSessionCreator(self.sess), hooks = infer_hooks)
+            session_creator = ReuseSessionCreator(self.sess), 
+            hooks = infer_hooks)
 
     def _trigger_step(self):
         if self.global_step % self._periodic == 0:

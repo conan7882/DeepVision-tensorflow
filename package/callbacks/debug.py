@@ -9,7 +9,8 @@ from ..utils.common import get_tensors_by_names
 __all__ = ['CheckScalar']
 
 def assert_type(v, tp):
-    assert isinstance(v, tp), "Expect " + str(tp) + ", but " + str(v.__class__) + " is given!"
+    assert isinstance(v, tp), \
+    "Expect " + str(tp) + ", but " + str(v.__class__) + " is given!"
 
 class CheckScalar(Callback):
     """ print scalar tensor values during training 
@@ -40,7 +41,8 @@ class CheckScalar(Callback):
    
     def _after_run(self, _, val):
         if val.results is not None:
-            print([name + ': ' + str(v) for name, v in zip(self._names, val.results)])
+            print([name + ': ' + str(v) 
+                    for name, v in zip(self._names, val.results)])
 
 
 

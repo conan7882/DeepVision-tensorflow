@@ -14,7 +14,8 @@ from ..utils.sesscreate import ReuseSessionCreator
 __all__ = ['SimpleFeedTrainer']
 
 def assert_type(v, tp):
-    assert isinstance(v, tp), "Expect " + str(tp) + ", but " + str(v.__class__) + " is given!"
+    assert isinstance(v, tp),\
+     "Expect " + str(tp) + ", but " + str(v.__class__) + " is given!"
 
 class SimpleFeedTrainer(Trainer):
     """ single optimizer """
@@ -51,34 +52,36 @@ class GANFeedTrainer(Trainer):
 
         dis_grads = self.model.get_discriminator_grads()
         dis_opt = self.model.get_discriminator_optimizer()
-        self.dis_train_op = dis_opt.apply_gradients(dis_grads, name = 'discriminator_train')
+        self.dis_train_op = dis_opt.apply_gradients(dis_grads, 
+                                        name = 'discriminator_train')
 
         gen_grads = self.model.get_generator_grads()
         gen_opt = self.model.get_generator_optimizer()
-        self.gen_train_op = gen_opt.apply_gradients(gen_grads, name = 'generator_train')
+        self.gen_train_op = gen_opt.apply_gradients(gen_grads, 
+                                        name = 'generator_train')
 
     def _create_session(self):
-        self._dis_callbacks = Callbacks([cb for cb in self.config.dis_callbacks])
-        self._gen_callbacks = Callbacks([cb for cb in self.config.gen_callbacks])
+        self._dis_callbacks = Callbacks([cb 
+                            for cb in self.config.dis_callbacks])
+        self._gen_callbacks = Callbacks([cb 
+                            for cb in self.config.gen_callbacks])
         dis_hooks = self._dis_callbacks.get_hooks()
         gen_hooks = self._gen_callbacks.get_hooks()
 
         self.sess = self.config.session_creator.create_session()
         self.dis_hooked_sess = tf.train.MonitoredSession(
-            session_creator = ReuseSessionCreator(self.sess), hooks = dis_hooks + self.feed_input_hook)
+            session_creator = ReuseSessionCreator(self.sess), 
+            hooks = dis_hooks + self.feed_input_hook)
         self.gen_hooked_sess = tf.train.MonitoredSession(
-            session_creator = ReuseSessionCreator(self.sess), hooks = gen_hooks)
+            session_creator = ReuseSessionCreator(self.sess), 
+            hooks = gen_hooks)
 
     def _run_step(self):
         model_feed = self.model.get_graph_feed()
-        # random_input_feed = self.model.get_random_input_feed()
-        # model_feed.update(random_input_feed)
         self.dis_hooked_sess.run(self.dis_train_op, feed_dict = model_feed)
 
         for k in range(0,2):
             model_feed = self.model.get_graph_feed()
-            # random_input_feed = self.model.get_random_input_feed()
-            # model_feed.update(random_input_feed)
             self.gen_hooked_sess.run(self.gen_train_op, feed_dict = model_feed)
 
 

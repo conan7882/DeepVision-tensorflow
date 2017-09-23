@@ -122,7 +122,8 @@ class InferScalars(InferencerBase):
 #         return {"test_accuracy": np.mean(self.result_list)}
 
 if __name__ == '__main__':
-    t = InferGANGenerator('gen_name', save_dir = 'D:\\Qian\\GitHub\\workspace\\test\\result\\', prefix = 1)
+    t = InferGANGenerator('gen_name', 
+            save_dir = 'D:\\Qian\\GitHub\\workspace\\test\\result\\', prefix = 1)
     print(t._prefix)
 
     

@@ -52,11 +52,11 @@ def get_tensors_by_names(names):
     for name in names:
         tensor_name = name + ':0'
         tensor_list += graph.get_tensor_by_name(tensor_name),
-
     return tensor_list
 
 def deconv_size(input_height, input_width, stride = 2):
-    return int(math.ceil(float(input_height) / float(stride))), int(math.ceil(float(input_height) / float(stride)))
+    return int(math.ceil(float(input_height) / float(stride))), \
+           int(math.ceil(float(input_height) / float(stride)))
 
 def check_dir(input_dir):
     # print(inspect.stack())

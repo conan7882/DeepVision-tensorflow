@@ -8,7 +8,8 @@ from .base import Predictor
 __all__ = ['SimpleFeedPredictor']
 
 def assert_type(v, tp):
-    assert isinstance(v, tp), "Expect " + str(tp) + ", but " + str(v.__class__) + " is given!"
+    assert isinstance(v, tp),\
+     "Expect " + str(tp) + ", but " + str(v.__class__) + " is given!"
 
 class SimpleFeedPredictor(Predictor):
     """ predictor with feed input """

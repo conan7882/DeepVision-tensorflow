@@ -53,7 +53,8 @@ class MatlabData(RNGDataFlow):
             self._suffle_file_list()
 
     def next_batch(self):
-        assert self._batch_size <= self.size(), "batch_size cannot be larger than data size"
+        assert self._batch_size <= self.size(), \
+        "batch_size cannot be larger than data size"
 
         start = self._image_id
         self._image_id += self._batch_size
@@ -73,13 +74,17 @@ class MatlabData(RNGDataFlow):
 
         for file_path in batch_file_path:
             mat = loadmat(file_path)
-            cur_data = load_image_from_mat(mat, self._mat_name_list[0], self._mat_type_list[0])
-            cur_data = np.reshape(cur_data, [1, cur_data.shape[0], cur_data.shape[1], self._num_channels])
+            cur_data = load_image_from_mat(mat, self._mat_name_list[0], 
+                                      self._mat_type_list[0])
+            cur_data = np.reshape(cur_data, 
+                [1, cur_data.shape[0], cur_data.shape[1], self._num_channels])
             input_data[0].extend(cur_data)
 
             for k in range(1, len(self._mat_name_list)):
-                cur_data = load_image_from_mat(mat, self._mat_name_list[k], self._mat_type_list[k])
-                cur_data = np.reshape(cur_data, [1, cur_data.shape[0], cur_data.shape[1]])
+                cur_data = load_image_from_mat(mat, 
+                               self._mat_name_list[k], self._mat_type_list[k])
+                cur_data = np.reshape(cur_data, 
+                               [1, cur_data.shape[0], cur_data.shape[1]])
                 input_data[k].extend(cur_data)
         return input_data
 

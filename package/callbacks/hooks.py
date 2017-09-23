@@ -7,7 +7,8 @@ from ..predicts.predictions import PredictionBase
 __all__ = ['Callback2Hook', 'Infer2Hook', 'Prediction2Hook']
 
 def assert_type(v, tp):
-    assert isinstance(v, tp), "Expect " + str(tp) + ", but " + str(v.__class__) + " is given!"
+    assert isinstance(v, tp), \
+    "Expect " + str(tp) + ", but " + str(v.__class__) + " is given!"
 
 class Callback2Hook(tf.train.SessionRunHook):
     """ """   

@@ -59,7 +59,7 @@ class PridectConfig(object):
         # self._callbacks = callbacks
 
         if session_creator is None:
-            self.session_creator = 
+            self.session_creator = \
                  NewSessionCreator(config = get_default_session_config())
         else:
             raise ValueError('custormer session creator is \

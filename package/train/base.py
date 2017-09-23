@@ -13,7 +13,8 @@ from ..callbacks.monitors import TrainingMonitor, Monitors
 __all__ = ['Trainer']
 
 def assert_type(v, tp):
-    assert isinstance(v, tp), "Expect " + str(tp) + ", but " + str(v.__class__) + " is given!"
+    assert isinstance(v, tp),\
+     "Expect " + str(tp) + ", but " + str(v.__class__) + " is given!"
 
 class Trainer(object):
     """ base class for trainer """
@@ -38,12 +39,14 @@ class Trainer(object):
 
     def register_callback(self, cb):
         assert_type(cb, Callback)
-        assert not isinstance(self._callbacks, Callbacks), "callbacks have been setup"
+        assert not isinstance(self._callbacks, Callbacks), \
+        "callbacks have been setup"
         self._callbacks.append(cb)
 
     def register_monitor(self, monitor):
         assert_type(monitor, TrainingMonitor)
-        assert not isinstance(self.monitors, Monitors), "monitors have been setup"
+        assert not isinstance(self.monitors, Monitors), \
+        "monitors have been setup"
         self.monitors.append(monitor)
         self.register_callback(monitor)
 
@@ -59,7 +62,8 @@ class Trainer(object):
             self._callbacks.before_train()
             while self.epochs_completed <= self.config.max_epoch:
                 self._global_step += 1
-                print('Epoch: {}. Step: {}'.format(self.epochs_completed, self._global_step))
+                print('Epoch: {}. Step: {}'.\
+                    format(self.epochs_completed, self._global_step))
                 # self._callbacks.before_epoch()
                 # TODO to be modified
                 self.model.set_is_training(True)

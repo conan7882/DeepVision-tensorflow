@@ -48,40 +48,35 @@ class Model(BaseModel):
         self.gt = tf.placeholder(tf.int64, [None, None, None], 'gt')
         self.mask = tf.placeholder(tf.int32, [None, None, None], 'mask')
 
-        conv1 = conv(self.image, 5, 5, 32, 'conv1')
-        pool1 = max_pool(conv1, name = 'pool1')
+        conv1 = conv(self.image, 5, 32, 'conv1', nl = tf.nn.relu)
+        pool1 = max_pool(conv1, 'max_pool1', padding = 'SAME')
 
-        conv2 = conv(pool1, 3, 3, 48, 'conv2')
-        pool2 = max_pool(conv2, name = 'pool2')
+        conv2 = conv(pool1, 3, 48, 'conv2', nl = tf.nn.relu)
+        pool2 = max_pool(conv2, 'max_pool2', padding = 'SAME')
 
-        conv3 = conv(pool2, 3, 3, 64, 'conv3')
-        pool3 = max_pool(conv3, name = 'pool3')
+        conv3 = conv(pool2, 3, 64, 'conv3', nl = tf.nn.relu)
+        pool3 = max_pool(conv3, 'max_pool3', padding = 'SAME')
 
-        conv4 = conv(pool3, 3, 3, 128, 'conv4')
-        pool4 = max_pool(conv4, name = 'pool4')
+        conv4 = conv(pool3, 3, 128, 'conv4', nl = tf.nn.relu)
+        pool4 = max_pool(conv4, 'max_pool4', padding = 'SAME')
 
-        fc1 = conv(pool4, 2, 2, 128, 'fc1', padding = 'SAME')
+        fc1 = conv(pool4, 2, 128, 'fc1', nl = tf.nn.relu)
         dropout_fc1 = dropout(fc1, self.keep_prob, self.is_training)
 
-        fc2 = conv(dropout_fc1, 1, 1, self.num_class, 'fc2', 
-                   padding = 'SAME', relu = False)
+        fc2 = conv(dropout_fc1, 1, self.num_class, 'fc2')
         
-        # deconv
-        dconv1 = dconv(fc2, 4, 4, 'dconv1', fuse_x = pool3)
-        dconv2 = dconv(dconv1, 4, 4, 'dconv2', fuse_x = pool2)
+        dconv1 = tf.add(dconv(fc2, 4, name = 'dconv1', 
+                              out_shape_by_tensor = pool3), pool3)
+        dconv2 = tf.add(dconv(dconv1, 4, name = 'dconv2', 
+                              out_shape_by_tensor = pool2), pool2)
+        dconv3 = dconv(dconv2, 16, self.num_class, 
+                        out_shape_by_tensor = self.image, 
+                        name = 'dconv3', stride = 4)
 
-        shape_X = tf.shape(self.image)
-        deconv3_shape = tf.stack([shape_X[0], shape_X[1], 
-                                  shape_X[2], self.num_class])
-        dconv3 = dconv(dconv2, 16, 16, 'dconv3', 
-                       output_channels = self.num_class, 
-                       output_shape = deconv3_shape, 
-                       stride_x = 4, stride_y = 4)
         self.prediction = tf.argmax(dconv3, name="prediction", dimension = -1)
         self.softmax_dconv3 = tf.nn.softmax(dconv3)
-        prediction_pro = tf.identity(
-                       self.softmax_dconv3[:,:,:,1],
-                       name = "prediction_pro")
+        prediction_pro = tf.identity(self.softmax_dconv3[:,:,:,1],
+                                      name = "prediction_pro")
             
     def _setup_graph(self):
         correct_prediction = apply_mask(
@@ -145,33 +140,32 @@ def get_config():
                               # CheckScalar(['accuracy'], periodic = 10),
                   ],
                  batch_size = 1, 
-                 max_epoch = 57)
+                 max_epoch = 200)
 
 def get_predictConfig():
     mat_name_list = ['level1Edge']
-    dataset_test = MatlabData('test57', shuffle = False,
+    dataset_test = MatlabData('Level_1', shuffle = False,
                                mat_name_list = mat_name_list,
-                               data_dir = 'D:\\Qian\\TestData\\')
+                               data_dir = 'D:\\GoogleDrive_Qian\\Foram\\testing\\')
     prediction_list = PredictionImage(['prediction', 'prediction_pro'], 
                                       ['test','test_pro'], 
                                       merge_im = True)
 
     return PridectConfig(
                  dataflow = dataset_test,
-                 model = Model(num_channels = 1, num_class = 2, 
-                        learning_rate = 0.0001),
-                        model_name = 'model-4060',
-                        model_dir = 'D:\\Qian\\GitHub\\workspace\\fcn_edge_foram\\bk\\',    
+                 model = Model(num_channels = 1, num_class = 2),
+                        model_name = 'model-14070',
+                        model_dir = 'D:\\Qian\\GitHub\\workspace\\test\\',    
                         result_dir = 'D:\\Qian\\GitHub\\workspace\\test\\2\\',
                         predictions = prediction_list,
                         session_creator = None,
-                        batch_size = 4)
+                        batch_size = 1)
 
 if __name__ == '__main__':
-    # config = get_config()
-    # SimpleFeedTrainer(config).train()
-    config = get_predictConfig()
-    SimpleFeedPredictor(config).run_predict()
+    config = get_config()
+    SimpleFeedTrainer(config).train()
+    # config = get_predictConfig()
+    # SimpleFeedPredictor(config).run_predict()
 
 
  
