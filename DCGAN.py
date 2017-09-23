@@ -25,14 +25,12 @@ class Model(GANBaseModel):
                  input_vec_length = 100, num_channels = 3, 
                  im_size = None, 
                  learning_rate = [0.0002, 0.0002]):
-        self.input_vec_length = input_vec_length
+
+        super(Model, self).__init__(input_vec_length, learning_rate)
 
         assert len(im_size) == 2
         self.im_height, self.im_width = im_size
-
-        assert len(learning_rate) == 2
-        self.dis_learning_rate, self.gen_learning_rate = learning_rate
-
+        
         self.num_channels = num_channels
         self.set_is_training(True)
 
@@ -40,41 +38,27 @@ class Model(GANBaseModel):
         # image
         return [self.real_data]
 
-    def _get_random_input_feed(self):
-        feed = {self.get_random_vec_placeholder(): 
-                np.random.normal(size = (self.get_batch_size(), 
-                                 self.input_vec_length))}
-        return feed
-
     def _create_graph(self):
         # self.Z = tf.placeholder(tf.float32, [None, self.input_vec_length])
         self.real_data = tf.placeholder(tf.float32, 
-                [None, self.im_height, self.im_width, self.num_channels], 
-                'real_data')
+                [None, self.im_height, self.im_width, self.num_channels])
 
-        # with tf.variable_scope('generator') as scope:
-        with tf.variable_scope('generator') as scope:
-            self.gen_image = self._generator()
-            scope.reuse_variables()
-            self.sample_image = tf.identity(self._generator(train = False), 
-                                            name = 'gen_image')
-            
-        with tf.variable_scope('discriminator') as scope:
-            self.discrim_real = self._discriminator(self.real_data)
-            scope.reuse_variables()
-            self.discrim_gen = self._discriminator(self.gen_image)
-
+        self.gen_image, self.sample_image, \
+        self.discrim_real, self.discrim_gen = \
+        self.create_GAN(self.real_data, 'gen_image')
 
     def _get_discriminator_loss(self):
-        print('------------- _get_discriminator_loss -----------------')
-        d_loss_real = self.comp_loss_real(self.discrim_real)
-        d_loss_fake = self.comp_loss_fake(self.discrim_gen)
-        return tf.identity(d_loss_real + d_loss_fake, name = 'd_loss')
+        with tf.name_scope('d_loss'):
+            print('------------- _get_discriminator_loss -----------------')
+            d_loss_real = self.comp_loss_real(self.discrim_real)
+            d_loss_fake = self.comp_loss_fake(self.discrim_gen)
+            return tf.identity(d_loss_real + d_loss_fake, name = 'result')
         
     def _get_generator_loss(self):
-        print('------------- _get_generator_loss -----------------')
-        return tf.identity(self.comp_loss_real(self.discrim_gen), 
-                           name = 'g_loss')
+        with tf.name_scope('g_loss'):
+            print('------------- _get_generator_loss -----------------')
+            return tf.identity(self.comp_loss_real(self.discrim_gen), 
+                               name = 'result')
 
     def _get_discriminator_optimizer(self):
         return tf.train.AdamOptimizer(beta1=0.5,
@@ -162,32 +146,17 @@ class Model(GANBaseModel):
         return fc5
 
     def _setup_summary(self):
-        with tf.name_scope('generator_im'):
-            tf.summary.image('generate_im', 
+        with tf.name_scope('generator_summary'):
+            tf.summary.image('generate_sample', 
                              tf.cast(self.sample_image, tf.float32), 
-                             collections = ['train_d'])
-        with tf.name_scope('real_im'):
-            tf.summary.image('real_im', 
+                             collections = ['summary_d'])
+            tf.summary.image('generate_train', 
+                             tf.cast(self.gen_image, tf.float32), 
+                             collections = ['summary_d'])
+        with tf.name_scope('real_data'):
+            tf.summary.image('real_data', 
                               tf.cast(self.real_data, tf.float32), 
-                              collections = ['train_d'])
-        with tf.name_scope('loss'):
-            tf.summary.scalar('d_loss', self.get_discriminator_loss(), 
-                               collections = ['train_d'])
-            tf.summary.scalar('g_loss', self.get_generator_loss(), 
-                              collections = ['train_g'])
-        with tf.name_scope('discriminator_out'):
-            tf.summary.histogram('discrim_real', 
-                                 tf.nn.sigmoid(self.discrim_real), 
-                                 collections = ['train_d'])
-            tf.summary.histogram('discrim_gen', 
-                                  tf.nn.sigmoid(self.discrim_gen), 
-                                  collections = ['train_d'])
-        [tf.summary.histogram('d_gradient/' + var.name, grad, 
-                        collections = ['train_d']) 
-                        for grad, var in self.get_discriminator_grads()]
-        [tf.summary.histogram('g_gradient/' + var.name, grad, 
-                        collections = ['train_g']) 
-                        for grad, var in self.get_generator_grads()]
+                              collections = ['summary_d'])
 
 def get_config(FLAGS):
     dataset_train = MNIST('train', data_dir = FLAGS.data_dir)
@@ -204,29 +173,34 @@ def get_config(FLAGS):
             discriminator_callbacks = [
                 # ModelSaver(periodic = 100,
                 #            checkpoint_dir = FLAGS.checkpoint_dir), 
-                TrainSummary(key = 'train_d', periodic = 10),
-                CheckScalar(['d_loss','g_loss','generator/dconv5/gen_shape'], periodic = 10),
+                TrainSummary(key = 'summary_d', periodic = 10),
+                CheckScalar(['d_loss/result','g_loss/result','generator/dconv5/gen_shape'], 
+                            periodic = 10),
                 GANInference(inputs = random_feed, periodic = 100, 
                               inferencers = inference_list),
               ],
             generator_callbacks = [
-                       TrainSummary(key = 'train_g', periodic = 10),
+                       # TrainSummary(key = self.g_collection, periodic = 10),
                     ],              
             batch_size = FLAGS.batch_size, 
-            max_epoch = 57)
+            max_epoch = 57,
+            summary_d_periodic = 10, 
+            summary_g_periodic = 10)
 
 def get_predictConfig(FLAGS):
     random_feed = RandomVec(len_vec = FLAGS.len_vec)
     prediction_list = PredictionImage('generator/gen_image', 
                                       'test', merge_im = True)
     return PridectConfig(
-                 dataflow = random_feed,
-                 model = Model(input_vec_length = FLAGS.len_vec, 
-                               num_channels = FLAGS.input_channel, 
-                               im_size = FLAGS.im_size),
-                 model_name = 'model-300', model_dir = FLAGS.model_dir, 
-                 result_dir = FLAGS.result_dir, predictions = prediction_list,
-                 batch_size = FLAGS.batch_size)
+                         dataflow = random_feed,
+                         model = Model(input_vec_length = FLAGS.len_vec, 
+                                       num_channels = FLAGS.input_channel, 
+                                       im_size = FLAGS.im_size),
+                         model_name = 'model-300', 
+                         model_dir = FLAGS.model_dir, 
+                         result_dir = FLAGS.result_dir, 
+                         predictions = prediction_list,
+                         batch_size = FLAGS.batch_size)
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -266,7 +240,7 @@ def get_args():
 if __name__ == '__main__':
 
     FLAGS = get_args()
-    
+
     if FLAGS.train:
         config = get_config(FLAGS)
         GANFeedTrainer(config).train()

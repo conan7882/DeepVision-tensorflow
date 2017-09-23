@@ -118,12 +118,8 @@ class Model(BaseModel):
             tf.summary.image("mask", 
                        tf.expand_dims(tf.cast(self.mask, tf.float32), -1),
                        collections = ['train'])
-            tf.summary.scalar('loss', self.get_loss(), 
-                              collections = ['train'])
             tf.summary.scalar('train_accuracy', self.accuracy, 
                               collections = ['train'])
-            [tf.summary.histogram('gradient/' + var.name, grad, 
-              collections = ['train']) for grad, var in self.get_grads()]
         with tf.name_scope('test_summary'):
             tf.summary.image("test_Predict", 
                       tf.expand_dims(tf.cast(self.prediction, tf.float32), -1),
@@ -153,7 +149,8 @@ def get_config(FLAGS):
                               # CheckScalar(['accuracy/result'], periodic = 10),
                   ],
                  batch_size = FLAGS.batch_size, 
-                 max_epoch = 200)
+                 max_epoch = 200,
+                 summary_periodic = 10)
 
 def get_predictConfig(FLAGS):
     mat_name_list = ['level1Edge']
@@ -165,14 +162,14 @@ def get_predictConfig(FLAGS):
                                       merge_im = True)
 
     return PridectConfig(
-                 dataflow = dataset_test,
-                 model = Model(FLAGS.input_channel, 
+                dataflow = dataset_test,
+                model = Model(FLAGS.input_channel, 
                                 num_class = FLAGS.num_class),
-                                model_name = 'model-14070',
-                                model_dir = FLAGS.model_dir,    
-                                result_dir = FLAGS.result_dir,
-                                predictions = prediction_list,
-                                batch_size = FLAGS.batch_size)
+                model_name = 'model-14070',
+                model_dir = FLAGS.model_dir,    
+                result_dir = FLAGS.result_dir,
+                predictions = prediction_list,
+                batch_size = FLAGS.batch_size)
 
 def get_args():
     parser = argparse.ArgumentParser()

@@ -36,7 +36,7 @@ class SimpleFeedTrainer(Trainer):
 class GANFeedTrainer(Trainer):
     def __init__(self, config):
         assert_type(config, GANTrainConfig)
-        assert_type(config.model, GANBaseModel)
+        # assert_type(config.model, GANBaseModel)
 
         # config.model.set_batch_size(config.batch_size)
 

@@ -3,10 +3,11 @@ import os
 import numpy as np
 
 from ..dataflow.base import DataFlow
-from ..models.base import ModelDes
+from ..models.base import ModelDes, GANBaseModel
 from ..utils.default import get_default_session_config
 from ..utils.sesscreate import NewSessionCreator
 from ..callbacks.monitors import TFSummaryWriter
+from ..callbacks.summary import TrainSummary
 
 __all__ = ['TrainConfig', 'GANTrainConfig']
 
@@ -20,7 +21,8 @@ class TrainConfig(object):
                  callbacks = [],
                  session_creator = None,
                  monitors = None,
-                 batch_size = 1, max_epoch = 100):
+                 batch_size = 1, max_epoch = 100,
+                 summary_periodic = None):
 
         assert_type(monitors, TFSummaryWriter), \
         "monitors has to be TFSummaryWriter at this point!"
@@ -48,6 +50,12 @@ class TrainConfig(object):
             callbacks = [callbacks]
         self._callbacks = callbacks
 
+        # TODO model.default_collection only in BaseModel class
+        if isinstance(summary_periodic, int):
+            self._callbacks.append(
+                TrainSummary(key = model.default_collection, 
+                            periodic = summary_periodic))
+
         if session_creator is None:
             self.session_creator = \
                NewSessionCreator(config = get_default_session_config())
@@ -66,7 +74,10 @@ class GANTrainConfig(TrainConfig):
                  generator_callbacks = [],
                  session_creator = None,
                  monitors = None,
-                 batch_size = 1, max_epoch = 100):
+                 batch_size = 1, max_epoch = 100,
+                 summary_d_periodic = None, summary_g_periodic = None):
+
+        assert_type(model, GANBaseModel)
 
         if not isinstance(discriminator_callbacks, list):
             discriminator_callbacks = [discriminator_callbacks]
@@ -75,6 +86,15 @@ class GANTrainConfig(TrainConfig):
         if not isinstance(generator_callbacks, list):
             generator_callbacks = [generator_callbacks]
         self._gen_callbacks = generator_callbacks
+
+        if isinstance(summary_d_periodic, int):
+            self._dis_callbacks.append(
+                TrainSummary(key = model.d_collection, 
+                            periodic = summary_d_periodic))
+        if isinstance(summary_g_periodic, int):
+            self._dis_callbacks.append(
+                TrainSummary(key = model.g_collection, 
+                            periodic = summary_g_periodic))
 
         callbacks = self._dis_callbacks + self._gen_callbacks
 
