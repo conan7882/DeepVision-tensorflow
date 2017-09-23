@@ -1,3 +1,5 @@
+import argparse
+
 import numpy as np
 import tensorflow as tf
 
@@ -48,22 +50,28 @@ class Model(BaseModel):
         self.gt = tf.placeholder(tf.int64, [None, None, None], 'gt')
         self.mask = tf.placeholder(tf.int32, [None, None, None], 'mask')
 
-        conv1 = conv(self.image, 5, 32, 'conv1', nl = tf.nn.relu)
-        pool1 = max_pool(conv1, 'max_pool1', padding = 'SAME')
+        with tf.variable_scope('conv1') as scope:
+            conv1 = conv(self.image, 5, 32, nl = tf.nn.relu)
+            pool1 = max_pool(conv1, padding = 'SAME')
 
-        conv2 = conv(pool1, 3, 48, 'conv2', nl = tf.nn.relu)
-        pool2 = max_pool(conv2, 'max_pool2', padding = 'SAME')
+        with tf.variable_scope('conv2') as scope: 
+            conv2 = conv(pool1, 3, 48, nl = tf.nn.relu)
+            pool2 = max_pool(conv2, padding = 'SAME')
 
-        conv3 = conv(pool2, 3, 64, 'conv3', nl = tf.nn.relu)
-        pool3 = max_pool(conv3, 'max_pool3', padding = 'SAME')
+        with tf.variable_scope('conv3') as scope:  
+            conv3 = conv(pool2, 3, 64, nl = tf.nn.relu)
+            pool3 = max_pool(conv3, padding = 'SAME')
 
-        conv4 = conv(pool3, 3, 128, 'conv4', nl = tf.nn.relu)
-        pool4 = max_pool(conv4, 'max_pool4', padding = 'SAME')
+        with tf.variable_scope('conv4') as scope: 
+            conv4 = conv(pool3, 3, 128, nl = tf.nn.relu)
+            pool4 = max_pool(conv4, padding = 'SAME')
 
-        fc1 = conv(pool4, 2, 128, 'fc1', nl = tf.nn.relu)
-        dropout_fc1 = dropout(fc1, self.keep_prob, self.is_training)
+        with tf.variable_scope('fc1') as scope: 
+            fc1 = conv(pool4, 2, 128, nl = tf.nn.relu)
+            dropout_fc1 = dropout(fc1, self.keep_prob, self.is_training)
 
-        fc2 = conv(dropout_fc1, 1, self.num_class, 'fc2')
+        with tf.variable_scope('fc2') as scope: 
+            fc2 = conv(dropout_fc1, 1, self.num_class)
         
         dconv1 = tf.add(dconv(fc2, 4, name = 'dconv1', 
                               out_shape_by_tensor = pool3), pool3)
@@ -73,22 +81,26 @@ class Model(BaseModel):
                         out_shape_by_tensor = self.image, 
                         name = 'dconv3', stride = 4)
 
-        self.prediction = tf.argmax(dconv3, name="prediction", dimension = -1)
-        self.softmax_dconv3 = tf.nn.softmax(dconv3)
-        prediction_pro = tf.identity(self.softmax_dconv3[:,:,:,1],
-                                      name = "prediction_pro")
+        with tf.name_scope('prediction'):
+            self.prediction = tf.argmax(dconv3, name='label', dimension = -1)
+            self.softmax_dconv3 = tf.nn.softmax(dconv3)
+            prediction_pro = tf.identity(self.softmax_dconv3[:,:,:,1],
+                                         name = 'probability')
             
     def _setup_graph(self):
-        correct_prediction = apply_mask(
-             tf.equal(self.prediction, self.gt), self.mask)
-        self.accuracy = tf.reduce_mean(
-                tf.cast(correct_prediction, tf.float32), 
-                name = 'accuracy')
+        with tf.name_scope('accuracy'):
+            correct_prediction = apply_mask(
+                        tf.equal(self.prediction, self.gt), 
+                        self.mask)
+            self.accuracy = tf.reduce_mean(
+                        tf.cast(correct_prediction, tf.float32), 
+                        name = 'result')
 
     def _get_loss(self):
-        return tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits
+        with tf.name_scope('loss'):
+            return tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits
                     (logits = apply_mask(self.softmax_dconv3, self.mask),
-                    labels = apply_mask(self.gt, self.mask)), name = 'loss')  
+                    labels = apply_mask(self.gt, self.mask)), name = 'result')  
 
     def _get_optimizer(self):
         return tf.train.AdamOptimizer(learning_rate = self.learning_rate)
@@ -117,55 +129,93 @@ class Model(BaseModel):
                       tf.expand_dims(tf.cast(self.prediction, tf.float32), -1),
                       collections = ['test'])
 
-def get_config():
+def get_config(FLAGS):
     mat_name_list = ['level1Edge', 'GT', 'Mask']
     dataset_train = MatlabData('train', mat_name_list = mat_name_list,
-                data_dir = 'D:\\GoogleDrive_Qian\\Foram\\Training\\CNN_Image\\')
+                               data_dir = FLAGS.data_dir)
     dataset_val = MatlabData('val', mat_name_list = mat_name_list, 
-                data_dir = 'D:\\GoogleDrive_Qian\\Foram\\Training\\CNN_Image\\')
-    inference_list = [InferScalars('accuracy', 'test_accuracy')]
+                             data_dir = FLAGS.data_dir)
+    inference_list = [InferScalars('accuracy/result', 'test_accuracy')]
     
     return TrainConfig(
                  dataflow = dataset_train, 
-                 model = Model(num_channels = 1, num_class = 2, 
+                 model = Model(num_channels = FLAGS.input_channel, 
+                               num_class = FLAGS.num_class, 
                                learning_rate = 0.0001),
-                 monitors = TFSummaryWriter(summary_dir = 'D:\\Qian\\GitHub\\workspace\\test\\'),
+                 monitors = TFSummaryWriter(summary_dir = FLAGS.summary_dir),
                  callbacks = [
                     ModelSaver(periodic = 10,
-                               checkpoint_dir = 'D:\\Qian\\GitHub\\workspace\\test\\'),
+                               checkpoint_dir = FLAGS.summary_dir),
                     TrainSummary(key = 'train', periodic = 10),
                     FeedInference(dataset_val, periodic = 10, 
                                   extra_cbs = TrainSummary(key = 'test'),
                                   inferencers = inference_list),
-                              # CheckScalar(['accuracy'], periodic = 10),
+                              # CheckScalar(['accuracy/result'], periodic = 10),
                   ],
-                 batch_size = 1, 
+                 batch_size = FLAGS.batch_size, 
                  max_epoch = 200)
 
-def get_predictConfig():
+def get_predictConfig(FLAGS):
     mat_name_list = ['level1Edge']
     dataset_test = MatlabData('Level_1', shuffle = False,
                                mat_name_list = mat_name_list,
-                               data_dir = 'D:\\GoogleDrive_Qian\\Foram\\testing\\')
-    prediction_list = PredictionImage(['prediction', 'prediction_pro'], 
+                               data_dir = FLAGS.test_data_dir)
+    prediction_list = PredictionImage(['prediction/label', 'prediction/probability'], 
                                       ['test','test_pro'], 
                                       merge_im = True)
 
     return PridectConfig(
                  dataflow = dataset_test,
-                 model = Model(num_channels = 1, num_class = 2),
-                        model_name = 'model-14070',
-                        model_dir = 'D:\\Qian\\GitHub\\workspace\\test\\',    
-                        result_dir = 'D:\\Qian\\GitHub\\workspace\\test\\2\\',
-                        predictions = prediction_list,
-                        session_creator = None,
-                        batch_size = 1)
+                 model = Model(FLAGS.input_channel, 
+                                num_class = FLAGS.num_class),
+                                model_name = 'model-14070',
+                                model_dir = FLAGS.model_dir,    
+                                result_dir = FLAGS.result_dir,
+                                predictions = prediction_list,
+                                batch_size = FLAGS.batch_size)
+
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--data_dir', 
+        help = 'Directory of input training data.',
+        default = 'D:\\GoogleDrive_Qian\\Foram\\Training\\CNN_Image\\')
+    parser.add_argument('--summary_dir', 
+        help = 'Directory for saving summary.',
+        default = 'D:\\Qian\\GitHub\\workspace\\test\\')
+    parser.add_argument('--checkpoint_dir', 
+        help = 'Directory for saving checkpoint.',
+        default = 'D:\\Qian\\GitHub\\workspace\\test\\')
+
+    parser.add_argument('--test_data_dir', 
+        help = 'Directory of input test data.',
+        default = 'D:\\GoogleDrive_Qian\\Foram\\testing\\')
+    parser.add_argument('--model_dir', 
+        help = 'Directory for restoring checkpoint.',
+        default = 'D:\\Qian\\GitHub\\workspace\\test\\')
+    parser.add_argument('--result_dir', 
+        help = 'Directory for saving prediction results.',
+        default = 'D:\\Qian\\GitHub\\workspace\\test\\2\\')
+
+    parser.add_argument('--input_channel', default = 1, 
+                        help = 'Number of image channels')
+    parser.add_argument('--num_class', default = 2, 
+                        help = 'Number of classes')
+    parser.add_argument('--batch_size', default = 1)
+
+    parser.add_argument('--predict', help = 'Run prediction', action='store_true')
+    parser.add_argument('--train', help = 'Train the model', action='store_true')
+
+    return parser.parse_args()
 
 if __name__ == '__main__':
-    config = get_config()
-    SimpleFeedTrainer(config).train()
-    # config = get_predictConfig()
-    # SimpleFeedPredictor(config).run_predict()
+
+    FLAGS = get_args()
+    if FLAGS.train:
+        config = get_config(FLAGS)
+        SimpleFeedTrainer(config).train()
+    elif FLAGS.predict:
+        config = get_predictConfig(FLAGS)
+        SimpleFeedPredictor(config).run_predict()
 
 
  

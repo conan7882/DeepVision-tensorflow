@@ -1,3 +1,5 @@
+import argparse
+
 import numpy as np
 import tensorflow as tf
 
@@ -80,7 +82,8 @@ class Model(GANBaseModel):
 
     def _get_generator_optimizer(self):
         return tf.train.AdamOptimizer(beta1=0.5,
-                        learning_rate = self.gen_learning_rate)      
+                        learning_rate = self.gen_learning_rate) 
+
 
     def _generator(self, train = True):
 
@@ -121,8 +124,10 @@ class Model(GANBaseModel):
 
         with tf.variable_scope('dconv5') as scope:
             # Do not use batch norm for the last layer
-            output_shape = [batch_size, self.im_height, self.im_width, self.num_channels]
-            dconv5 = dconv(bn_dconv4, filter_size, out_shape = output_shape, name = 'dconv')
+            output_shape = [batch_size, self.im_height, 
+                            self.im_width, self.num_channels]
+            dconv5 = dconv(bn_dconv4, filter_size, 
+                           out_shape = output_shape, name = 'dconv')
             gen_shape = tf.shape(dconv5, name = 'gen_shape')
             
         generation = tf.nn.tanh(dconv5, 'gen_out')
@@ -184,21 +189,21 @@ class Model(GANBaseModel):
                         collections = ['train_g']) 
                         for grad, var in self.get_generator_grads()]
 
-def get_config():
-    dataset_train = MNIST('train', 
-                          data_dir = 'D:\\Qian\\GitHub\\workspace\\tensorflow-DCGAN\\MNIST_data\\')
+def get_config(FLAGS):
+    dataset_train = MNIST('train', data_dir = FLAGS.data_dir)
     inference_list = InferImages('generator/gen_image', prefix = 'gen',
-                                  save_dir = 'D:\\Qian\\GitHub\\workspace\\test\\result\\')
-    random_feed = RandomVec(len_vec = 100)
+                                  save_dir = FLAGS.infer_dir)
+    random_feed = RandomVec(len_vec = FLAGS.len_vec)
     return GANTrainConfig(
             dataflow = dataset_train, 
-            model = Model(input_vec_length = 100, num_channels = 1, 
-                          im_size = [28, 28], 
+            model = Model(input_vec_length = FLAGS.len_vec, 
+                          num_channels = FLAGS.input_channel, 
+                          im_size = FLAGS.im_size, 
                           learning_rate = [0.0002, 0.0002]),
-            monitors = TFSummaryWriter(summary_dir = 'D:\\Qian\\GitHub\\workspace\\test\\'),
+            monitors = TFSummaryWriter(summary_dir = FLAGS.summary_dir),
             discriminator_callbacks = [
                 # ModelSaver(periodic = 100,
-                #            checkpoint_dir = 'D:\\Qian\\GitHub\\workspace\\test\\'), 
+                #            checkpoint_dir = FLAGS.checkpoint_dir), 
                 TrainSummary(key = 'train_d', periodic = 10),
                 CheckScalar(['d_loss','g_loss','generator/dconv5/gen_shape'], periodic = 10),
                 GANInference(inputs = random_feed, periodic = 100, 
@@ -207,30 +212,67 @@ def get_config():
             generator_callbacks = [
                        TrainSummary(key = 'train_g', periodic = 10),
                     ],              
-            batch_size = 64, 
+            batch_size = FLAGS.batch_size, 
             max_epoch = 57)
 
-def get_predictConfig():
-    random_feed = RandomVec(len_vec = 100)
+def get_predictConfig(FLAGS):
+    random_feed = RandomVec(len_vec = FLAGS.len_vec)
     prediction_list = PredictionImage('generator/gen_image', 
                                       'test', merge_im = True)
     return PridectConfig(
                  dataflow = random_feed,
-                 model = Model(input_vec_length = 100, num_channels = 1, 
-                               im_size = [28, 28], 
-                               learning_rate = [0.0002, 0.0002]),
-                 model_name = 'model-300',
-                 model_dir = 'D:\\Qian\\GitHub\\workspace\\test\\', 
-                 result_dir = 'D:\\Qian\\GitHub\\workspace\\test\\2\\',
-                 predictions = prediction_list,
-                 session_creator = None,
-                 batch_size = 64)
+                 model = Model(input_vec_length = FLAGS.len_vec, 
+                               num_channels = FLAGS.input_channel, 
+                               im_size = FLAGS.im_size),
+                 model_name = 'model-300', model_dir = FLAGS.model_dir, 
+                 result_dir = FLAGS.result_dir, predictions = prediction_list,
+                 batch_size = FLAGS.batch_size)
+
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--data_dir', 
+        help = 'Directory of input data.',
+        default = 'D:\\Qian\\GitHub\\workspace\\tensorflow-DCGAN\\MNIST_data\\')
+    parser.add_argument('--infer_dir', 
+        help = 'Directory for saving inference data.',
+        default = 'D:\\Qian\\GitHub\\workspace\\test\\result\\')
+    parser.add_argument('--summary_dir', 
+        help = 'Directory for saving summary.',
+        default = 'D:\\Qian\\GitHub\\workspace\\test\\')
+    parser.add_argument('--checkpoint_dir', 
+        help = 'Directory for saving checkpoint.',
+        default = 'D:\\Qian\\GitHub\\workspace\\test\\')
+
+    parser.add_argument('--model_dir', 
+        help = 'Directory for restoring checkpoint.',
+        default = 'D:\\Qian\\GitHub\\workspace\\test\\')
+    parser.add_argument('--result_dir', 
+        help = 'Directory for saving prediction results.',
+        default = 'D:\\Qian\\GitHub\\workspace\\test\\2\\')
+
+    parser.add_argument('--len_vec', default = 100, 
+                        help = 'Length of input random vector')
+    parser.add_argument('--input_channel', default = 1, 
+                        help = 'Number of image channels')
+    parser.add_argument('--im_size', default = [28, 28], 
+                        help = 'Size of input images')
+    parser.add_argument('--batch_size', default = 64)
+
+    parser.add_argument('--predict', help = 'Run prediction', action='store_true')
+    parser.add_argument('--train', help = 'Train the model', action='store_true')
+
+    return parser.parse_args()
 
 if __name__ == '__main__':
-    config = get_config()
-    GANFeedTrainer(config).train()
-    # config = get_predictConfig()
-    # SimpleFeedPredictor(config).run_predict()
+
+    FLAGS = get_args()
+    
+    if FLAGS.train:
+        config = get_config(FLAGS)
+        GANFeedTrainer(config).train()
+    elif FLAGS.predict:
+        config = get_predictConfig(FLAGS)
+        SimpleFeedPredictor(config).run_predict()
 
 
 
