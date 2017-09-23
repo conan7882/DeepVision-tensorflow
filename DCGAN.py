@@ -4,6 +4,7 @@ import numpy as np
 import tensorflow as tf
 
 from package.dataflow.dataset.MNIST import MNIST
+from package.dataflow.dataset.CIFAR import CIFAR
 from package.dataflow.randoms import RandomVec
 from package.models.layers import *
 from package.models.base import GANBaseModel
@@ -67,7 +68,6 @@ class Model(GANBaseModel):
     def _get_generator_optimizer(self):
         return tf.train.AdamOptimizer(beta1=0.5,
                         learning_rate = self.gen_learning_rate) 
-
 
     def _generator(self, train = True):
 
@@ -159,7 +159,8 @@ class Model(GANBaseModel):
                               collections = ['summary_d'])
 
 def get_config(FLAGS):
-    dataset_train = MNIST('train', data_dir = FLAGS.data_dir)
+    # dataset_train = MNIST('train', data_dir = FLAGS.data_dir)
+    dataset_train = CIFAR(data_dir = FLAGS.data_dir)
     inference_list = InferImages('generator/gen_image', prefix = 'gen',
                                   save_dir = FLAGS.infer_dir)
     random_feed = RandomVec(len_vec = FLAGS.len_vec)
@@ -176,14 +177,16 @@ def get_config(FLAGS):
                 TrainSummary(key = 'summary_d', periodic = 10),
                 CheckScalar(['d_loss/result','g_loss/result','generator/dconv5/gen_shape'], 
                             periodic = 10),
-                GANInference(inputs = random_feed, periodic = 100, 
-                              inferencers = inference_list),
+                # GANInference(inputs = random_feed, periodic = 100, 
+                #               inferencers = inference_list),
               ],
             generator_callbacks = [
+                        GANInference(inputs = random_feed, periodic = 100, 
+                                    inferencers = inference_list),
                        # TrainSummary(key = self.g_collection, periodic = 10),
                     ],              
             batch_size = FLAGS.batch_size, 
-            max_epoch = 57,
+            max_epoch = 100,
             summary_d_periodic = 10, 
             summary_g_periodic = 10)
 
@@ -206,7 +209,8 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_dir', 
         help = 'Directory of input data.',
-        default = 'D:\\Qian\\GitHub\\workspace\\tensorflow-DCGAN\\MNIST_data\\')
+        default = 'D:\\Qian\\GitHub\\workspace\\tensorflow-DCGAN\\cifar-10-python.tar\\')
+        # default = 'D:\\Qian\\GitHub\\workspace\\tensorflow-DCGAN\\MNIST_data\\')
     parser.add_argument('--infer_dir', 
         help = 'Directory for saving inference data.',
         default = 'D:\\Qian\\GitHub\\workspace\\test\\result\\')
@@ -226,9 +230,9 @@ def get_args():
 
     parser.add_argument('--len_vec', default = 100, 
                         help = 'Length of input random vector')
-    parser.add_argument('--input_channel', default = 1, 
+    parser.add_argument('--input_channel', default = 3, 
                         help = 'Number of image channels')
-    parser.add_argument('--im_size', default = [28, 28], 
+    parser.add_argument('--im_size', default = [32, 32], 
                         help = 'Size of input images')
     parser.add_argument('--batch_size', default = 64)
 

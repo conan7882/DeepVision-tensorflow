@@ -2,7 +2,6 @@
 # Author: Qian Ge <geqian1001@gmail.com>
 
 import os
-from scipy.io import loadmat
 
 import numpy as np 
 from tensorflow.examples.tutorials.mnist import input_data

@@ -4,7 +4,6 @@
 import scipy.misc
 import os
 
-import numpy as np
 import tensorflow as tf
 
 from .base import Callback
