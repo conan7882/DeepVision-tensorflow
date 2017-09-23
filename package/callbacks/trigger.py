@@ -11,7 +11,8 @@ from .base import ProxyCallback, Callback
 __all__ = ['PeriodicTrigger']
 
 def assert_type(v, tp):
-    assert isinstance(v, tp), "Expect " + str(tp) + ", but " + str(v.__class__) + " is given!"
+    assert isinstance(v, tp), \
+    "Expect " + str(tp) + ", but " + str(v.__class__) + " is given!"
 
 class PeriodicTrigger(ProxyCallback):
 	""" may not need """

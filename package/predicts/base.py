@@ -11,7 +11,8 @@ from ..callbacks.hooks import Prediction2Hook
 __all__ = ['Predictor']
 
 def assert_type(v, tp):
-    assert isinstance(v, tp), "Expect " + str(tp) + ", but " + str(v.__class__) + " is given!"
+    assert isinstance(v, tp), \
+    "Expect " + str(tp) + ", but " + str(v.__class__) + " is given!"
 
 class Predictor(object):
     """ base class for predictor """
@@ -37,7 +38,8 @@ class Predictor(object):
         self.hooked_sess = tf.train.MonitoredSession(
             session_creator = ReuseSessionCreator(self.sess), hooks = hooks)
 
-        load_model_path = os.path.join(self.config.model_dir, self.config.model_name)
+        load_model_path = os.path.join(self.config.model_dir, 
+                                    self.config.model_name)
         # assert os.path.isdir(load_model_path), load_model_path
         saver = tf.train.Saver()
         saver.restore(self.sess, load_model_path)

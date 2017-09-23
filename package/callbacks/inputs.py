@@ -4,7 +4,6 @@
 import scipy.misc
 import os
 
-import numpy as np
 import tensorflow as tf
 
 from .base import Callback
@@ -13,7 +12,8 @@ from ..dataflow.base import DataFlow
 __all__ = ['FeedInput']
 
 def assert_type(v, tp):
-    assert isinstance(v, tp), "Expect " + str(tp) + ", but " + str(v.__class__) + " is given!"
+    assert isinstance(v, tp), \
+    "Expect " + str(tp) + ", but " + str(v.__class__) + " is given!"
 
 class FeedInput(Callback):
     """ input using feed """

@@ -2,7 +2,6 @@
 # Author: Qian Ge <geqian1001@gmail.com>
 
 import os
-from scipy.io import loadmat
 
 import numpy as np 
 from tensorflow.examples.tutorials.mnist import input_data
@@ -50,7 +49,8 @@ class MNIST(RNGDataFlow):
 
     def next_batch(self):
         assert self._batch_size <= self.size(), \
-        "batch_size {} cannot be larger than data size {}".format(self._batch_size, self.size())
+          "batch_size {} cannot be larger than data size {}".\
+           format(self._batch_size, self.size())
         start = self._image_id
         self._image_id += self._batch_size
         end = self._image_id

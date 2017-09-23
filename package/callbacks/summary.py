@@ -19,8 +19,8 @@ class TrainSummary(Callback):
 	    self._key = key
 
 	def _setup_graph(self):
-		# self.trainer.model.setup_summary()
-		self.summary_list = tf.summary.merge([tf.summary.merge_all(key) for key in self._key])
+		self.summary_list = tf.summary.merge(
+			 [tf.summary.merge_all(key) for key in self._key])
 		# self.all_summary = tf.summary.merge_all(self._key)
 		
 	def _before_run(self, _):

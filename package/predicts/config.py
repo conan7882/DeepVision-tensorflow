@@ -11,7 +11,8 @@ from .predictions import PredictionBase
 __all__ = ['PridectConfig']
 
 def assert_type(v, tp):
-    assert isinstance(v, tp), "Expect " + str(tp) + ", but " + str(v.__class__) + " is given!"
+    assert isinstance(v, tp), \
+    "Expect " + str(tp) + ", but " + str(v.__class__) + " is given!"
 
 class PridectConfig(object):
     def __init__(self, 
@@ -21,6 +22,9 @@ class PridectConfig(object):
                  predictions = None,
                  session_creator = None,
                  batch_size = 1):
+        """
+        Args:
+        """
 
         assert dataflow is not None, "dataflow cannot be None!"
         assert_type(dataflow, DataFlow)
@@ -55,9 +59,11 @@ class PridectConfig(object):
         # self._callbacks = callbacks
 
         if session_creator is None:
-            self.session_creator = NewSessionCreator(config = get_default_session_config())
+            self.session_creator = \
+                 NewSessionCreator(config = get_default_session_config())
         else:
-            raise ValueError('custormer session creator is not allowed at this point!')
+            raise ValueError('custormer session creator is \
+                               not allowed at this point!')
         
     @property
     def callbacks(self):
