@@ -6,15 +6,10 @@
 Welcome to DeepVision-TensorFlow's documentation!
 =================================================
 
+
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+  :maxdepth: 3
 
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+  tutorial/index
+  modules/index
+..  casestudies/index
