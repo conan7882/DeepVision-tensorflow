@@ -7,7 +7,7 @@ from scipy.io import loadmat
 import numpy as np 
 
 from .base import RNGDataFlow
-from .common import get_file_list
+from .common import *
 
 __all__ = ['MatlabData']
 
@@ -89,27 +89,16 @@ class MatlabData(RNGDataFlow):
         input_data = [np.array(data) for data in input_data]
         if self._normalize == 'tanh':
             try:
-                input_data[0] = (input_data[0]*1.0 - self._half_in_val)/\
-                                 self._half_in_val
+                input_data[0] = tanh_normalization(input_data[0], self._half_in_val)
             except AttributeError:
                 self._input_val_range(input_data[0][0])
-                input_data[0] = (input_data[0]*1.0 - self._half_in_val)/\
-                                 self._half_in_val
+                input_data[0] = tanh_normalization(input_data[0], self._half_in_val)
+
         return input_data
 
     def _input_val_range(self, in_mat):
-        # TODO to be modified    
-        max_val = np.amax(in_mat)
-        min_val = np.amin(in_mat)
-        if max_val > 1:
-            self._max_in_val = 255.0
-            self._half_in_val = 128.0
-        elif min_val >= 0:
-            self._max_in_val = 1.0
-            self._half_in_val = 0.5
-        else:
-            self._max_in_val = 1.0
-            self._half_in_val = 0
+        # TODO to be modified  
+        self._max_in_val, self._half_in_val = input_val_range(in_mat)  
 
     def size(self):
         return len(self.file_list)
@@ -119,8 +108,9 @@ def load_image_from_mat(matfile, name, datatype):
     return mat
 
 if __name__ == '__main__':
-    a = MatlabData(data_dir = 'D:\\GoogleDrive_Qian\\Foram\\Training\\CNN_Image\\train\\', 
+    a = MatlabData(data_dir = 'D:\\GoogleDrive_Qian\\Foram\\Training\\CNN_GAN_ORIGINAL_64\\', 
                    mat_name_list = ['level1Edge'],
                    normalize = 'tanh')
     print(a.next_batch()[0].shape)
     print(a.next_batch()[0][:,30:40,30:40,:])
+    print(np.amax(a.next_batch()[0]))

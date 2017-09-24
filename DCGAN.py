@@ -7,6 +7,7 @@ from package.dataflow.dataset.MNIST import MNIST
 from package.dataflow.dataset.CIFAR import CIFAR
 from package.dataflow.matlab import MatlabData
 from package.dataflow.randoms import RandomVec
+from package.dataflow.image import ImageData
 from package.models.layers import *
 from package.models.base import GANBaseModel
 from package.utils.common import get_tensors_by_names, deconv_size
@@ -176,6 +177,11 @@ def get_config(FLAGS):
                                mat_name_list = mat_name_list,
                                data_dir = FLAGS.data_dir,
                                normalize = 'tanh')
+    elif FLAGS.image:
+        im_size = [FLAGS.h, FLAGS.w]
+        dataset_train = ImageData('.png', data_dir = FLAGS.data_dir,
+                                   num_channels = FLAGS.input_channel,
+                                   normalize = 'tanh')
 
     inference_list = InferImages('generator/gen_image', prefix = 'gen',
                                   save_dir = FLAGS.infer_dir)
@@ -200,7 +206,7 @@ def get_config(FLAGS):
                         TrainSummary(key = 'summary_g', periodic = 10),
                     ],              
             batch_size = FLAGS.batch_size, 
-            max_epoch = 100,
+            max_epoch = 1000,
             summary_d_periodic = 10, 
             summary_g_periodic = 10)
 
@@ -268,6 +274,9 @@ def get_args():
                         help = 'Run on dataset of .mat files')
     parser.add_argument('--mat_name', type = str, default = None,
                         help = 'Name of mat to be loaded from .mat file')
+
+    parser.add_argument('--image', action = 'store_true',
+                        help = 'Run on dataset of image files')
 
     return parser.parse_args()
 
