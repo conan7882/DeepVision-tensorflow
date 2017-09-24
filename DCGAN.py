@@ -5,6 +5,7 @@ import tensorflow as tf
 
 from package.dataflow.dataset.MNIST import MNIST
 from package.dataflow.dataset.CIFAR import CIFAR
+from package.dataflow.matlab import MatlabData
 from package.dataflow.randoms import RandomVec
 from package.models.layers import *
 from package.models.base import GANBaseModel
@@ -149,7 +150,7 @@ class Model(GANBaseModel):
         with tf.name_scope('generator_summary'):
             tf.summary.image('generate_sample', 
                              tf.cast(self.sample_image, tf.float32), 
-                             collections = ['summary_d'])
+                             collections = ['summary_g'])
             tf.summary.image('generate_train', 
                              tf.cast(self.gen_image, tf.float32), 
                              collections = ['summary_d'])
@@ -159,8 +160,23 @@ class Model(GANBaseModel):
                               collections = ['summary_d'])
 
 def get_config(FLAGS):
-    # dataset_train = MNIST('train', data_dir = FLAGS.data_dir)
-    dataset_train = CIFAR(data_dir = FLAGS.data_dir)
+    if FLAGS.mnist:
+        dataset_train = MNIST('train', data_dir = FLAGS.data_dir, normalize = 'tanh')
+        FLAGS.input_channel = 1
+        im_size = [28, 28]
+    elif FLAGS.cifar:
+        dataset_train = CIFAR(data_dir = FLAGS.data_dir, normalize = 'tanh')
+        FLAGS.input_channel = 3
+        im_size = [32, 32]
+    elif FLAGS.matlab:
+        im_size = [FLAGS.h, FLAGS.w]
+        mat_name_list = FLAGS.mat_name
+        dataset_train = MatlabData(
+                               num_channels = FLAGS.input_channel,
+                               mat_name_list = mat_name_list,
+                               data_dir = FLAGS.data_dir,
+                               normalize = 'tanh')
+
     inference_list = InferImages('generator/gen_image', prefix = 'gen',
                                   save_dir = FLAGS.infer_dir)
     random_feed = RandomVec(len_vec = FLAGS.len_vec)
@@ -168,7 +184,7 @@ def get_config(FLAGS):
             dataflow = dataset_train, 
             model = Model(input_vec_length = FLAGS.len_vec, 
                           num_channels = FLAGS.input_channel, 
-                          im_size = FLAGS.im_size, 
+                          im_size = im_size, 
                           learning_rate = [0.0002, 0.0002]),
             monitors = TFSummaryWriter(summary_dir = FLAGS.summary_dir),
             discriminator_callbacks = [
@@ -177,13 +193,11 @@ def get_config(FLAGS):
                 TrainSummary(key = 'summary_d', periodic = 10),
                 CheckScalar(['d_loss/result','g_loss/result','generator/dconv5/gen_shape'], 
                             periodic = 10),
-                # GANInference(inputs = random_feed, periodic = 100, 
-                #               inferencers = inference_list),
               ],
             generator_callbacks = [
                         GANInference(inputs = random_feed, periodic = 100, 
                                     inferencers = inference_list),
-                       # TrainSummary(key = self.g_collection, periodic = 10),
+                        TrainSummary(key = 'summary_g', periodic = 10),
                     ],              
             batch_size = FLAGS.batch_size, 
             max_epoch = 100,
@@ -194,11 +208,12 @@ def get_predictConfig(FLAGS):
     random_feed = RandomVec(len_vec = FLAGS.len_vec)
     prediction_list = PredictionImage('generator/gen_image', 
                                       'test', merge_im = True)
+    im_size = [FLAGS.h, FLAGS.w]
     return PridectConfig(
                          dataflow = random_feed,
                          model = Model(input_vec_length = FLAGS.len_vec, 
                                        num_channels = FLAGS.input_channel, 
-                                       im_size = FLAGS.im_size),
+                                       im_size = im_size),
                          model_name = 'model-300', 
                          model_dir = FLAGS.model_dir, 
                          result_dir = FLAGS.result_dir, 
@@ -209,7 +224,8 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_dir', 
         help = 'Directory of input data.',
-        default = 'D:\\Qian\\GitHub\\workspace\\tensorflow-DCGAN\\cifar-10-python.tar\\')
+        default = 'D:\\GoogleDrive_Qian\\Foram\\Training\\CNN_GAN_ORIGINAL_64\\')
+        # default = 'D:\\Qian\\GitHub\\workspace\\tensorflow-DCGAN\\cifar-10-python.tar\\')
         # default = 'D:\\Qian\\GitHub\\workspace\\tensorflow-DCGAN\\MNIST_data\\')
     parser.add_argument('--infer_dir', 
         help = 'Directory for saving inference data.',
@@ -228,16 +244,30 @@ def get_args():
         help = 'Directory for saving prediction results.',
         default = 'D:\\Qian\\GitHub\\workspace\\test\\2\\')
 
-    parser.add_argument('--len_vec', default = 100, 
+    parser.add_argument('--len_vec', default = 100, type = int,
                         help = 'Length of input random vector')
-    parser.add_argument('--input_channel', default = 3, 
+    parser.add_argument('--input_channel', default = 1, type = int,
                         help = 'Number of image channels')
-    parser.add_argument('--im_size', default = [32, 32], 
-                        help = 'Size of input images')
-    parser.add_argument('--batch_size', default = 64)
+    parser.add_argument('--h', default = 32, type = int,
+                        help = 'Heigh of input images')
+    parser.add_argument('--w', default = 32, type = int,
+                        help = 'Width of input images')
+    parser.add_argument('--batch_size', default = 64, type = int)
 
-    parser.add_argument('--predict', help = 'Run prediction', action='store_true')
-    parser.add_argument('--train', help = 'Train the model', action='store_true')
+    parser.add_argument('--predict', action = 'store_true', 
+                        help = 'Run prediction')
+    parser.add_argument('--train', action = 'store_true', 
+                        help = 'Train the model')
+
+    parser.add_argument('--mnist', action = 'store_true',
+                        help = 'Run on MNIST dataset')
+    parser.add_argument('--cifar', action = 'store_true',
+                        help = 'Run on CIFAR dataset')
+
+    parser.add_argument('--matlab', action = 'store_true',
+                        help = 'Run on dataset of .mat files')
+    parser.add_argument('--mat_name', type = str, default = None,
+                        help = 'Name of mat to be loaded from .mat file')
 
     return parser.parse_args()
 

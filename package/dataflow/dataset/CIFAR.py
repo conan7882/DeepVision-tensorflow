@@ -12,11 +12,12 @@ __all__ = ['CIFAR']
 
 ## TODO Add batch size
 class CIFAR(RNGDataFlow):
-    def __init__(self, data_dir = '', shuffle = True):
+    def __init__(self, data_dir = '', shuffle = True, normalize = None):
         assert os.path.isdir(data_dir)
         self.data_dir = data_dir
 
         self.shuffle = shuffle
+        self._normalize = normalize
         self._num_channels = 3
 
         self.setup(epoch_val = 0, batch_size = 1)
@@ -38,7 +39,8 @@ class CIFAR(RNGDataFlow):
             self._batch_file_id += 1
         self._image = np.array(unpickle(self._file_list[self._batch_file_id]))
         # TODO to be modified
-        self._image = (self._image*1. - 128)/128.0
+        if self._normalize == 'tanh':
+            self._image = (self._image*1. - 128)/128.0
 
         if self.shuffle:
             self._suffle_files()

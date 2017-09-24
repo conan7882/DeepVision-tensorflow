@@ -12,11 +12,12 @@ __all__ = ['BSDS500']
 
 ## TODO Add batch size
 class BSDS500(RNGDataFlow):
-    def __init__(self, name, data_dir = '', shuffle = True):
+    def __init__(self, name, data_dir = '', shuffle = True, normalize = None):
         assert os.path.isdir(data_dir)
         self.data_dir = data_dir
 
         self.shuffle = shuffle
+        self._normalize = normalize
 
         assert name in ['train', 'test', 'val']
         self.setup(epoch_val = 0, batch_size = 1)

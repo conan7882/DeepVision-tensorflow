@@ -13,17 +13,19 @@ __all__ = ['MatlabData']
 
 class MatlabData(RNGDataFlow):
     """ dataflow from .mat file with mask """
-    def __init__(self, name, 
+    def __init__(self, 
                  num_channels = 1, 
                  data_dir = '',
                  mat_name_list = None, 
                  mat_type_list = None,
-                 shuffle = True):
+                 shuffle = True,
+                 normalize = None):
 
         self.setup(epoch_val = 0, batch_size = 1)
 
         self._num_channels = num_channels
         self.shuffle = shuffle
+        self._normalize = normalize
 
         assert os.path.isdir(data_dir)
         self.data_dir = data_dir
@@ -38,16 +40,14 @@ class MatlabData(RNGDataFlow):
         'Length of mat_name_list and mat_type_list has to be the same!'
         self._mat_type_list = mat_type_list
 
-        # assert name in ['train', 'test', 'val']
-        self._load_file_list(name)
+        self._load_file_list()
         self._num_image = self.size()
         self._image_id = 0
         
-    def _load_file_list(self, name):
-        data_dir = os.path.join(self.data_dir, name)
-
-        self.file_list = np.array([os.path.join(data_dir, file) 
-            for file in os.listdir(data_dir) if file.endswith(".mat")])
+    def _load_file_list(self):
+        # data_dir = os.path.join(self.data_dir)
+        self.file_list = np.array([os.path.join(self.data_dir, file) 
+            for file in os.listdir(self.data_dir) if file.endswith(".mat")])
 
         if self.shuffle:
             self._suffle_file_list()
@@ -86,7 +86,30 @@ class MatlabData(RNGDataFlow):
                 cur_data = np.reshape(cur_data, 
                                [1, cur_data.shape[0], cur_data.shape[1]])
                 input_data[k].extend(cur_data)
+        input_data = [np.array(data) for data in input_data]
+        if self._normalize == 'tanh':
+            try:
+                input_data[0] = (input_data[0]*1.0 - self._half_in_val)/\
+                                 self._half_in_val
+            except AttributeError:
+                self._input_val_range(input_data[0][0])
+                input_data[0] = (input_data[0]*1.0 - self._half_in_val)/\
+                                 self._half_in_val
         return input_data
+
+    def _input_val_range(self, in_mat):
+        # TODO to be modified    
+        max_val = np.amax(in_mat)
+        min_val = np.amin(in_mat)
+        if max_val > 1:
+            self._max_in_val = 255.0
+            self._half_in_val = 128.0
+        elif min_val >= 0:
+            self._max_in_val = 1.0
+            self._half_in_val = 0.5
+        else:
+            self._max_in_val = 1.0
+            self._half_in_val = 0
 
     def size(self):
         return len(self.file_list)
@@ -96,5 +119,8 @@ def load_image_from_mat(matfile, name, datatype):
     return mat
 
 if __name__ == '__main__':
-    a = MatlabMask('train',data_dir = 'D:\\GoogleDrive_Qian\\Foram\\Training\\CNN_Image\\')
-    print(a.next_batch()[2].shape)
+    a = MatlabData(data_dir = 'D:\\GoogleDrive_Qian\\Foram\\Training\\CNN_Image\\train\\', 
+                   mat_name_list = ['level1Edge'],
+                   normalize = 'tanh')
+    print(a.next_batch()[0].shape)
+    print(a.next_batch()[0][:,30:40,30:40,:])

@@ -12,11 +12,12 @@ __all__ = ['MNIST']
 
 ## TODO Add batch size
 class MNIST(RNGDataFlow):
-    def __init__(self, name, data_dir = '', shuffle = True):
+    def __init__(self, name, data_dir = '', shuffle = True, normalize = None):
         assert os.path.isdir(data_dir)
         self.data_dir = data_dir
 
         self.shuffle = shuffle
+        self._normalize = normalize
 
         assert name in ['train', 'test', 'val']
         self.setup(epoch_val = 0, batch_size = 1)
@@ -31,7 +32,8 @@ class MNIST(RNGDataFlow):
         if name is 'train':
             for image, label in zip(mnist_data.train.images, mnist_data.train.labels):
                 # TODO to be modified
-                image = image*2.-1.
+                if self._normalize == 'tanh':
+                    image = image*2.-1.
                 image = np.reshape(image, [28, 28, 1])
                 self.im_list.append(image)
         self.im_list = np.array(self.im_list)
