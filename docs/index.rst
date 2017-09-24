@@ -9,7 +9,6 @@ Welcome to DeepVision-TensorFlow's documentation!
 
 .. toctree::
   :maxdepth: 3
+  tutorial
+  modules
 
-  tutorial/index
-  modules/index
-..  casestudies/index
