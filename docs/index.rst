@@ -5,3 +5,6 @@ It is a simplified version of [tensorpack](https://github.com/ppwwyyxx/tensorpac
 
 .. toctree::
   :maxdepth: 3
+
+  tutorial/index
+  modules/index
