@@ -1,10 +1,10 @@
-.. tensorcv documentation master file, created by
-   sphinx-quickstart on Sun Sep 24 15:30:54 2017.
+.. DeepVision-TensorFlow documentation master file, created by
+   sphinx-quickstart on Sun Sep 24 16:49:23 2017.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to tensorcv's documentation!
-====================================
+Welcome to DeepVision-TensorFlow's documentation!
+=================================================
 
 .. toctree::
    :maxdepth: 2

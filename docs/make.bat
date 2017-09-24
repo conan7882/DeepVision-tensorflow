@@ -9,7 +9,7 @@ if "%SPHINXBUILD%" == "" (
 )
 set SOURCEDIR=.
 set BUILDDIR=_build
-set SPHINXPROJ=tensorcv
+set SPHINXPROJ=DeepVision-TensorFlow
 
 if "%1" == "" goto help
 
