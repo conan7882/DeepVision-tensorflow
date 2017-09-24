@@ -42,6 +42,13 @@ extensions = ['sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages']
 
+# -- Configurations for plugins ------------
+napoleon_google_docstring = True
+napoleon_include_init_with_doc = True
+napoleon_include_special_with_doc = True
+napoleon_numpy_docstring = False
+napoleon_use_rtype = False
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
@@ -85,6 +92,24 @@ language = None
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'README.md']
+
+# If true, '()' will be appended to :func: etc. cross-reference text.
+add_function_parentheses = True
+
+# If true, the current module name will be prepended to all description
+# unit titles (such as .. function::).
+add_module_names = True
+# 'tensorpack.' prefix was removed by js
+
+# If true, sectionauthor and moduleauthor directives will be shown in the
+# output. They are ignored by default.
+show_authors = False
+
+# A list of ignored prefixes for module index sorting.
+modindex_common_prefix = ['package.']
+
+# If true, keep warnings as "system message" paragraphs in the built documents.
+keep_warnings = False
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
