@@ -9,7 +9,7 @@ import numpy as np
 
 from ..utils.common import get_tensors_by_names, save_merge_images
 
-__all__ = ['PredictionBase', 'PredictionImage']
+__all__ = ['PredictionImage']
 
 def assert_type(v, tp):
     assert isinstance(v, tp), \
