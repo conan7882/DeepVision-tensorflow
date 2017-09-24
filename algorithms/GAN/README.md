@@ -9,11 +9,18 @@ You can run this script on CIFAR10, MNIST dataset as well as custom dataset in f
 
 To train on CIFAR10:
 ```bash
-python DCGAN.py --train --cifar
+python DCGAN.py --train --cifar --batch_size 32
 ```
 
-To train on CIFAR10:
+To train on MNIST:
 ```bash
-python DCGAN.py --train --cifar
+python DCGAN.py --train --mnist --batch_size 32
 ```
+
+To train custom dataset in .mat files:
+```bash
+python DCGAN.py --train --matlab --batch_size 32 --mat_name level1Edge --h 64 --w 64
+```
+
+
 
