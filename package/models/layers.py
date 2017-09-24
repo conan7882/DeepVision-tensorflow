@@ -5,6 +5,7 @@
 import tensorflow as tf
 import numpy as np
 
+
 def conv(x, filter_size, out_dim, 
          name = 'conv', stride = 1, 
          padding = 'SAME',
