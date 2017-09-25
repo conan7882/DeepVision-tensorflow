@@ -26,13 +26,14 @@ On .mat files:
 
 On images files:
 
-	$ python DCGAN.py --train --image --batch_size 32 --type 	IMAGE_FILE_EXTENSION(start with '.') --h IMAGE_HEIGHT --w IMAGE_WIDTH --input_channel NUM_INPUT_CHANNEL
+	$ python DCGAN.py --train --image --batch_size 32 --type IMAGE_FILE_EXTENSION(start with '.')\
+	 --h IMAGE_HEIGHT --w IMAGE_WIDTH --input_channel NUM_INPUT_CHANNEL
 	
 **Please note, the batch size has to be the same for both training and testing.**
 
 ## Default Summary
 ### Scalar:
-- loss of both generator and discriminator
+- loss of generator and discriminator
 
 ### Histogram:
 - gradients of generator and discriminator
@@ -45,12 +46,12 @@ On images files:
 *details can be found in docs (comming soon)*
 ### Available callbacks:
 
-- TrainSummary
-- CheckScalar
-- GANInference
+- TrainSummary()
+- CheckScalar()
+- GANInference()
  
 ### Available inferencer:
-- InferImages
+- InferImages()
 
 ## Results
 
