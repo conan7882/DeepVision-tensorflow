@@ -35,7 +35,7 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.napoleon',
     #'sphinx.ext.autosectionlabel',
-    #'sphinx.ext.coverage',
+    'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
     'sphinx.ext.intersphinx',
     'sphinx.ext.viewcode',
@@ -53,7 +53,7 @@ if os.environ.get('READTHEDOCS') == 'True':
 else:
     # skip this when building locally
     intersphinx_timeout = 0.1
-intersphinx_mapping = {'python': ('https://docs.python.org/3.4', None)}
+intersphinx_mapping = {'python': ('https://docs.python.org/3.6', None)}
 # -------------------------
 
 # Add any paths that contain templates here, relative to this directory.

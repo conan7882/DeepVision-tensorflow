@@ -7,7 +7,6 @@ Submodules
 package\.predicts\.base module
 ------------------------------
 
-
 .. automodule:: package.predicts.base
     :members:
     :undoc-members:
