@@ -6,17 +6,17 @@ import argparse
 import numpy as np
 import tensorflow as tf
 
-import package
-from package.dataflow import *
-from package.callbacks import *
-from package.predicts import *
-from package.models.layers import *
-from package.models.losses import *
-from package.predicts.simple import SimpleFeedPredictor
-from package.models.base import GANBaseModel
-from package.train.config import GANTrainConfig
-from package.train.simple import GANFeedTrainer
-from package.utils.common import deconv_size
+import tensorcv
+from tensorcv.dataflow import *
+from tensorcv.callbacks import *
+from tensorcv.predicts import *
+from tensorcv.models.layers import *
+from tensorcv.models.losses import *
+from tensorcv.predicts.simple import SimpleFeedPredictor
+from tensorcv.models.base import GANBaseModel
+from tensorcv.train.config import GANTrainConfig
+from tensorcv.train.simple import GANFeedTrainer
+from tensorcv.utils.common import deconv_size
 
 
 class Model(GANBaseModel):

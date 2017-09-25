@@ -1,10 +1,10 @@
 from setuptools import setup
 
-setup(name='package',
+setup(name='tensorcv',
       version='0.1',
       description=' ',
       url='https://github.com/conan7882/DeepVision-tensorflow',
-      author='Qian',
+      author='Qian Ge',
       author_email='geqian1001@gmail.com',
-      packages=['package'],
+      packages=['tensorcv'],
       zip_safe=False)

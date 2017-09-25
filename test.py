@@ -3,21 +3,21 @@ import argparse
 import numpy as np
 import tensorflow as tf
 
-from package.dataflow.matlab import MatlabData
-from package.models.layers import *
-from package.models.base import BaseModel
-from package.utils.common import apply_mask, get_tensors_by_names
-from package.train.config import TrainConfig
-from package.predicts.config import PridectConfig
-from package.train.simple import SimpleFeedTrainer
-from package.callbacks.saver import ModelSaver
-from package.callbacks.summary import TrainSummary
-from package.callbacks.inference import FeedInference
-from package.callbacks.monitors import TFSummaryWriter
-from package.callbacks.inferencer import InferScalars
-from package.predicts.simple import SimpleFeedPredictor
-from package.predicts.predictions import PredictionImage
-from package.callbacks.debug import CheckScalar
+from tensorcv.dataflow.matlab import MatlabData
+from tensorcv.models.layers import *
+from tensorcv.models.base import BaseModel
+from tensorcv.utils.common import apply_mask, get_tensors_by_names
+from tensorcv.train.config import TrainConfig
+from tensorcv.predicts.config import PridectConfig
+from tensorcv.train.simple import SimpleFeedTrainer
+from tensorcv.callbacks.saver import ModelSaver
+from tensorcv.callbacks.summary import TrainSummary
+from tensorcv.callbacks.inference import FeedInference
+from tensorcv.callbacks.monitors import TFSummaryWriter
+from tensorcv.callbacks.inferencer import InferScalars
+from tensorcv.predicts.simple import SimpleFeedPredictor
+from tensorcv.predicts.predictions import PredictionImage
+from tensorcv.callbacks.debug import CheckScalar
 
 class Model(BaseModel):
     def __init__(self, num_channels = 3, num_class = 2, 
