@@ -380,7 +380,7 @@ def setup(app):
     app.add_config_value(
         'recommonmark_config',
         {
-        'url_resolver': url_resolver,
+        # 'url_resolver': url_resolver,
          'auto_toc_tree_section': 'Contents',
          'enable_math': True,
          'enable_inline_math': True,
