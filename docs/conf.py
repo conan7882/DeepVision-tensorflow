@@ -20,7 +20,7 @@ for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock(name=mod_name)
 sys.modules['cv2'].__version__ = '3.2.1'    # fake version
 
-import package
+# import package
 
 # -- General configuration ------------------------------------------------
 
@@ -380,7 +380,7 @@ def setup(app):
     app.add_config_value(
         'recommonmark_config',
         {
-        # 'url_resolver': url_resolver,
+        'url_resolver': url_resolver,
          'auto_toc_tree_section': 'Contents',
          'enable_math': True,
          'enable_inline_math': True,
