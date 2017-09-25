@@ -5,7 +5,7 @@ import inspect
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath('../'))
 # os.environ['tensorcv_DOC_BUILDING'] = '1'
 
 
@@ -128,7 +128,7 @@ pygments_style = 'sphinx'
 modindex_common_prefix = ['tensorcv.']
 
 # If true, keep warnings as "system message" paragraphs in the built documents.
-keep_warnings = False
+keep_warnings = True
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
