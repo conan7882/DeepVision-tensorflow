@@ -71,7 +71,10 @@ class PredictionImage(PredictionBase):
                 save_prefix, merge_im = False):
         """
         Args:
-            merge_im (bool): merge output of one batch
+            prediction_image_tensors (list): a list of tensor names
+            save_prefix (list): a list of file prefix for saving 
+                                each tensor in prediction_image_tensors
+            merge_im (bool): merge output of one batch or not
         """
         self._merge = merge_im
         super(PredictionImage, self).__init__(prediction_tensors = prediction_image_tensors, 
@@ -82,7 +85,7 @@ class PredictionImage(PredictionBase):
         for re, prefix in zip(results, self._prefix_list):
             cur_global_ind = self._global_ind
             if self._merge and re.shape[0] > 1:
-                grid_size = self.grid_size(re.shape[0])
+                grid_size = self._grid_size(re.shape[0])
                 save_path = os.path.join(self._save_dir, 
                                str(cur_global_ind) + '_' + prefix + '.png')
                 save_merge_images(np.squeeze(re), 
@@ -96,7 +99,7 @@ class PredictionImage(PredictionBase):
                     cur_global_ind += 1
         self._global_ind = cur_global_ind
 
-    def grid_size(self, batch_size):
+    def _grid_size(self, batch_size):
         try:
             return self._grid_size 
         except AttributeError:
