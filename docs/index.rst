@@ -11,6 +11,7 @@ Welcome to DeepVision-TensorFlow's documentation!
 
   modules/index
   .. automodule:: package.predicts
-  .. autoclass:: PredictionBase
+  .. automodule:: package.predicts.predictions
+  .. autoclass:: package.predicts.predictions.PredictionBase
 
 
