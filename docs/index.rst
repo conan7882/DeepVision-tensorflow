@@ -10,5 +10,7 @@ Welcome to DeepVision-TensorFlow's documentation!
   :maxdepth: 3
 
   modules/index
+  .. automodule:: package.predicts
+  .. autoclass:: PredictionBase
 
 
