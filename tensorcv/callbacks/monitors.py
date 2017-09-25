@@ -24,7 +24,7 @@ class Monitors(TrainingMonitor):
             assert_type(mon, TrainingMonitor)
         self.mons = mons
 
-    def process_summary(self, summary):
+    def _process_summary(self, summary):
         for mon in self.mons:
             mon.process_summary(summary)
 
