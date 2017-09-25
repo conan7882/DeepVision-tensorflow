@@ -21,11 +21,12 @@ To train on custom dataset, input image size and channels need to be specified:
 
 On .mat files:
 
-	$ python DCGAN.py --train --matlab --batch_size 32 --mat_name MAT_NAME_IN_MAT_FILE --h IMAGE_HEIGHT --w IMAGE_WIDTH --input_channel NUM_INPUT_CHANNEL
+	$ python DCGAN.py --train --matlab --batch_size 32 --mat_name MAT_NAME_IN_MAT_FILE\
+	 --h IMAGE_HEIGHT --w IMAGE_WIDTH --input_channel NUM_INPUT_CHANNEL
 
 On images files:
 
-	$ python DCGAN.py --train --image --batch_size 32 --type IMAGE_FILE_EXTENSION MAT_NAME_IN_MAT_FILE(start with '.') --h IMAGE_HEIGHT --w IMAGE_WIDTH --input_channel NUM_INPUT_CHANNEL
+	$ python DCGAN.py --train --image --batch_size 32 --type 	IMAGE_FILE_EXTENSION(start with '.') --h IMAGE_HEIGHT --w IMAGE_WIDTH --input_channel NUM_INPUT_CHANNEL
 	
 **Please note, the batch size has to be the same for both training and testing.**
 
@@ -54,8 +55,11 @@ On images files:
 ## Results
 
 ### CIFAR10
+![cifar_result1](fig/cifar_result.png)
 
 ### MNIST
+
+![MNIST_result1](fig/mnist_result.png)
 
 *More results will be added later.*
 
