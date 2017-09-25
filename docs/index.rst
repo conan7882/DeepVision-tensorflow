@@ -5,13 +5,13 @@
 
 Welcome to DeepVision-TensorFlow's documentation!
 =================================================
-
 .. toctree::
-  :maxdepth: 3
-
-  modules/index
+   :maxdepth: 2
+ 
 .. automodule:: package.predicts
 .. automodule:: package.predicts.predictions
 .. autoclass:: package.predicts.predictions.PredictionBase
+
+
 
 
