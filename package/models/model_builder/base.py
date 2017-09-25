@@ -1,64 +1,71 @@
+# File: base.py
+# Author: Qian Ge <geqian1001@gmail.com>
+
 from abc import abstractmethod
 
 import tensorflow as tf
 import numpy as np
 
-from .losses import *
 
+__all__ = ['BaseBuilder']
 
-__all__ = ['ModelDes', 'BaseModel', 'GANBaseModel']
-
-class ModelDes(object):
-    """ base model for ModelDes """
-
-    def set_batch_size(self, val):
-        self._batch_size = val
-
-    def get_batch_size(self):
-        return self._batch_size
-
-    def set_is_training(self, is_training = True):
-        self.is_training = is_training
-
-    def get_placeholder(self):
-        return self._get_placeholder()
-
-    def _get_placeholder(self):
-        return []
-
-    # TODO to be modified
-    def get_prediction_placeholder(self):
-        return self._get_prediction_placeholder()
-
-    def _get_prediction_placeholder(self):
-        return []
-
-    def get_graph_feed(self):
-        return self._get_graph_feed()
-
-    def _get_graph_feed(self):
-        return {}
-
-    def create_graph(self):
-        self._create_graph()
-        self._setup_graph()
-        # self._setup_summary()
-
-    @abstractmethod
-    def _create_graph(self):
-        raise NotImplementedError()
-
-    def _setup_graph(self):
+class BaseBuilder(object):
+    """ base model for model builder """
+    def __init__(self):
+        self.input = []
+        self.output = []
+    def Add(self, BaseLayer):
+        """ add one layer """
         pass
 
-    # TDDO move outside of class
-    # summary will be created before prediction
-    # which is unnecessary
-    def setup_summary(self):
-        self._setup_summary()
+    # def set_batch_size(self, val):
+    #     self._batch_size = val
 
-    def _setup_summary(self):
-        pass
+    # def get_batch_size(self):
+    #     return self._batch_size
+
+    # def set_is_training(self, is_training = True):
+    #     self.is_training = is_training
+
+    # def get_placeholder(self):
+    #     return self._get_placeholder()
+
+    # def _get_placeholder(self):
+    #     return []
+
+    # # TODO to be modified
+    # def get_prediction_placeholder(self):
+    #     return self._get_prediction_placeholder()
+
+    # def _get_prediction_placeholder(self):
+    #     return []
+
+    # def get_graph_feed(self):
+    #     return self._get_graph_feed()
+
+    # def _get_graph_feed(self):
+    #     return {}
+
+    # def create_graph(self):
+    #     self._create_graph()
+    #     self._setup_graph()
+    #     # self._setup_summary()
+
+    # @abstractmethod
+    # def _create_graph(self):
+    #     raise NotImplementedError()
+
+    # def _setup_graph(self):
+    #     pass
+
+    # # TDDO move outside of class
+    # # summary will be created before prediction
+    # # which is unnecessary
+    # def setup_summary(self):
+    #     self._setup_summary()
+
+    # def _setup_summary(self):
+    #     pass
 
     
 class BaseModel(ModelDes):
@@ -146,23 +153,19 @@ class GANBaseModel(ModelDes):
                                             name = gen_data_name)
             
         with tf.variable_scope('discriminator') as scope:
-            self.d_real = self._discriminator(real_data)
+            d_real = self._discriminator(real_data)
             scope.reuse_variables()
-            self.d_fake = self._discriminator(gen_data)
+            d_fake = self._discriminator(gen_data)
 
         with tf.name_scope('discriminator_out'):
             tf.summary.histogram('discrim_real', 
-                                 tf.nn.sigmoid(self.d_real), 
+                                 tf.nn.sigmoid(d_real), 
                                  collections = [self.d_collection])
             tf.summary.histogram('discrim_gen', 
-                                  tf.nn.sigmoid(self.d_fake), 
+                                  tf.nn.sigmoid(d_fake), 
                                   collections = [self.d_collection])
 
-        return gen_data, sample_gen_data, self.d_real, self.d_fake
-
-    def def_loss(self, dis_loss_fnc, gen_loss_fnc):
-        self.d_loss = dis_loss_fnc(self.d_real, self.d_fake, name = 'd_loss')
-        self.g_loss = gen_loss_fnc(self.d_fake, name = 'g_loss')
+        return gen_data, sample_gen_data, d_real, d_fake
 
     # def get_random_input_feed(self):
     #     return self._get_random_input_feed()
@@ -185,16 +188,10 @@ class GANBaseModel(ModelDes):
             return self.g_optimizer
 
     def _get_discriminator_optimizer(self):
-        # TODO use for future
-        self.d_optimizer = tf.train.AdamOptimizer(beta1=0.5,
-                        learning_rate = self.dis_learning_rate)
-        return self.d_optimizer
+        raise NotImplementedError()
 
     def _get_generator_optimizer(self):
-        # TODO use for future
-        self.g_optimizer = tf.train.AdamOptimizer(beta1=0.5,
-                        learning_rate = self.gen_learning_rate)
-        return self.g_optimizer
+        raise NotImplementedError()
 
     def get_discriminator_loss(self):
         try: 
@@ -215,11 +212,10 @@ class GANBaseModel(ModelDes):
             return self.g_loss
 
     def _get_discriminator_loss(self):
-        return GAN_discriminator_loss(self.d_real, self.d_fake, 
-                                    name = 'd_loss')
+        raise NotImplementedError()
 
     def _get_generator_loss(self):
-        return GAN_generator_loss(self.d_fake, name = 'g_loss')
+        raise NotImplementedError()
 
     def get_discriminator_grads(self):
         try:
@@ -252,17 +248,17 @@ class GANBaseModel(ModelDes):
                         for grad, var in self.g_grads]
             return self.g_grads
 
-    # @staticmethod
-    # def comp_loss_fake(discrim_output):
-    #     return tf.reduce_mean(
-    #         tf.nn.sigmoid_cross_entropy_with_logits(logits = discrim_output, 
-    #                                 labels = tf.zeros_like(discrim_output)))
+    @staticmethod
+    def comp_loss_fake(discrim_output):
+        return tf.reduce_mean(
+            tf.nn.sigmoid_cross_entropy_with_logits(logits = discrim_output, 
+                                    labels = tf.zeros_like(discrim_output)))
 
-    # @staticmethod
-    # def comp_loss_real(discrim_output):
-    #     return tf.reduce_mean(
-    #         tf.nn.sigmoid_cross_entropy_with_logits(logits = discrim_output, 
-    #                                  labels = tf.ones_like(discrim_output)))
+    @staticmethod
+    def comp_loss_real(discrim_output):
+        return tf.reduce_mean(
+            tf.nn.sigmoid_cross_entropy_with_logits(logits = discrim_output, 
+                                     labels = tf.ones_like(discrim_output)))
 
 
 

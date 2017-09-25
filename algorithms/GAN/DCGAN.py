@@ -11,6 +11,7 @@ from package.dataflow import *
 from package.callbacks import *
 from package.predicts import *
 from package.models.layers import *
+from package.models.losses import *
 from package.predicts.simple import SimpleFeedPredictor
 from package.models.base import GANBaseModel
 from package.train.config import GANTrainConfig
@@ -44,27 +45,6 @@ class Model(GANBaseModel):
         self.gen_image, self.sample_image, \
         self.discrim_real, self.discrim_gen = \
         self.create_GAN(self.real_data, 'gen_image')
-
-    def _get_discriminator_loss(self):
-        with tf.name_scope('d_loss'):
-            print('------------- _get_discriminator_loss -----------------')
-            d_loss_real = self.comp_loss_real(self.discrim_real)
-            d_loss_fake = self.comp_loss_fake(self.discrim_gen)
-            return tf.identity(d_loss_real + d_loss_fake, name = 'result')
-        
-    def _get_generator_loss(self):
-        with tf.name_scope('g_loss'):
-            print('------------- _get_generator_loss -----------------')
-            return tf.identity(self.comp_loss_real(self.discrim_gen), 
-                               name = 'result')
-
-    def _get_discriminator_optimizer(self):
-        return tf.train.AdamOptimizer(beta1=0.5,
-                        learning_rate = self.dis_learning_rate)
-
-    def _get_generator_optimizer(self):
-        return tf.train.AdamOptimizer(beta1=0.5,
-                        learning_rate = self.gen_learning_rate) 
 
     def _generator(self, train = True):
 
@@ -143,6 +123,8 @@ class Model(GANBaseModel):
         return fc5
 
     def _setup_summary(self):
+        g_loss = tf.identity(self.get_generator_loss(), 'g_loss_check')
+        d_loss = tf.identity(self.get_discriminator_loss(), 'd_loss_check')
         with tf.name_scope('generator_summary'):
             tf.summary.image('generate_sample', 
                              tf.cast(self.sample_image, tf.float32), 
@@ -192,7 +174,8 @@ def get_config(FLAGS):
                 # ModelSaver(periodic = 100,
                 #            checkpoint_dir = FLAGS.checkpoint_dir), 
                 TrainSummary(key = 'summary_d', periodic = 10),
-                CheckScalar(['d_loss/result','g_loss/result','generator/dconv5/gen_shape'], 
+                CheckScalar(['d_loss/result','g_loss/result','generator/dconv5/gen_shape',
+                             'd_loss_check', 'g_loss_check'], 
                             periodic = 10),
               ],
             generator_callbacks = [
