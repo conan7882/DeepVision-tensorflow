@@ -1,34 +1,25 @@
 ## Deep Convolutional Generative Adversarial Networks (DCGAN)
 
+Model for [DCGAN](https://arxiv.org/abs/1511.06434)
 
-TensorFlow implementation of [Unsupervised Representation Learning with Deep Convolutional Generative Adversarial Networks](https://arxiv.org/abs/1511.06434). 
+*Details of how to write your own GAN modedl and callbacks configuration can be found in docs (comming soon).*
 
-## Usage
+## Implementation Details
+#### Generator
 
-You can run this script on CIFAR10, MNIST dataset as well as custom dataset in format of Matlab .mat files and image files.
+#### Discriminator
 
-To train a model in CIFAR10 and MNIST:
+#### Loss function
 
-	$ python DCGAN.py --train --cifar --batch_size 32
-	$ python DCGAN.py --train --mnist --batch_size 32
+#### Optimizer
 
+#### Variable initialization
 
-To train on custom dataset:
+#### Batch normal and LeakyReLu
 
-.mat files:
-
-	$ python DCGAN.py --train --matlab --batch_size 32 --mat_name MAT_NAME_IN_MAT_FILE
-
-images files:
-
-	$ python DCGAN.py --train --image --batch_size 32 --type IMAGE_FILE_EXTENSION(start with '.')
-	 
-To test using an exist model, input image size and channels need to be specified, and the batch size has to be the same as training:
-
-	$ python DCGAN.py --predict --batch_size SAME_AS_TRAINING \
-	--h IMAGE_HEIGHT --w IMAGE_WIDTH --input_channel NUM_INPUT_CHANNEL
-	
-**Please note, all the images should have the same size.**
+#### Training settings
+- training rate
+- training step
 
 ## Default Summary
 ### Scalar:
@@ -41,8 +32,8 @@ To test using an exist model, input image size and channels need to be specified
 ### Image
 - real image and generated image
 
-## Costum Configuration
-*details can be found in docs (comming soon)*
+## Callbacks
+
 ### Available callbacks:
 
 - TrainSummary()
@@ -52,18 +43,32 @@ To test using an exist model, input image size and channels need to be specified
 ### Available inferencer:
 - InferImages()
 
+### Availabel predictor
+- PredictionImage()
+
+## Test 
+To test this model on MNIST dataset, first put all the directories in *config.py*.
+
+For training:
+
+	$ python DCGAN.py --train --batch_size 32
+	
+For testing, the batch size has to be the same as training:
+
+	$ python DCGAN.py --predict --batch_size 32
+	
+
+An example implementation of DCGAN using this model can be found [here](https://github.com/conan7882/tensorflow-DCGAN). This example is able to run on CIFAR10, MNIST dataset as well as your own dataset in format of Matlab .mat files and image files.
+
 ## Results
-
-### CIFAR10
-![cifar_result1](fig/cifar_result.png)
-
+*More results can be found [here](https://github.com/conan7882/tensorflow-DCGAN).*
 ### MNIST
 
 ![MNIST_result1](fig/mnist_result.png)
 
-*More results will be added later.*
 
-
+## Reference 
+- [Unsupervised Representation Learning with Deep Convolutional Generative Adversarial Networks.](https://arxiv.org/abs/1511.06434)
 
 
 
