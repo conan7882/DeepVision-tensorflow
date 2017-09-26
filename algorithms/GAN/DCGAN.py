@@ -18,6 +18,7 @@ from tensorcv.train.config import GANTrainConfig
 from tensorcv.train.simple import GANFeedTrainer
 from tensorcv.utils.common import deconv_size
 
+import config
 
 class Model(GANBaseModel):
     def __init__(self, 
@@ -139,11 +140,11 @@ class Model(GANBaseModel):
 
 def get_config(FLAGS):
     if FLAGS.mnist:
-        dataset_train = MNIST('train', data_dir = FLAGS.data_dir, normalize = 'tanh')
+        dataset_train = MNIST('train', data_dir = config.data_dir, normalize = 'tanh')
         FLAGS.input_channel = 1
         im_size = [28, 28]
     elif FLAGS.cifar:
-        dataset_train = CIFAR(data_dir = FLAGS.data_dir, normalize = 'tanh')
+        dataset_train = CIFAR(data_dir = config.data_dir, normalize = 'tanh')
         FLAGS.input_channel = 3
         im_size = [32, 32]
     elif FLAGS.matlab:
@@ -152,27 +153,26 @@ def get_config(FLAGS):
         dataset_train = MatlabData(
                                num_channels = FLAGS.input_channel,
                                mat_name_list = mat_name_list,
-                               data_dir = FLAGS.data_dir,
+                               data_dir = config.data_dir,
                                normalize = 'tanh')
     elif FLAGS.image:
         im_size = [FLAGS.h, FLAGS.w]
-        dataset_train = ImageData('.png', data_dir = FLAGS.data_dir,
+        dataset_train = ImageData('.png', data_dir = config.data_dir,
                                    num_channels = FLAGS.input_channel,
                                    normalize = 'tanh')
 
-    inference_list = InferImages('generator/gen_image', prefix = 'gen',
-                                  save_dir = FLAGS.infer_dir)
+    inference_list = InferImages('generator/gen_image', prefix = 'gen')
     random_feed = RandomVec(len_vec = FLAGS.len_vec)
+    
     return GANTrainConfig(
             dataflow = dataset_train, 
             model = Model(input_vec_length = FLAGS.len_vec, 
                           num_channels = FLAGS.input_channel, 
                           im_size = im_size, 
                           learning_rate = [0.0002, 0.0002]),
-            monitors = TFSummaryWriter(summary_dir = FLAGS.summary_dir),
+            monitors = TFSummaryWriter(),
             discriminator_callbacks = [
-                # ModelSaver(periodic = 100,
-                #            checkpoint_dir = FLAGS.checkpoint_dir), 
+                ModelSaver(periodic = 100), 
                 TrainSummary(key = 'summary_d', periodic = 10),
                 CheckScalar(['d_loss/result','g_loss/result','generator/dconv5/gen_shape',
                              'd_loss_check', 'g_loss_check'], 
@@ -186,7 +186,8 @@ def get_config(FLAGS):
             batch_size = FLAGS.batch_size, 
             max_epoch = 1000,
             summary_d_periodic = 10, 
-            summary_g_periodic = 10)
+            summary_g_periodic = 10,
+            default_dirs = config)
 
 def get_predictConfig(FLAGS):
     random_feed = RandomVec(len_vec = FLAGS.len_vec)
@@ -198,35 +199,13 @@ def get_predictConfig(FLAGS):
                          model = Model(input_vec_length = FLAGS.len_vec, 
                                        num_channels = FLAGS.input_channel, 
                                        im_size = im_size),
-                         model_name = 'model-300', 
-                         model_dir = FLAGS.model_dir, 
-                         result_dir = FLAGS.result_dir, 
+                         model_name = 'model-100', 
                          predictions = prediction_list,
-                         batch_size = FLAGS.batch_size)
+                         batch_size = FLAGS.batch_size,
+                         default_dirs = config)
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--data_dir', 
-        help = 'Directory of input data.',
-        default = 'D:\\GoogleDrive_Qian\\Foram\\Training\\CNN_GAN_ORIGINAL_64\\')
-        # default = 'D:\\Qian\\GitHub\\workspace\\tensorflow-DCGAN\\cifar-10-python.tar\\')
-        # default = 'D:\\Qian\\GitHub\\workspace\\tensorflow-DCGAN\\MNIST_data\\')
-    parser.add_argument('--infer_dir', 
-        help = 'Directory for saving inference data.',
-        default = 'D:\\Qian\\GitHub\\workspace\\test\\result\\')
-    parser.add_argument('--summary_dir', 
-        help = 'Directory for saving summary.',
-        default = 'D:\\Qian\\GitHub\\workspace\\test\\')
-    parser.add_argument('--checkpoint_dir', 
-        help = 'Directory for saving checkpoint.',
-        default = 'D:\\Qian\\GitHub\\workspace\\test\\')
-
-    parser.add_argument('--model_dir', 
-        help = 'Directory for restoring checkpoint.',
-        default = 'D:\\Qian\\GitHub\\workspace\\test\\')
-    parser.add_argument('--result_dir', 
-        help = 'Directory for saving prediction results.',
-        default = 'D:\\Qian\\GitHub\\workspace\\test\\2\\')
 
     parser.add_argument('--len_vec', default = 100, type = int,
                         help = 'Length of input random vector')

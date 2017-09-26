@@ -22,7 +22,9 @@ class TrainConfig(object):
                  session_creator = None,
                  monitors = None,
                  batch_size = 1, max_epoch = 100,
-                 summary_periodic = None):
+                 summary_periodic = None,
+                 default_dirs = None):
+        self.default_dirs = default_dirs
 
         assert_type(monitors, TFSummaryWriter), \
         "monitors has to be TFSummaryWriter at this point!"
@@ -75,7 +77,8 @@ class GANTrainConfig(TrainConfig):
                  session_creator = None,
                  monitors = None,
                  batch_size = 1, max_epoch = 100,
-                 summary_d_periodic = None, summary_g_periodic = None):
+                 summary_d_periodic = None, summary_g_periodic = None,
+                 default_dirs = None):
 
         assert_type(model, GANBaseModel)
 
@@ -103,7 +106,8 @@ class GANTrainConfig(TrainConfig):
                     callbacks = callbacks,
                     session_creator = session_creator,
                     monitors = monitors,
-                    batch_size = batch_size, max_epoch = max_epoch)
+                    batch_size = batch_size, max_epoch = max_epoch,
+                    default_dirs = default_dirs)
     @property
     def dis_callbacks(self):
         return self._dis_callbacks

@@ -1,7 +1,7 @@
 # File: inference.py
 # Author: Qian Ge <geqian1001@gmail.com>
 
-from abc import ABCMeta
+import os
 
 import numpy as np
 import tensorflow as tf
@@ -17,9 +17,9 @@ class InferencerBase(Callback):
         if not isinstance(self._names, list):
             self._names = [self._names]
         self._names = get_tensors_by_names(self._names)
-        self._setup_inference()
+        self._setup_inference(self.trainer.default_dirs)
 
-    def _setup_inference(self):
+    def _setup_inference(self, default_dirs = None):
         pass
 
     def put_fetch(self):
@@ -55,14 +55,16 @@ class InferencerBase(Callback):
         return None
 
 class InferImages(InferencerBase):
-    def __init__(self, gen_name, save_dir = None, prefix = None):
-        check_dir(save_dir)
-        self._save_dir = save_dir
-        # TODO get global step
-        self._save_id = 0
-
+    def __init__(self, gen_name, prefix = None):
         self._names, self._prefix = match_tensor_save_name(gen_name, prefix)
 
+    def _setup_inference(self, default_dirs = None):
+        try:
+            self._save_dir = os.path.join(self.trainer.default_dirs.infer_dir)
+            check_dir(self._save_dir)
+        except AttributeError:
+            raise AttributeError('summary_dir is not set in infer_dir.py!')
+        
     def _get_fetch(self, val):
         self._result_im = val.results
 
@@ -73,7 +75,6 @@ class InferImages(InferencerBase):
         for im, save_name in zip(self._result_im, self._prefix): 
             save_merge_images(im, grid_size, 
                 self._save_dir + save_name + '_' + str(self.global_step) + '.png')
-        self._save_id += 1
         return None
 
 class InferScalars(InferencerBase):

@@ -3,6 +3,7 @@ import os
 import tensorflow as tf
 
 from .base import Callback
+from ..utils.common import check_dir
 
 __all__ = ['TrainingMonitor','Monitors','TFSummaryWriter']
 
@@ -29,14 +30,14 @@ class Monitors(TrainingMonitor):
             mon.process_summary(summary)
 
 class TFSummaryWriter(TrainingMonitor):
-    def __init__(self, summary_dir = None):
-        assert summary_dir is not None, "save summary_dir cannot be None"
-        assert os.path.isdir(summary_dir)
-        self.summary_dir = summary_dir
 
     def _setup_graph(self):
-        self.path = os.path.join(self.summary_dir)
-        self._writer = tf.summary.FileWriter(self.path)
+        try:
+            summary_dir = os.path.join(self.trainer.default_dirs.summary_dir)
+            check_dir(summary_dir)
+        except AttributeError:
+            raise AttributeError('summary_dir is not set in config.py!')
+        self._writer = tf.summary.FileWriter(summary_dir)
 
     def _before_train(self):
         # default to write graph

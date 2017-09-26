@@ -1,12 +1,12 @@
 import scipy.misc
 import os
-from abc import ABCMeta
 import os
 
 import numpy as np
 import tensorflow as tf
 
 from .base import Callback
+from ..utils.common import check_dir
 
 __all__ = ['ModelSaver']
 
@@ -26,17 +26,19 @@ class ModelSaver(Callback):
             var_collections = [var_collections]
         self.var_collections = var_collections
 
-        assert checkpoint_dir is not None, "checkpoint_dir cannot be None"
-        assert os.path.isdir(checkpoint_dir)
-        self.checkpoint_dir = checkpoint_dir
-
     def _setup_graph(self):
-        self.path = os.path.join(self.checkpoint_dir, 'model')
-        self.saver = tf.train.Saver()
+        try:
+            checkpoint_dir = os.path.join(self.trainer.default_dirs.checkpoint_dir)
+            check_dir(checkpoint_dir)
+        except AttributeError:
+            raise AttributeError('summary_dir is not set in checkpoint_dir.py!')
+
+        self._save_path = os.path.join(checkpoint_dir, 'model')
+        self._saver = tf.train.Saver()
 
     def _trigger_step(self):
         if self.global_step % self._periodic == 0:
-            self.saver.save(tf.get_default_session(), self.path, 
+            self._saver.save(tf.get_default_session(), self._save_path, 
                             global_step = self.global_step)
         
 

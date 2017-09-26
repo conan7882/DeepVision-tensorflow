@@ -7,6 +7,7 @@ from ..models.base import ModelDes
 from ..utils.default import get_default_session_config
 from ..utils.sesscreate import NewSessionCreator
 from .predictions import PredictionBase
+from ..utils.common import check_dir
 
 __all__ = ['PridectConfig']
 
@@ -18,13 +19,25 @@ class PridectConfig(object):
     def __init__(self, 
                  dataflow = None, model = None,
                  model_dir = None, model_name = '',
-                 result_dir = None,
-                 predictions = None,
                  session_creator = None,
-                 batch_size = 1):
+                 predictions = None,
+                 batch_size = 1,
+                 default_dirs = None):
         """
         Args:
         """
+        self.model_name = model_name
+        try:
+            self.model_dir = os.path.join(default_dirs.model_dir)
+            check_dir(self.model_dir)
+        except AttributeError:
+            raise AttributeError('summary_dir is not set in model_dir.py!')
+
+        try:
+            self.result_dir = os.path.join(default_dirs.result_dir)
+            check_dir(self.result_dir)
+        except AttributeError:
+            raise AttributeError('summary_dir is not set in result_dir.py!')
 
         assert dataflow is not None, "dataflow cannot be None!"
         assert_type(dataflow, DataFlow)
@@ -37,15 +50,6 @@ class PridectConfig(object):
         assert model is not None, "model cannot be None!"
         assert_type(model, ModelDes)
         self.model = model
-
-        assert model_dir is not None, "model_dir cannot be None"
-        assert os.path.isdir(model_dir)
-        self.model_dir = model_dir
-        self.model_name = model_name
-
-        assert result_dir is not None, "result_dir cannot be None"
-        assert os.path.isdir(result_dir)
-        self.result_dir = result_dir
 
         assert predictions is not None, "predictions cannot be None"
         if not isinstance(predictions, list):

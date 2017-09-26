@@ -29,6 +29,8 @@ class Trainer(object):
         self._callbacks = []
         self.monitors = []
 
+        self.default_dirs = config.default_dirs
+
     @property
     def epochs_completed(self):
         return self.dataflow.epochs_completed

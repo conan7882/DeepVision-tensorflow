@@ -23,6 +23,7 @@ class Predictor(object):
         self.model = config.model
 
         self.input = config.dataflow
+        
         self.result_dir = config.result_dir
 
         # TODO to be modified
