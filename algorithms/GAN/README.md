@@ -2,7 +2,9 @@
 
 Model for [DCGAN](https://arxiv.org/abs/1511.06434)
 
-*Details of how to write your own GAN modedl and callbacks configuration can be found in docs (comming soon).*
+An example implementation of DCGAN using this model can be found [here](https://github.com/conan7882/tensorflow-DCGAN).
+
+*Details of how to write your own GAN model and callbacks configuration can be found in docs (coming soon).*
 
 ## Implementation Details
 #### Generator
@@ -43,7 +45,7 @@ Model for [DCGAN](https://arxiv.org/abs/1511.06434)
 ### Available inferencer:
 - InferImages()
 
-### Availabel predictor
+### Available predictor
 - PredictionImage()
 
 ## Test 
@@ -57,11 +59,11 @@ For testing, the batch size has to be the same as training:
 
 	$ python DCGAN.py --predict --batch_size 32
 	
-
-An example implementation of DCGAN using this model can be found [here](https://github.com/conan7882/tensorflow-DCGAN). This example is able to run on CIFAR10, MNIST dataset as well as your own dataset in format of Matlab .mat files and image files.
+Using this model run on other dataset can be found [here](https://github.com/conan7882/tensorflow-DCGAN).
+<!--An example implementation of DCGAN using this model can be found [here](https://github.com/conan7882/tensorflow-DCGAN). This example is able to run on CIFAR10, MNIST dataset as well as your own dataset in format of Matlab .mat files and image files.-->
 
 ## Results
-*More results can be found [here](https://github.com/conan7882/tensorflow-DCGAN).*
+*More results can be found [here](https://github.com/conan7882/tensorflow-DCGAN#results).*
 ### MNIST
 
 ![MNIST_result1](fig/mnist_result.png)
