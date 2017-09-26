@@ -13,6 +13,10 @@ __all__ = ['MNIST']
 ## TODO Add batch size
 class MNIST(RNGDataFlow):
     def __init__(self, name, data_dir = '', shuffle = True, normalize = None):
+
+        self.num_channels = 1
+        self.im_size = [28, 28]
+
         assert os.path.isdir(data_dir)
         self.data_dir = data_dir
 

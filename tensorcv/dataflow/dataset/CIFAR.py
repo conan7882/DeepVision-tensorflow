@@ -13,12 +13,14 @@ __all__ = ['CIFAR']
 ## TODO Add batch size
 class CIFAR(RNGDataFlow):
     def __init__(self, data_dir = '', shuffle = True, normalize = None):
+        self.num_channels = 3
+        self.im_size = [32, 32]
+
         assert os.path.isdir(data_dir)
         self.data_dir = data_dir
 
         self.shuffle = shuffle
         self._normalize = normalize
-        self._num_channels = 3
 
         self.setup(epoch_val = 0, batch_size = 1)
         self._file_list = [os.path.join(data_dir, 'data_batch_' + str(batch_id)) for batch_id in range(1,6)]

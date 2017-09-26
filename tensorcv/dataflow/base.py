@@ -21,6 +21,28 @@ class DataFlow(object):
     def _setup(self):
         pass
 
+    # @property
+    # def channels(self):
+    #     try:
+    #         return self._num_channels
+    #     except AttributeError:
+    #         self._num_channels = self._get_channels()
+    #         return self._num_channels
+
+    # def _get_channels(self):
+    #     return 0
+
+    # @property
+    # def im_size(self):
+    #     try:
+    #         return self._im_size
+    #     except AttributeError:
+    #         self._im_size = self._get_im_size()
+    #         return self._im_size
+
+    def _get_im_size(self):
+        return 0
+
     @property
     def epochs_completed(self):
         return self._epochs_completed 

@@ -2,8 +2,9 @@
 # Author: Qian Ge <geqian1001@gmail.com>
 import os
 
-import cv2
+# import cv2
 import numpy as np 
+from scipy import misc
 
 from .common import *
 from .base import RNGDataFlow
@@ -13,21 +14,33 @@ __all__ = ['ImageData']
 ## TODO Add batch size
 class ImageData(RNGDataFlow):
     def __init__(self, ext_name, data_dir = '', 
-                 num_channels = 1,
                  shuffle = True, normalize = None):
         assert os.path.isdir(data_dir)
         self.data_dir = data_dir
 
         self.shuffle = shuffle
         self._normalize = normalize
-        if num_channels > 1:
-            self._cv_read = cv2.IMREAD_COLOR
-        else:
-            self._cv_read = cv2.IMREAD_GRAYSCALE
 
         self.setup(epoch_val = 0, batch_size = 1)
         self._load_file_list(ext_name)
+        self._get_im_size()
         self._data_id = 0
+
+        # if num_channels > 1:
+        #     self._cv_read = cv2.IMREAD_COLOR
+        # else:
+        #     self._cv_read = cv2.IMREAD_GRAYSCALE
+
+    def _get_im_size(self):
+        # Run after _load_file_list
+        # Assume all the image have the same size
+        im = misc.imread(self.im_list[0])
+        
+        if len(im.shape) < 3:
+            self.num_channels = 1
+        else:
+            self.num_channels = im.shape[2]
+        self.im_size = [im.shape[0], im.shape[1]]
     
     def _load_file_list(self, ext_name):
         # TODO load other data as well
@@ -40,7 +53,8 @@ class ImageData(RNGDataFlow):
     def _load_data(self, batch_file_path):
         input_list = []
         for file_path in batch_file_path:
-            im = cv2.imread(self.im_list[self._data_id], self._cv_read)
+            # im = cv2.imread(self.im_list[self._data_id], self._cv_read)
+            im = misc.imread(self.im_list[self._data_id])
             if len(im.shape) < 3:
                 im = np.reshape(im, [1, im.shape[0], im.shape[1], 1])
             else:

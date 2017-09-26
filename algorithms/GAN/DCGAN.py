@@ -22,16 +22,17 @@ import config
 
 class Model(GANBaseModel):
     def __init__(self, 
-                 input_vec_length = 100, num_channels = 3, 
-                 im_size = None, 
-                 learning_rate = [0.0002, 0.0002]):
+                 input_vec_length = 100, 
+                 learning_rate = [0.0002, 0.0002],
+                 num_channels = None, 
+                 im_size = None):
 
         super(Model, self).__init__(input_vec_length, learning_rate)
 
-        assert len(im_size) == 2
-        self.im_height, self.im_width = im_size
-        
-        self.num_channels = num_channels
+        if num_channels is not None and im_size is not None:
+            self.im_height, self.im_width = im_size
+            self.num_channels = num_channels
+
         self.set_is_training(True)
 
     def _get_placeholder(self):
@@ -141,24 +142,16 @@ class Model(GANBaseModel):
 def get_config(FLAGS):
     if FLAGS.mnist:
         dataset_train = MNIST('train', data_dir = config.data_dir, normalize = 'tanh')
-        FLAGS.input_channel = 1
-        im_size = [28, 28]
     elif FLAGS.cifar:
         dataset_train = CIFAR(data_dir = config.data_dir, normalize = 'tanh')
-        FLAGS.input_channel = 3
-        im_size = [32, 32]
     elif FLAGS.matlab:
-        im_size = [FLAGS.h, FLAGS.w]
         mat_name_list = FLAGS.mat_name
         dataset_train = MatlabData(
-                               num_channels = FLAGS.input_channel,
                                mat_name_list = mat_name_list,
                                data_dir = config.data_dir,
                                normalize = 'tanh')
     elif FLAGS.image:
-        im_size = [FLAGS.h, FLAGS.w]
         dataset_train = ImageData('.png', data_dir = config.data_dir,
-                                   num_channels = FLAGS.input_channel,
                                    normalize = 'tanh')
 
     inference_list = InferImages('generator/gen_image', prefix = 'gen')
@@ -167,8 +160,6 @@ def get_config(FLAGS):
     return GANTrainConfig(
             dataflow = dataset_train, 
             model = Model(input_vec_length = FLAGS.len_vec, 
-                          num_channels = FLAGS.input_channel, 
-                          im_size = im_size, 
                           learning_rate = [0.0002, 0.0002]),
             monitors = TFSummaryWriter(),
             discriminator_callbacks = [

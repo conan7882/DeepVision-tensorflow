@@ -14,7 +14,6 @@ __all__ = ['MatlabData']
 class MatlabData(RNGDataFlow):
     """ dataflow from .mat file with mask """
     def __init__(self, 
-                 num_channels = 1, 
                  data_dir = '',
                  mat_name_list = None, 
                  mat_type_list = None,
@@ -41,8 +40,21 @@ class MatlabData(RNGDataFlow):
         self._mat_type_list = mat_type_list
 
         self._load_file_list()
+        self._get_im_size()
         self._num_image = self.size()
         self._image_id = 0
+
+    def _get_im_size(self):
+        # Run after _load_file_list
+        # Assume all the image have the same size
+        mat = loadmat(self.file_list[0])
+        cur_mat = load_image_from_mat(mat, self._mat_name_list[0], 
+                                      self._mat_type_list[0])
+        if len(cur_mat.shape) < 3:
+            self.num_channels = 1
+        else:
+            self.num_channels = cur_mat.shape[2]
+        self.im_size = [cur_mat.shape[0], cur_mat.shape[1]]
         
     def _load_file_list(self):
         # data_dir = os.path.join(self.data_dir)
@@ -87,6 +99,7 @@ class MatlabData(RNGDataFlow):
                                [1, cur_data.shape[0], cur_data.shape[1]])
                 input_data[k].extend(cur_data)
         input_data = [np.array(data) for data in input_data]
+
         if self._normalize == 'tanh':
             try:
                 input_data[0] = tanh_normalization(input_data[0], self._half_in_val)

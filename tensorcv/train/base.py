@@ -22,6 +22,7 @@ class Trainer(object):
         assert_type(config, TrainConfig)
         self.config = config
         self.model = config.model
+        self.model.ex_init_model(config.dataflow)
         self.dataflow = config.dataflow
         # self.monitors = self.config.monitors
 
