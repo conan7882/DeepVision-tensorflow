@@ -16,6 +16,9 @@ class TrainingMonitor(Callback):
         pass
 
     def process_summary(self, summary):
+        self._process_summary(summary)
+
+    def _process_summary(self, summary):
         pass
 
 class Monitors(TrainingMonitor):

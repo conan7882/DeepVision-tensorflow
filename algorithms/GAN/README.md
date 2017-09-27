@@ -1,8 +1,8 @@
 ## Deep Convolutional Generative Adversarial Networks (DCGAN)
 
-Model for [DCGAN](https://arxiv.org/abs/1511.06434)
+- Model for [DCGAN](https://arxiv.org/abs/1511.06434)
 
-An example implementation of DCGAN using this model can be found [here](https://github.com/conan7882/tensorflow-DCGAN).
+- An example implementation of DCGAN using this model can be found [here](https://github.com/conan7882/tensorflow-DCGAN).
 
 *Details of how to write your own GAN model and callbacks configuration can be found in docs (coming soon).*
 

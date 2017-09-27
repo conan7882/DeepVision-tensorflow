@@ -39,14 +39,9 @@ class Model(GANBaseModel):
         # image
         return [self.real_data]
 
-    def _create_graph(self):
-        # self.Z = tf.placeholder(tf.float32, [None, self.input_vec_length])
+    def _create_input(self):
         self.real_data = tf.placeholder(tf.float32, 
                 [None, self.im_height, self.im_width, self.num_channels])
-
-        self.gen_image, self.sample_image, \
-        self.discrim_real, self.discrim_gen = \
-        self.create_GAN(self.real_data, 'gen_image')
 
     def _generator(self, train = True):
 
@@ -124,27 +119,31 @@ class Model(GANBaseModel):
 
         return fc5
 
+    def _ex_setup_graph(self):
+        gen_im = tf.identity(self.get_sample_gen_data(), 'gen_image_summary')
+
+
     def _setup_summary(self):
         g_loss = tf.identity(self.get_generator_loss(), 'g_loss_check')
         d_loss = tf.identity(self.get_discriminator_loss(), 'd_loss_check')
         with tf.name_scope('generator_summary'):
             tf.summary.image('generate_sample', 
-                             tf.cast(self.sample_image, tf.float32), 
-                             collections = ['summary_g'])
+                             tf.cast(self.get_sample_gen_data(), tf.float32), 
+                             collections = [self.g_collection])
             tf.summary.image('generate_train', 
-                             tf.cast(self.gen_image, tf.float32), 
-                             collections = ['summary_d'])
+                             tf.cast(self.get_gen_data(), tf.float32), 
+                             collections = [self.d_collection])
         with tf.name_scope('real_data'):
-            tf.summary.image('real_data', 
+            tt = tf.summary.image('real_data', 
                               tf.cast(self.real_data, tf.float32), 
-                              collections = ['summary_d'])
+                              collections = [self.d_collection])
 
 # end of model definition
 
 def get_config(FLAGS):
     dataset_train = MNIST('train', data_dir = config.data_dir, normalize = 'tanh')
 
-    inference_list = InferImages('generator/gen_image', prefix = 'gen')
+    inference_list = InferImages('gen_image_summary', prefix = 'gen')
     random_feed = RandomVec(len_vec = FLAGS.len_vec)
     
     return GANTrainConfig(
@@ -153,15 +152,15 @@ def get_config(FLAGS):
                           learning_rate = [0.0002, 0.0002]),
             monitors = TFSummaryWriter(),
             discriminator_callbacks = [
-                ModelSaver(periodic = 100), 
-                TrainSummary(key = 'summary_d', periodic = 10),
+                # ModelSaver(periodic = 100), 
+                TrainSummary(key = 'default_d', 
+                            periodic = 10),
                 CheckScalar(['d_loss_check', 'g_loss_check'], 
                             periodic = 10),
               ],
             generator_callbacks = [
                         GANInference(inputs = random_feed, periodic = 100, 
                                     inferencers = inference_list),
-                        TrainSummary(key = 'summary_g', periodic = 10),
                     ],              
             batch_size = FLAGS.batch_size, 
             max_epoch = 100,
@@ -171,7 +170,7 @@ def get_config(FLAGS):
 
 def get_predictConfig(FLAGS):
     random_feed = RandomVec(len_vec = FLAGS.len_vec)
-    prediction_list = PredictionImage('generator/gen_image', 
+    prediction_list = PredictionImage('gen_image_summary', 
                                       'test', merge_im = True)
     im_size = [FLAGS.h, FLAGS.w]
     return PridectConfig(

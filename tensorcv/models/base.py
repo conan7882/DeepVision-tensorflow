@@ -53,16 +53,31 @@ class ModelDes(object):
         return {}
 
     def create_graph(self):
-        self._create_graph()
-        self._setup_graph()
-        # self._setup_summary()
+        # self._create_graph()
+        # self._setup_graph()
+
+        self._create_input()
+        self._create_model()
+        self._ex_setup_graph()
+
+
+    @abstractmethod
+    def _create_model(self):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def _create_input(self):
+        raise NotImplementedError()  
 
     @abstractmethod
     def _create_graph(self):
         raise NotImplementedError()
 
-    def _setup_graph(self):
-        pass
+    def _ex_setup_graph(self):
+        raise NotImplementedError()
+
+    # def _setup_graph(self):
+    #     pass
 
     # TDDO move outside of class
     # summary will be created before prediction
@@ -151,17 +166,19 @@ class GANBaseModel(ModelDes):
                                  self.input_vec_length))}
         return feed
 
-    def create_GAN(self, real_data, gen_data_name = 'gen_data'):
+    def _create_model(self):
+        # TODO
+        real_data = self._get_placeholder()[0]
+
         with tf.variable_scope('generator') as scope:
-            gen_data = self._generator()
+            self.gen_data = self._generator()
             scope.reuse_variables()
-            sample_gen_data = tf.identity(self._generator(train = False), 
-                                            name = gen_data_name)
+            self.sample_gen_data = self._generator(train = False)
             
         with tf.variable_scope('discriminator') as scope:
             self.d_real = self._discriminator(real_data)
             scope.reuse_variables()
-            self.d_fake = self._discriminator(gen_data)
+            self.d_fake = self._discriminator(self.gen_data)
 
         with tf.name_scope('discriminator_out'):
             tf.summary.histogram('discrim_real', 
@@ -170,18 +187,17 @@ class GANBaseModel(ModelDes):
             tf.summary.histogram('discrim_gen', 
                                   tf.nn.sigmoid(self.d_fake), 
                                   collections = [self.d_collection])
+    def get_gen_data(self):
+        return self.gen_data
 
-        return gen_data, sample_gen_data, self.d_real, self.d_fake
+    def get_sample_gen_data(self):
+        return self.sample_gen_data
 
     def def_loss(self, dis_loss_fnc, gen_loss_fnc):
+        """ updata definintion of loss functions """
         self.d_loss = dis_loss_fnc(self.d_real, self.d_fake, name = 'd_loss')
         self.g_loss = gen_loss_fnc(self.d_fake, name = 'g_loss')
 
-    # def get_random_input_feed(self):
-    #     return self._get_random_input_feed()
-
-    # def _get_random_input_feed(self):
-    #     return {}
 
     def get_discriminator_optimizer(self):
         try:
@@ -265,17 +281,6 @@ class GANBaseModel(ModelDes):
                         for grad, var in self.g_grads]
             return self.g_grads
 
-    # @staticmethod
-    # def comp_loss_fake(discrim_output):
-    #     return tf.reduce_mean(
-    #         tf.nn.sigmoid_cross_entropy_with_logits(logits = discrim_output, 
-    #                                 labels = tf.zeros_like(discrim_output)))
-
-    # @staticmethod
-    # def comp_loss_real(discrim_output):
-    #     return tf.reduce_mean(
-    #         tf.nn.sigmoid_cross_entropy_with_logits(logits = discrim_output, 
-    #                                  labels = tf.ones_like(discrim_output)))
 
 
 
