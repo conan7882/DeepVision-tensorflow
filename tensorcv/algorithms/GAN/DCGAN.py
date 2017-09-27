@@ -86,7 +86,6 @@ class Model(GANBaseModel):
                             self.im_width, self.num_channels]
             dconv5 = dconv(bn_dconv4, filter_size, 
                            out_shape = output_shape, name = 'dconv')
-            gen_shape = tf.shape(dconv5, name = 'gen_shape')
             
         generation = tf.nn.tanh(dconv5, 'gen_out')
         return generation
@@ -120,12 +119,12 @@ class Model(GANBaseModel):
         return fc5
 
     def _ex_setup_graph(self):
-        gen_im = tf.identity(self.get_sample_gen_data(), 'gen_image_summary')
+        gen_im = tf.identity(self.get_sample_gen_data(), 'generate_image')
+        g_loss = tf.identity(self.get_generator_loss(), 'g_loss_check')
+        d_loss = tf.identity(self.get_discriminator_loss(), 'd_loss_check')
 
 
     def _setup_summary(self):
-        g_loss = tf.identity(self.get_generator_loss(), 'g_loss_check')
-        d_loss = tf.identity(self.get_discriminator_loss(), 'd_loss_check')
         with tf.name_scope('generator_summary'):
             tf.summary.image('generate_sample', 
                              tf.cast(self.get_sample_gen_data(), tf.float32), 
@@ -143,7 +142,7 @@ class Model(GANBaseModel):
 def get_config(FLAGS):
     dataset_train = MNIST('train', data_dir = config.data_dir, normalize = 'tanh')
 
-    inference_list = InferImages('gen_image_summary', prefix = 'gen')
+    inference_list = InferImages('generate_image', prefix = 'gen')
     random_feed = RandomVec(len_vec = FLAGS.len_vec)
     
     return GANTrainConfig(
@@ -153,8 +152,6 @@ def get_config(FLAGS):
             monitors = TFSummaryWriter(),
             discriminator_callbacks = [
                 # ModelSaver(periodic = 100), 
-                TrainSummary(key = 'default_d', 
-                            periodic = 10),
                 CheckScalar(['d_loss_check', 'g_loss_check'], 
                             periodic = 10),
               ],
@@ -170,7 +167,7 @@ def get_config(FLAGS):
 
 def get_predictConfig(FLAGS):
     random_feed = RandomVec(len_vec = FLAGS.len_vec)
-    prediction_list = PredictionImage('gen_image_summary', 
+    prediction_list = PredictionImage('generate_image', 
                                       'test', merge_im = True)
     im_size = [FLAGS.h, FLAGS.w]
     return PridectConfig(

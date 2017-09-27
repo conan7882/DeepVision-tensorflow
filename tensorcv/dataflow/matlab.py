@@ -22,7 +22,6 @@ class MatlabData(RNGDataFlow):
 
         self.setup(epoch_val = 0, batch_size = 1)
 
-        self._num_channels = num_channels
         self.shuffle = shuffle
         self._normalize = normalize
 
@@ -89,7 +88,7 @@ class MatlabData(RNGDataFlow):
             cur_data = load_image_from_mat(mat, self._mat_name_list[0], 
                                       self._mat_type_list[0])
             cur_data = np.reshape(cur_data, 
-                [1, cur_data.shape[0], cur_data.shape[1], self._num_channels])
+                [1, cur_data.shape[0], cur_data.shape[1], self.num_channels])
             input_data[0].extend(cur_data)
 
             for k in range(1, len(self._mat_name_list)):

@@ -109,9 +109,15 @@ class InferenceBase(Callback):
         self.hooked_sess.run(fetches = [], feed_dict = extra_feed)
         
 class FeedInference(InferenceBase):
+    """
+    default inferencer:
+        inference_list = InferImages('generator/gen_image', prefix = 'gen')
+    """
     def __init__(self, inputs, periodic = 1, 
-                 inferencers = None, extra_cbs = None):
+                 inferencers = [], extra_cbs = None):
         assert_type(inputs, DataFlow)
+
+        # inferencers.append(InferImages('default', prefix = 'gen'))
         super(FeedInference, self).__init__(inputs = inputs, 
                                             periodic = periodic, 
                                             inferencers = inferencers,
