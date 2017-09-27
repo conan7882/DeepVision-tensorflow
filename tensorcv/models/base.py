@@ -74,7 +74,7 @@ class ModelDes(object):
         raise NotImplementedError()
 
     def _ex_setup_graph(self):
-        raise NotImplementedError()
+        pass
 
     # def _setup_graph(self):
     #     pass

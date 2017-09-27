@@ -43,8 +43,8 @@ def conv(x, filter_size, out_dim,
         init = tf.random_normal_initializer(stddev = 0.002)
 
     with tf.variable_scope(name) as scope:
-        weights = new_variable('weights', filter_shape, initializer = init)
-        biases = new_variable('biases', [out_dim], initializer = init)
+        weights = new_variable('weights', 0, filter_shape, initializer = init)
+        biases = new_variable('biases', 1, [out_dim], initializer = init)
 
         conv = convolve(x, weights)
         bias = tf.nn.bias_add(conv, biases)
@@ -115,8 +115,8 @@ def dconv(x, filter_size, out_dim = None,
         init = tf.random_normal_initializer(stddev = 0.002)
 
     with tf.variable_scope(name) as scope:
-        weights = new_variable('weights', filter_shape, initializer = init)
-        biases = new_variable('biases', [out_dim], initializer = init)
+        weights = new_variable('weights', 0, filter_shape, initializer = init)
+        biases = new_variable('biases', 1, [out_dim], initializer = init)
         dconv = tf.nn.conv2d_transpose(x, weights, 
                                output_shape = out_shape, 
                                strides = stride, 
@@ -145,14 +145,15 @@ def fc(x, out_dim, name = 'fc', init = None, nl = tf.identity):
     """
 
     x_flatten = batch_flatten(x)
+    # x_flatten = tf.reshape(x_flatten, x_flatten.get_shape().as_list())
     x_shape = x_flatten.get_shape().as_list()
     in_dim = x_shape[1]
 
     if init is None:
         init = tf.random_normal_initializer(stddev = 0.002)
     with tf.variable_scope(name) as scope:
-        weights = new_variable('weights', [in_dim, out_dim], initializer = init)
-        biases = new_variable('biases', [out_dim], initializer = init)
+        weights = new_variable('weights', 0, [in_dim, out_dim], initializer = init)
+        biases = new_variable('biases', 1, [out_dim], initializer = init)
         act = tf.nn.xw_plus_b(x_flatten, weights, biases)
 
         output = nl(act, name = 'output')
@@ -240,9 +241,11 @@ def new_normal_variable(name, shape = None, trainable = True, stddev = 0.002):
     return tf.get_variable(name, shape = shape, trainable = trainable, 
                  initializer = tf.random_normal_initializer(stddev = stddev))
 
-def new_variable(name, shape, initializer = None):
-    return tf.get_variable(name, shape = shape, 
+def new_variable(name, idx ,shape, initializer = None):
+    var = tf.get_variable(name, shape = shape, 
                            initializer = initializer) 
+    # var_dict[(name, idx)] = var
+    return var
 
 
 
