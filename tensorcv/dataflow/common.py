@@ -7,10 +7,25 @@ import numpy as np
 
 
 def get_file_list(file_dir, file_ext):
-    assert file_ext in ['.mat', '.png', '.jpg']
-    return np.array([os.path.join(file_dir, file) 
-        for file in os.listdir(file_dir) 
-        if file.endswith(file_ext)])
+    assert file_ext in ['.mat', '.png', '.jpg', '.jpeg']
+    re_list = []
+    return np.array([os.path.join(root, name)
+        for root, dirs, files in os.walk(file_dir) 
+        for name in files if name.lower().endswith(file_ext)])
+    # for root, dirs, files in os.walk(file_dir):
+    #     for name in files:
+    #         if name.lower().endswith(file_ext):
+    #             re_list.append(os.path.join(root, name))
+    # return np.array(re_list)
+
+def get_folder_list(folder_dir):
+    return np.array([os.path.join(folder_dir, folder) 
+                    for folder in os.listdir(folder_dir) 
+                    if os.path.join(folder_dir, folder)]) 
+
+def get_folder_names(folder_dir):
+    return np.array([name for name in os.listdir(folder_dir) 
+                    if os.path.join(folder_dir, name)])    
 
 def input_val_range(in_mat):
     # TODO to be modified    

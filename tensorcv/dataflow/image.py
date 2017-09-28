@@ -2,14 +2,166 @@
 # Author: Qian Ge <geqian1001@gmail.com>
 import os
 
-# import cv2
+import cv2
 import numpy as np 
 from scipy import misc
 
 from .common import *
 from .base import RNGDataFlow
+from ..utils.common import check_dir
 
 __all__ = ['ImageData']
+
+class DataFromFile(RNGDataFlow):
+    """ Base class for image from files """
+    def __init__(self, ext_name, data_dir = '', 
+                 num_channel = None,
+                 shuffle = True, normalize = None):
+        check_dir(data_dir)
+        self.data_dir = data_dir
+
+        self._shuffle = shuffle
+        self._normalize = normalize
+
+
+        self.setup(epoch_val = 0, batch_size = 512)
+
+        self._load_file_list(ext_name.lower())
+        self.num_channel, self.im_size = self._get_im_size()
+        self._data_id = 0
+
+    def _load_file_list(self):
+        raise NotImplementedError()
+
+    def _get_im_size(self):
+        # Run after _load_file_list
+        # Assume all the image have the same size
+        pass
+
+    def _suffle_file_list(self):
+        pass
+
+    def next_batch(self):
+        assert self._batch_size <= self.size(), \
+        "batch_size cannot be larger than data size"
+
+        start = self._data_id
+        self._data_id += self._batch_size
+        end = self._data_id
+        # batch_file_range = range(start, end)
+
+        if self._data_id + self._batch_size > self.size():
+            self._epochs_completed += 1
+            self._data_id = 0
+            if self.shuffle:
+                self._suffle_file_list()
+        return self._load_data(start, end)
+
+    def _load_data(self, start, end):
+        raise NotImplementedError()
+
+    def _input_val_range(self, sample_data):
+        # TODO to be modified  
+        self._max_in_val, self._half_in_val = input_val_range(sample_data)
+
+
+class ImageLabelFromFolder(DataFromFile):
+    """ read rgb image data with label in subfolder name"""
+    def __init__(self, ext_name, data_dir = '', 
+                 num_channel = None,
+                 label_dict = {},
+                 shuffle = True, normalize = None):
+        """
+        Args:
+           label_dict (dict): empty or full
+        """
+
+        if num_channel is not None:
+            self.num_channel = num_channel
+            if num_channel > 1:
+                self._cv_read = cv2.IMREAD_COLOR
+            else:
+                self._cv_read = cv2.IMREAD_GRAYSCALE
+        else:
+            self._cv_read = None
+
+        self.label_dict = label_dict
+        super(ImageLabelFromFolder, self).__init__(ext_name, 
+                                        data_dir = data_dir,
+                                        shuffle = shuffle, 
+                                        normalize = normalize)
+
+    def _load_file_list(self, ext_name):
+        self._label_list = []
+        self._im_list = []       
+
+        folder_list = get_folder_names(self.data_dir)
+        if len(self.label_dict) < len(folder_list):
+            self.label_dict = {}
+            label_cnt = 0
+            for folder_name in folder_list:
+                if folder_name not in self.label_dict:
+                    self.label_dict[folder_name] = label_cnt
+                    label_cnt += 1
+
+        for folder_path, folder_name in zip(get_folder_list(self.data_dir), get_folder_names(self.data_dir)):
+            cur_folder_list = get_file_list(folder_path, ext_name)
+            self._im_list.extend(cur_folder_list)
+            self._label_list.extend([self.label_dict[folder_name] for i in range(len(cur_folder_list))])
+
+        self._im_list = np.array(self._im_list)
+        self._label_list = np.array(self._label_list)
+
+        if self._shuffle:
+            self._suffle_file_list()
+
+    def _suffle_file_list(self):
+        idxs = np.arange(self.size())
+        self.rng.shuffle(idxs)
+        self._im_list = self._im_list[idxs]
+        self._label_list = self._label_list[idxs]
+
+
+    def _load_data(self, start, end):
+        input_im_list = []
+        input_label_list = []
+        print(start,end)
+        for k in range(start, end):
+            print(self._im_list[k])
+            im_path = self._im_list[k]
+            im = cv2.imread(im_path, cv2.IMREAD_COLOR)
+            im = np.reshape(im, [1, im.shape[0], im.shape[1], self.num_channel])
+            input_im_list.extend(im)
+
+        input_label_list = np.array(self._label_list[start:end])
+        input_im_list = np.array(input_im_list)
+
+        if self._normalize == 'tanh':
+            try:
+                input_im_list = (input_im_list*1.0 - self._half_in_val)/\
+                                 self._half_in_val
+            except AttributeError:
+                self._input_val_range(input_im_list[0])
+                input_im_list = (input_im_list*1.0 - self._half_in_val)/\
+                                 self._half_in_val
+
+        return [input_im_list, input_label_list]
+
+    def size(self):
+        return self._im_list.shape[0]
+
+    def _get_im_size(self):
+        if self._cv_read is not None:
+            im = cv2.imread(self._im_list[0], cv2.IMREAD_COLOR)
+        else:
+            im = misc.imread(self._im_list[0])
+            if len(im.shape) < 3:
+                self.num_channel = 1
+            else:
+                self.num_channel = im.shape[2]
+        self.im_size = [im.shape[0], im.shape[1]]
+        return self.num_channel, self.im_size
+
 
 ## TODO Add batch size
 class ImageData(RNGDataFlow):
@@ -49,6 +201,7 @@ class ImageData(RNGDataFlow):
 
         if self.shuffle:
             self._suffle_file_list()
+        return self.im_list
 
     def _load_data(self, batch_file_path):
         input_list = []
@@ -104,6 +257,8 @@ class ImageData(RNGDataFlow):
     
 
 if __name__ == '__main__':
-    a = ImageData('.png','D:\\GoogleDrive_Qian\\Foram\\Training\\CNN_GAN_ORIGINAL_64\\')
-    print(a.next_batch()[0][:,30:40,30:40,:])
-    print(a.next_batch()[0].shape)
+    a = ImageLabelFromFolder('.jpeg',data_dir = 'D:\\Qian\\GitHub\\workspace\\dataset\\tiny-imagenet-200\\tiny-imagenet-200\\train\\',
+                 shuffle = True, normalize = 'tanh', num_channel = 3)
+    # print(a.next_batch()[0][:,30:40,30:40,:])
+    print(a.next_batch()[1])
+    # print(a.next_batch()[0].shape)

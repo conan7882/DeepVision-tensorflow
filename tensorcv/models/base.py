@@ -33,24 +33,58 @@ class ModelDes(object):
     def set_is_training(self, is_training = True):
         self.is_training = is_training
 
-    def get_placeholder(self):
-        return self._get_placeholder()
+    def get_train_placeholder(self):
+        default_plh = self._get_train_placeholder()
+        if not isinstance(default_plh, list):
+            default_plh = [default_plh]
+        try:
+            return self._train_plhs + default_plh
+        except AttributeError:
+            return default_plh
 
-    def _get_placeholder(self):
+    def _get_train_placeholder(self):
         return []
+
+    def set_train_placeholder(self, plhs = None):
+        if not isinstance(plhs, list):
+            plhs = [plhs]
+        self._train_plhs = plhs
 
     # TODO to be modified
     def get_prediction_placeholder(self):
-        return self._get_prediction_placeholder()
+        default_plh = self._get_prediction_placeholder()
+        if not isinstance(default_plh, list):
+            default_plh = [default_plh]
+        try:
+            return self._predict_plhs + default_plh
+        except AttributeError:
+            return default_plh
 
     def _get_prediction_placeholder(self):
         return []
+
+    def set_prediction_placeholder(self, plhs = None):
+        if not isinstance(plhs, list):
+            plhs = [plhs]
+        self._predict_plhs = plhs
 
     def get_graph_feed(self):
         return self._get_graph_feed()
 
     def _get_graph_feed(self):
-        return {}
+        """ return keep_prob feed when dropout is set """
+        try:
+            if self.is_training:
+                feed = {self._dropout_pl: self._keep_prob}
+            else:
+                feed = {self._dropout_pl: 1}
+            return feed
+        except AttributeError:
+            return {}
+
+    def set_dropout(self, dropout_placeholder, keep_prob = 0.5):
+        self._dropout_pl = dropout_placeholder
+        self._keep_prob = keep_prob
 
     def create_graph(self):
         # self._create_graph()
@@ -60,6 +94,14 @@ class ModelDes(object):
         self._create_model()
         self._ex_setup_graph()
 
+    def create_model(self, inputs = None):
+        """ only called when defined inside other model"""
+        assert inputs is not None, 'inputs cannot be None!'
+        if not isinstance(inputs, list):
+            inputs = [inputs]
+        self._input = inputs
+        self._create_model()
+
 
     @abstractmethod
     def _create_model(self):
@@ -67,7 +109,22 @@ class ModelDes(object):
 
     @abstractmethod
     def _create_input(self):
-        raise NotImplementedError()  
+        raise NotImplementedError() 
+
+    @property
+    def model_input(self):
+        try:
+            return self._input
+        except AttributeError:
+            raise AttributeError
+
+    def set_model_input(self, inputs = None):
+        self._input = inputs
+
+    
+
+    # def _get_model_input(self):
+    #     return []
 
     @abstractmethod
     def _create_graph(self):
@@ -91,6 +148,8 @@ class ModelDes(object):
     
 class BaseModel(ModelDes):
     """ Model with single loss and single optimizer """
+
+    
 
     def get_optimizer(self):
         try:
@@ -168,7 +227,7 @@ class GANBaseModel(ModelDes):
 
     def _create_model(self):
         # TODO
-        real_data = self._get_placeholder()[0]
+        real_data = self.get_train_placeholder()[0]
 
         with tf.variable_scope('generator') as scope:
             self.gen_data = self._generator()

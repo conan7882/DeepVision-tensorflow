@@ -35,13 +35,15 @@ class Model(GANBaseModel):
 
         self.set_is_training(True)
 
-    def _get_placeholder(self):
-        # image
-        return [self.real_data]
+    # def _get_placeholder(self):
+    #     # image
+    #     return [self.real_data]
 
     def _create_input(self):
         self.real_data = tf.placeholder(tf.float32, 
                 [None, self.im_height, self.im_width, self.num_channels])
+        
+        self.set_train_placeholder(self.real_data)
 
     def _generator(self, train = True):
 

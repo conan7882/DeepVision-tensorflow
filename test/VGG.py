@@ -46,25 +46,18 @@ class Model(BaseModel):
                             shape = [None, self.im_height, self.im_width, self.num_channels])
         self.label = tf.placeholder(tf.int64, [None, self.num_class], 'label')
 
-    def _get_placeholder(self):
-        return [self.image, self.label]
-        # image, label 
-
-    def _get_prediction_placeholder(self):
-        return self.image
-
-    def _get_graph_feed(self):
-        if self.is_training:
-            feed = {self.keep_prob: 0.5}
-        else:
-            feed = {self.keep_prob: 1}
-        return feed
+        self.set_model_input([self.image, self.keep_prob])
+        self.set_dropout(self.keep_prob, keep_prob = 0.5)
+        self.set_train_placeholder([self.image, self.label])
+        self.set_prediction_placeholder(self.image)
 
     def _create_model(self):
 
-    
+        input_im = self.model_input[0]
+        keep_prob = self.model_input[1]
+
         with tf.variable_scope('conv1') as scope:
-            conv1_1 = conv(self.image, 3, 64, 'conv1_1', nl = tf.nn.relu)
+            conv1_1 = conv(input_im, 3, 64, 'conv1_1', nl = tf.nn.relu)
             conv1_2 = conv(conv1_1, 3, 64, 'conv1_2', nl = tf.nn.relu)
             pool1 = max_pool(conv1_2, padding = 'SAME')
 
@@ -96,16 +89,17 @@ class Model(BaseModel):
 
         with tf.variable_scope('fc6') as scope: 
             fc6 = fc(pool5, 4096, nl = tf.nn.relu)
-            dropout_fc6 = dropout(fc6, self.keep_prob, self.is_training)
+            dropout_fc6 = dropout(fc6, keep_prob, self.is_training)
 
         with tf.variable_scope('fc7') as scope: 
             fc7 = fc(dropout_fc6, 4096, nl = tf.nn.relu)
-            dropout_fc7 = dropout(fc7, self.keep_prob, self.is_training)
+            dropout_fc7 = dropout(fc7, keep_prob, self.is_training)
 
         with tf.variable_scope('fc8') as scope: 
             fc8 = fc(dropout_fc7, 1000)
 
         with tf.name_scope('prediction'):
+            self.prediction_act = tf.identity(fc8, name = 'pre_act')
             self.prediction_pro = tf.nn.softmax(fc8, name='pre_prob')
             self.prediction = tf.argmax(fc8, name='pre_label', dimension = -1)
 
@@ -113,7 +107,7 @@ class Model(BaseModel):
         with tf.name_scope('loss'):
             # return tf.reduce_sum((self.prediction_pro - self.label)**2)
             return tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits
-                    (logits = self.prediction_pro, labels = self.label), 
+                    (logits = self.prediction_act, labels = self.label), 
                     name = 'result') 
 
     def _get_optimizer(self):
@@ -147,32 +141,31 @@ class Model(BaseModel):
 #                       tf.expand_dims(tf.cast(self.prediction, tf.float32), -1),
 #                       collections = ['test'])
 
-# def get_config(FLAGS):
-#     mat_name_list = ['level1Edge', 'GT', 'Mask']
-#     dataset_train = MatlabData('train', mat_name_list = mat_name_list,
-#                                data_dir = FLAGS.data_dir)
-#     dataset_val = MatlabData('val', mat_name_list = mat_name_list, 
-#                              data_dir = FLAGS.data_dir)
-#     inference_list = [InferScalars('accuracy/result', 'test_accuracy')]
+def get_config(FLAGS):
+    dataset_train = MatlabData('train', mat_name_list = mat_name_list,
+                               data_dir = FLAGS.data_dir)
+    dataset_val = MatlabData('val', mat_name_list = mat_name_list, 
+                             data_dir = FLAGS.data_dir)
+    inference_list = [InferScalars('accuracy/result', 'test_accuracy')]
     
-#     return TrainConfig(
-#                  dataflow = dataset_train, 
-#                  model = Model(num_channels = FLAGS.input_channel, 
-#                                num_class = FLAGS.num_class, 
-#                                learning_rate = 0.0001),
-#                  monitors = TFSummaryWriter(summary_dir = FLAGS.summary_dir),
-#                  callbacks = [
-#                     ModelSaver(periodic = 10,
-#                                checkpoint_dir = FLAGS.summary_dir),
-#                     TrainSummary(key = 'train', periodic = 10),
-#                     FeedInference(dataset_val, periodic = 10, 
-#                                   extra_cbs = TrainSummary(key = 'test'),
-#                                   inferencers = inference_list),
-#                               # CheckScalar(['accuracy/result'], periodic = 10),
-#                   ],
-#                  batch_size = FLAGS.batch_size, 
-#                  max_epoch = 200,
-#                  summary_periodic = 10)
+    return TrainConfig(
+                 dataflow = dataset_train, 
+                 model = Model(num_channels = FLAGS.input_channel, 
+                               num_class = FLAGS.num_class, 
+                               learning_rate = 0.0001),
+                 monitors = TFSummaryWriter(summary_dir = FLAGS.summary_dir),
+                 callbacks = [
+                    ModelSaver(periodic = 10,
+                               checkpoint_dir = FLAGS.summary_dir),
+                    TrainSummary(key = 'train', periodic = 10),
+                    FeedInference(dataset_val, periodic = 10, 
+                                  extra_cbs = TrainSummary(key = 'test'),
+                                  inferencers = inference_list),
+                              # CheckScalar(['accuracy/result'], periodic = 10),
+                  ],
+                 batch_size = FLAGS.batch_size, 
+                 max_epoch = 200,
+                 summary_periodic = 10)
 
 # def get_predictConfig(FLAGS):
 #     mat_name_list = ['level1Edge']
@@ -232,6 +225,12 @@ if __name__ == '__main__':
     VGG.create_graph()
     VGG.get_grads()
     VGG.get_optimizer()
+    # keep_prob = tf.placeholder(tf.float32, name='keep_prob')
+    # image = tf.placeholder(tf.float32, name = 'image',
+    #                         shape = [None, 224, 224, 3])
+
+    # VGG.create_model([image, keep_prob])
+
 
     writer = tf.summary.FileWriter(config.summary_dir)
     with tf.Session() as sess:

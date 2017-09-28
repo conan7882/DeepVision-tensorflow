@@ -25,7 +25,7 @@ class SimpleFeedTrainer(Trainer):
 
     def _setup(self):
         # TODO to be modified
-        cbs = FeedInput(self.dataflow, self.model.get_placeholder())
+        cbs = FeedInput(self.dataflow, self.model.get_train_placeholder())
 
         self.config.callbacks.append(cbs)
 
@@ -46,7 +46,7 @@ class GANFeedTrainer(Trainer):
         # TODO to be modified
         # Since FeedInput only have before_run,
         # it is safe to put this cb only in hooks.
-        cbs = FeedInput(self.dataflow, self.model.get_placeholder())
+        cbs = FeedInput(self.dataflow, self.model.get_train_placeholder())
         # self.config.callbacks.append(cbs)
         self.feed_input_hook = [Callback2Hook(cbs)]
 
