@@ -43,13 +43,13 @@ class InferencerBase(Callback):
         pass
 
     def after_inference(self):
-        re = self._after_inference()
+        self._after_inference()
 
-        if re is not None:
-            for key, val in re.items():
-                s = tf.Summary()
-                s.value.add(tag = key, simple_value = val)
-                self.trainer.monitors.process_summary(s)
+        # if re is not None:
+        #     for key, val in re.items():
+        #         s = tf.Summary()
+        #         s.value.add(tag = key, simple_value = val)
+        #         self.trainer.monitors.process_summary(s)
 
     def _after_inference(self):
         return None
@@ -100,8 +100,16 @@ class InferScalars(InferencerBase):
 
     def _after_inference(self):
         """ process after get_fetch """
-        return {name: np.mean(val) for name, 
-                val in zip(self._summary_names, self.result_list)}
+        summary_dict = {name: np.mean(val) for name, val 
+                        in zip(self._summary_names, self.result_list)}
+        if summary_dict is not None:
+            for key, val in summary_dict.items():
+                s = tf.Summary()
+                s.value.add(tag = key, simple_value = val)
+                self.trainer.monitors.process_summary(s)
+                print('[infer] '+ key + ': ' + str(val))
+        # return {name: np.mean(val) for name, val 
+        #       in zip(self._summary_names, self.result_list)}
 
 # TODO to be modified
 # class BinaryClassificationStats(InferencerBase):

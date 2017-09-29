@@ -45,3 +45,19 @@ def input_val_range(in_mat):
 def tanh_normalization(data, half_in_val):
     return (data*1.0 - half_in_val)/half_in_val
 
+
+def dense_to_one_hot(labels_dense, num_classes):
+    """Convert class labels from scalars to one-hot vectors."""
+    num_labels = labels_dense.shape[0]
+    index_offset = np.arange(num_labels) * num_classes
+    labels_one_hot = np.zeros((num_labels, num_classes))
+    labels_one_hot.flat[[index_offset + labels_dense.ravel()]] = 1
+    return labels_one_hot
+
+def reverse_label_dict(label_dict):
+    label_dict_reverse = {}
+    for key, value in label_dict.items():
+        label_dict_reverse[value] = key
+    return label_dict_reverse
+
+

@@ -124,7 +124,7 @@ class FeedInference(InferenceBase):
                                             extra_cbs = extra_cbs)
 
     def _setup_inference(self):
-        placeholders = self.model.get_placeholder()
+        placeholders = self.model.get_train_placeholder()
         self._extra_cbs.append(FeedInput(self._inputs, placeholders))
 
     def _inference_step(self):
@@ -132,6 +132,21 @@ class FeedInference(InferenceBase):
         while self._inputs.epochs_completed <= 0:
             self.hooked_sess.run(fetches = [], feed_dict = model_feed)
         self._inputs.reset_epochs_completed(0)
+
+class FeedInferenceBatch(FeedInference):
+    """ do not use all validation data """
+    def __init__(self, inputs, periodic = 1, 
+                 batch_count = 10,
+                 inferencers = [], extra_cbs = None):
+        self._batch_count = batch_count
+        super(FeedInferenceBatch, self).__init__(inputs = inputs, 
+                                                periodic = periodic, 
+                                                inferencers = inferencers, 
+                                                extra_cbs = extra_cbs)
+    def _inference_step(self):
+        model_feed = self.model.get_graph_feed()
+        for i in range(self._batch_count):
+            self.hooked_sess.run(fetches = [], feed_dict = model_feed)
 
 
 class GANInference(InferenceBase):

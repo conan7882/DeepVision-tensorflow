@@ -29,9 +29,9 @@ class Model(GANBaseModel):
 
         super(Model, self).__init__(input_vec_length, learning_rate)
 
-        if num_channels is not None and im_size is not None:
-            self.im_height, self.im_width = im_size
-            self.num_channels = num_channels
+        # if num_channels is not None and im_size is not None:
+        self.im_height, self.im_width = im_size
+        self.num_channels = num_channels
 
         self.set_is_training(True)
 

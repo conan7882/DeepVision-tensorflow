@@ -98,6 +98,7 @@ class Model(BaseModel):
 
     def _get_loss(self):
         with tf.name_scope('loss'):
+            # This op expects unscaled logits, since it performs a softmax on logits internally for efficiency. Do not call this op with the output of softmax, as it will produce incorrect results.
             return tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits
                     (logits = apply_mask(self.softmax_dconv3, self.mask),
                     labels = apply_mask(self.gt, self.mask)), name = 'result')  

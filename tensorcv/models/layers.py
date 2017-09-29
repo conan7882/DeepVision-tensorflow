@@ -43,8 +43,8 @@ def conv(x, filter_size, out_dim,
         init = tf.random_normal_initializer(stddev = 0.002)
 
     with tf.variable_scope(name) as scope:
-        weights = new_variable('weights', 0, filter_shape, initializer = init)
-        biases = new_variable('biases', 1, [out_dim], initializer = init)
+        weights = new_weights('weights', 0, filter_shape, initializer = init)
+        biases = new_biases('biases', 1, [out_dim], initializer = init)
 
         conv = convolve(x, weights)
         bias = tf.nn.bias_add(conv, biases)
@@ -115,8 +115,8 @@ def dconv(x, filter_size, out_dim = None,
         init = tf.random_normal_initializer(stddev = 0.002)
 
     with tf.variable_scope(name) as scope:
-        weights = new_variable('weights', 0, filter_shape, initializer = init)
-        biases = new_variable('biases', 1, [out_dim], initializer = init)
+        weights = new_weights('weights', 0, filter_shape, initializer = init)
+        biases = new_biases('biases', 1, [out_dim], initializer = init)
         dconv = tf.nn.conv2d_transpose(x, weights, 
                                output_shape = out_shape, 
                                strides = stride, 
@@ -152,8 +152,8 @@ def fc(x, out_dim, name = 'fc', init = None, nl = tf.identity):
     if init is None:
         init = tf.random_normal_initializer(stddev = 0.002)
     with tf.variable_scope(name) as scope:
-        weights = new_variable('weights', 0, [in_dim, out_dim], initializer = init)
-        biases = new_variable('biases', 1, [out_dim], initializer = init)
+        weights = new_weights('weights', 0, [in_dim, out_dim], initializer = init)
+        biases = new_biases('biases', 1, [out_dim], initializer = init)
         act = tf.nn.xw_plus_b(x_flatten, weights, biases)
 
         output = nl(act, name = 'output')
@@ -241,9 +241,41 @@ def new_normal_variable(name, shape = None, trainable = True, stddev = 0.002):
     return tf.get_variable(name, shape = shape, trainable = trainable, 
                  initializer = tf.random_normal_initializer(stddev = stddev))
 
-def new_variable(name, idx ,shape, initializer = None):
+def new_variable(name, idx, shape, initializer = None):
+    # initial_value = tf.truncated_normal(shape, 0.0, 0.001)
+    # var = tf.get_variable(name, 
+    #                        initializer = initial_value)
+    # initializer = tf.random_normal_initializer(stddev = 0.002)
+
     var = tf.get_variable(name, shape = shape, 
                            initializer = initializer) 
+
+    # var_dict[(name, idx)] = var
+    return var
+
+def new_weights(name, idx, shape, initializer = None):
+    # initial_value = tf.truncated_normal(shape, 0.0, 0.001)
+    # var = tf.get_variable(name, 
+    #                        initializer = initial_value)
+    initializer = tf.truncated_normal_initializer(stddev=0.01)
+    # initializer = tf.contrib.layers.xavier_initializer()
+    var = tf.get_variable(name, shape = shape, 
+                           initializer = initializer) 
+
+    # var_dict[(name, idx)] = var
+    return var
+
+def new_biases(name, idx, shape, initializer = None):
+    # initial_value = tf.truncated_normal(shape, 0.0, 0.001)
+    # var = tf.get_variable(name, 
+    #                        initializer = initial_value)
+    # initializer = tf.random_normal_initializer(stddev = 0.002)
+    # initializer = tf.random_normal_initializer(stddev = 0.001)
+    # initializer = tf.contrib.layers.xavier_initializer()
+    initializer = tf.constant_initializer(0.5)
+    var = tf.get_variable(name, shape = shape, 
+                           initializer = initializer) 
+
     # var_dict[(name, idx)] = var
     return var
 
@@ -287,4 +319,44 @@ def batch_flatten(x):
     if None not in shape:
         return tf.reshape(x, [-1, int(np.prod(shape))])
     return tf.reshape(x, tf.stack([tf.shape(x)[0], -1]))
+
+# From tensorflow tutorial
+# def _variable_with_weight_decay(name, shape, stddev, wd):
+#   """Helper to create an initialized Variable with weight decay.
+#   Note that the Variable is initialized with a truncated normal distribution.
+#   A weight decay is added only if one is specified.
+#   Args:
+#     name: name of the variable
+#     shape: list of ints
+#     stddev: standard deviation of a truncated Gaussian
+#     wd: add L2Loss weight decay multiplied by this float. If None, weight
+#         decay is not added for this Variable.
+#   Returns:
+#     Variable Tensor
+#   """
+#   # dtype = tf.float16 if FLAGS.use_fp16 else tf.float32
+#     dtype = tf.float32
+#     var = _variable_on_cpu(
+#         name,
+#         shape,
+#         tf.truncated_normal_initializer(stddev=stddev, dtype=dtype))
+#     if wd is not None:
+#         weight_decay = tf.multiply(tf.nn.l2_loss(var), wd, name='weight_loss')
+#         tf.add_to_collection('losses', weight_decay)
+#     return var
+
+
+# def _variable_on_cpu(name, shape, initializer):
+#   """Helper to create a Variable stored on CPU memory.
+#   Args:
+#     name: name of the variable
+#     shape: list of ints
+#     initializer: initializer for Variable
+#   Returns:
+#     Variable Tensor
+#   """
+#   # with tf.device('/cpu:0'):
+#     dtype = tf.float32
+#     var = tf.get_variable(name, shape, initializer=initializer, dtype=dtype)
+#   # return var
 

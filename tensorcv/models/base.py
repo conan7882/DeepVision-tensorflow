@@ -17,12 +17,14 @@ class ModelDes(object):
             self.im_height = dataflow.im_size[0]
             self.im_width = dataflow.im_size[1]
         except AttributeError:
-            self.im_height = None
-            self.im_width = None
+            pass
+            # self.im_height = self.im_height
+            # self.im_width = self.im_height
         try:
             self.num_channels = dataflow.num_channels
         except AttributeError:
-            self.num_channels = None
+            pass
+            # self.num_channels = self.num_channels
 
     def set_batch_size(self, val):
         self._batch_size = val
@@ -148,8 +150,6 @@ class ModelDes(object):
     
 class BaseModel(ModelDes):
     """ Model with single loss and single optimizer """
-
-    
 
     def get_optimizer(self):
         try:
