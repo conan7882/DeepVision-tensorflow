@@ -57,6 +57,9 @@ class Model(BaseModel):
         input_im = self.model_input[0]
         keep_prob = self.model_input[1]
 
+        # resize images to 224*224
+        # input_im = tf.image.resize_images(input_im, [224, 224])
+
         red, green, blue = tf.split(axis=3, num_or_size_splits=3, value=input_im)
         # assert red.get_shape().as_list()[1:] == [self.im_height, self.im_width, 1]
         # assert green.get_shape().as_list()[1:] == [self.im_height, self.im_width, 1]

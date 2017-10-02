@@ -10,7 +10,7 @@ from .common import *
 from .base import RNGDataFlow
 from ..utils.common import check_dir
 
-__all__ = ['ImageData', 'DataFromFile', 'ImageLabelFromFolder', 'ImageLabelFromFile']
+__all__ = ['ImageData', 'DataFromFile', 'ImageLabelFromFolder', 'ImageLabelFromFile', 'ImageFromFile']
 
 class DataFromFile(RNGDataFlow):
     """ Base class for image from files """
@@ -69,7 +69,65 @@ class DataFromFile(RNGDataFlow):
         # TODO to be modified  
         self._max_in_val, self._half_in_val = input_val_range(sample_data)
 
-class ImageLabelFromFolder(DataFromFile):
+class ImageFromFile(DataFromFile):
+    def __init__(self, ext_name, data_dir = '', 
+                 num_channel = None,
+                 shuffle = True, normalize = None):
+        if num_channel is not None:
+            self.num_channel = num_channel
+            self._read_channel = num_channel
+        else:
+            self._read_channel = None
+
+        super(ImageFromFile, self).__init__(ext_name, 
+                                        data_dir = data_dir,
+                                        shuffle = shuffle, 
+                                        normalize = normalize)
+
+    def _load_file_list(self, ext_name):
+        im_dir = os.path.join(self.data_dir)
+        self._im_list = get_file_list(im_dir, ext_name)
+        if self._shuffle:
+            self._suffle_file_list()
+
+    def _suffle_file_list(self):
+        idxs = np.arange(self.size())
+        self.rng.shuffle(idxs)
+        self._im_list = self._im_list[idxs]
+
+    def _load_data(self, start, end):
+        input_im_list = []
+        for k in range(start, end):
+            im_path = self._im_list[k]
+            im = load_image(im_path, read_channel = self._read_channel)
+            input_im_list.extend(im)
+
+        input_im_list = np.array(input_im_list)
+
+        if self._normalize == 'tanh':
+            try:
+                input_im_list = (input_im_list*1.0 - self._half_in_val)/\
+                                 self._half_in_val
+            except AttributeError:
+                self._input_val_range(input_im_list[0])
+                input_im_list = (input_im_list*1.0 - self._half_in_val)/\
+                                 self._half_in_val
+        return [input_im_list]
+
+    def _get_im_size(self):
+        im = load_image(self._im_list[0], read_channel = self._read_channel)
+        if self._read_channel is None:
+            if len(im.shape) < 3:
+                self.num_channel = 1
+            else:
+                self.num_channel = im.shape[2]
+        self.im_size = [im.shape[0], im.shape[1]]
+        return self.num_channel, self.im_size
+
+    def size(self):
+        return self._im_list.shape[0]
+
+class ImageLabelFromFolder(ImageFromFile):
     """ read image data with label in subfolder name """
     def __init__(self, ext_name, data_dir = '', 
                  num_channel = None,
@@ -83,12 +141,9 @@ class ImageLabelFromFolder(DataFromFile):
 
         if num_channel is not None:
             self.num_channel = num_channel
-            if num_channel > 1:
-                self._cv_read = cv2.IMREAD_COLOR
-            else:
-                self._cv_read = cv2.IMREAD_GRAYSCALE
+            self._read_channel = num_channel
         else:
-            self._cv_read = None
+            self._read_channel = None
 
         self._num_class = num_class
         self._one_hot = one_hot
@@ -141,11 +196,13 @@ class ImageLabelFromFolder(DataFromFile):
         input_label_list = []
         for k in range(start, end):
             im_path = self._im_list[k]
-            if self._cv_read is not None:
-                im = cv2.imread(im_path, self._cv_read)
-            else:
-                im = misc.imread(self._im_list[0])
-            im = np.reshape(im, [1, im.shape[0], im.shape[1], self.num_channel])
+            im = load_image(im_path, read_channel = self._read_channel)
+            # if self._cv_read is not None:
+            #     im = cv2.imread(im_path, self._cv_read)
+            # else:
+            #     im = misc.imread(im_path)
+
+            # im = np.reshape(im, [1, im.shape[0], im.shape[1], self.num_channel])
             input_im_list.extend(im)
 
         input_label_list = np.array(self._label_list[start:end])
@@ -169,19 +226,21 @@ class ImageLabelFromFolder(DataFromFile):
     def size(self):
         return self._im_list.shape[0]
 
-    def _get_im_size(self):
-        if self._cv_read is not None:
-            im = cv2.imread(self._im_list[0], self._cv_read)
-        else:
-            im = misc.imread(self._im_list[0])
-            if len(im.shape) < 3:
-                self.num_channel = 1
-                self._cv_read = cv2.IMREAD_GRAYSCALE
-            else:
-                self.num_channel = im.shape[2]
-                self._cv_read = cv2.IMREAD_COLOR
-        self.im_size = [im.shape[0], im.shape[1]]
-        return self.num_channel, self.im_size
+    # def _get_im_size(self):
+    #     im = load_image(self._im_list[0], read_channel = self._read_channel)
+    #     # if self._cv_read is not None:
+    #     #     im = cv2.imread(self._im_list[0], self._cv_read)
+    #     # else:
+    #     #     im = misc.imread(self._im_list[0])
+    #     if self._read_channel is None:
+    #         if len(im.shape) < 3:
+    #             self.num_channel = 1
+    #             # self._cv_read = cv2.IMREAD_GRAYSCALE
+    #         else:
+    #             self.num_channel = im.shape[2]
+    #             # self._cv_read = cv2.IMREAD_COLOR
+    #     self.im_size = [im.shape[0], im.shape[1]]
+    #     return self.num_channel, self.im_size
 
 
 class ImageLabelFromFile(ImageLabelFromFolder):
@@ -246,9 +305,11 @@ class ImageData(RNGDataFlow):
         self._normalize = normalize
 
         self.setup(epoch_val = 0, batch_size = 1)
-        self._load_file_list(ext_name)
+        self._load_file_list(ext_name.lower())
         self._get_im_size()
         self._data_id = 0
+
+        self._read_channel = None
 
         # if num_channels > 1:
         #     self._cv_read = cv2.IMREAD_COLOR
@@ -258,7 +319,8 @@ class ImageData(RNGDataFlow):
     def _get_im_size(self):
         # Run after _load_file_list
         # Assume all the image have the same size
-        im = misc.imread(self.im_list[0])
+        # im = misc.imread(self.im_list[0])
+        im = load_image(self.im_list[0])
         
         if len(im.shape) < 3:
             self.num_channels = 1
@@ -279,7 +341,9 @@ class ImageData(RNGDataFlow):
         input_list = []
         for file_path in batch_file_path:
             # im = cv2.imread(self.im_list[self._data_id], self._cv_read)
-            im = misc.imread(self.im_list[self._data_id])
+            # print(file_path)
+            # im = misc.imread(file_path)
+            im = load_image(file_path, read_channel = self._read_channel)
             if len(im.shape) < 3:
                 im = np.reshape(im, [1, im.shape[0], im.shape[1], 1])
             else:

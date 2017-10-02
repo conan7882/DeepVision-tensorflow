@@ -20,19 +20,19 @@ import config
 
 VGG_MEAN = [103.939, 116.779, 123.68]
 
-def load_VGG_model(session, model_path, skip_layer = []):
-    weights_dict = np.load(model_path, encoding='latin1').item()
-    for layer_name in weights_dict:
-        print(layer_name)
-        if layer_name not in skip_layer:
-            with tf.variable_scope(layer_name, reuse = True):
-                for data in weights_dict[layer_name]:
-                    if len(data.shape) == 1:
-                        var = tf.get_variable('biases', trainable = False)
-                        session.run(var.assign(data))
-                    else:
-                        var = tf.get_variable('weights', trainable = False)
-                        session.run(var.assign(data))
+# def load_VGG_model(session, model_path, skip_layer = []):
+#     weights_dict = np.load(model_path, encoding='latin1').item()
+#     for layer_name in weights_dict:
+#         print(layer_name)
+#         if layer_name not in skip_layer:
+#             with tf.variable_scope(layer_name, reuse = True):
+#                 for data in weights_dict[layer_name]:
+#                     if len(data.shape) == 1:
+#                         var = tf.get_variable('biases', trainable = False)
+#                         session.run(var.assign(data))
+#                     else:
+#                         var = tf.get_variable('weights', trainable = False)
+#                         session.run(var.assign(data))
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -49,7 +49,7 @@ def get_args():
     return parser.parse_args()
 
 if __name__ == '__main__':
-    Model = VGG.Model(num_class = 1000,
+    Model = VGG.VGG19(num_class = 1000,
                       num_channels = 3, 
                       im_height = 224, 
                       im_width = 224)
@@ -67,8 +67,12 @@ if __name__ == '__main__':
                                     num_channel = 3,
                                     label_dict = {},
                                     shuffle = False)
+
+    # dataset_val = ImageData('.JPEG', data_dir = config.valid_data_dir, 
+    #                         shuffle = False)
+
     dataset_val.setup(epoch_val = 0, batch_size = 32)
-    o_label_dict = dataset_val.label_dict_reverse
+    # o_label_dict = dataset_val.label_dict_reverse
 
     
 
@@ -89,31 +93,6 @@ if __name__ == '__main__':
         print(result)
         print([word_dict[o_label_dict[label]] for label in batch_data[1]])
 
-
-    # print(word_dict)
-
-
-
-    # word_list = [line.split('\t')[1] for line in lines 
-    #             if len(line.split('\t')) >= 2]
-    # print(word_list)
-
-        
-
-    # writer = tf.summary.FileWriter(config.summary_dir)
-    # with tf.Session() as sess:
-    #     sess.run(tf.global_variables_initializer())
-    #     writer.add_graph(sess.graph)
-
-    # writer.close()
-
-    # FLAGS = get_args()
-    # if FLAGS.train:
-    #     config = get_config(FLAGS)
-    #     SimpleFeedTrainer(config).train()
-    # elif FLAGS.predict:
-    #     config = get_predictConfig(FLAGS)
-    #     SimpleFeedPredictor(config).run_predict()
 
 
  

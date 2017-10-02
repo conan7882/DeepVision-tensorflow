@@ -3,7 +3,9 @@
 
 import os
 
-import numpy as np
+import cv2
+from scipy import misc
+import numpy as np 
 
 
 def get_file_list(file_dir, file_ext):
@@ -59,5 +61,23 @@ def reverse_label_dict(label_dict):
     for key, value in label_dict.items():
         label_dict_reverse[value] = key
     return label_dict_reverse
+
+def load_image(im_path, read_channel = None):
+    # im = cv2.imread(im_path, self._cv_read)
+    if read_channel is None:
+        im = misc.imread(im_path)
+    elif read_channel == 3:
+        im = misc.imread(im_path, mode = 'RGB')
+    else:
+        im = misc.imread(im_path, flatten = True)
+
+    if len(im.shape) < 3:
+        im = np.reshape(im, [1, im.shape[0], im.shape[1], 1])
+    else:
+        im = np.reshape(im, [1, im.shape[0], im.shape[1], im.shape[2]])
+
+    return im
+
+    
 
 
