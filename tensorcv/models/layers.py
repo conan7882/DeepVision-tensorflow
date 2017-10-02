@@ -186,6 +186,39 @@ def max_pool(x, name = 'max_pool', filter_size = 2, stride = None, padding = 'VA
                           strides = stride, 
                           padding = padding, name = name)
 
+def global_avg_pool(x, name = 'global_avg_pool', data_format = 'NHWC'):
+    assert x.shape.ndims == 4
+    assert data_format in ['NHWC', 'NCHW']
+    axis = [1, 2] if data_format == 'NHWC' else [2, 3]
+    return tf.reduce_mean(x, axis, name = name)
+
+# def avg_pool(x, name = 'avg_pool', filter_size = 2, stride = None, padding = 'VALID'):
+#     """ 
+#     Average pooling layer 
+
+#     Args:
+#         x (tf.tensor): a tensor 
+#         name (str): name scope of the layer
+#         filter_size (int or list with length 2): size of filter
+#         stride (int or list with length 2): Default to be the same as shape
+#         padding (str): 'VALID' or 'SAME'. Use 'SAME' for FCN.
+
+#     Returns:
+#         tf.tensor with name 'name'
+#     """
+
+#     padding = padding.upper()
+#     filter_shape = get_shape2D(filter_size)
+#     if stride is None:
+#         stride = filter_shape
+#     else:
+#         stride = get_shape4D(stride)
+#     return tf.nn.pool(x,window_shape = filter_shape, 
+#                         pooling_type = 'AVG',
+#                         padding = padding,
+#                         # strides = stride, 
+#                         name = name)
+
 def dropout(x, keep_prob, is_training, name = 'dropout'):
     """ 
     Dropout 
@@ -308,8 +341,8 @@ def get_shape4D(in_val):
     Returns:
         list with length 4
     """
-    if isinstance(in_val, int):
-        return [1] + get_shape2D(in_val) + [1]
+    # if isinstance(in_val, int):
+    return [1] + get_shape2D(in_val) + [1]
 
 def batch_flatten(x):
     """
