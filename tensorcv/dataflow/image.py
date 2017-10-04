@@ -26,7 +26,7 @@ class DataFromFile(RNGDataFlow):
         self.setup(epoch_val = 0, batch_size = 1)
 
         self._load_file_list(ext_name.lower())
-        self.num_channel, self.im_size = self._get_im_size()
+        self.num_channels, self.im_size = self._get_im_size()
         self._data_id = 0
 
         if self._normalize == 'mean':
@@ -74,7 +74,7 @@ class ImageFromFile(DataFromFile):
                  num_channel = None,
                  shuffle = True, normalize = None):
         if num_channel is not None:
-            self.num_channel = num_channel
+            self.num_channels = num_channel
             self._read_channel = num_channel
         else:
             self._read_channel = None
@@ -117,12 +117,9 @@ class ImageFromFile(DataFromFile):
     def _get_im_size(self):
         im = load_image(self._im_list[0], read_channel = self._read_channel)
         if self._read_channel is None:
-            if len(im.shape) < 3:
-                self.num_channel = 1
-            else:
-                self.num_channel = im.shape[2]
-        self.im_size = [im.shape[0], im.shape[1]]
-        return self.num_channel, self.im_size
+            self.num_channels = im.shape[3]
+        self.im_size = [im.shape[1], im.shape[2]]
+        return self.num_channels, self.im_size
 
     def size(self):
         return self._im_list.shape[0]
@@ -140,7 +137,7 @@ class ImageLabelFromFolder(ImageFromFile):
         """
 
         if num_channel is not None:
-            self.num_channel = num_channel
+            self.num_channels = num_channel
             self._read_channel = num_channel
         else:
             self._read_channel = None
