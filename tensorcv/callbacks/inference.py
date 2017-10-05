@@ -17,7 +17,7 @@ from .hooks import Callback2Hook, Infer2Hook
 from ..utils.sesscreate import ReuseSessionCreator
 from .inferencer import InferencerBase
 
-__all__ = ['FeedInference', 'GANInference']
+__all__ = ['FeedInference', 'GANInference', 'FeedInferenceBatch']
 
 def assert_type(v, tp):
     assert isinstance(v, tp), \

@@ -11,7 +11,7 @@ import tensorflow as tf
 
 __all__ = ['save_merge_images', 'get_file_list', 'apply_mask']
 
-def save_merge_images(images, im_size, save_path):
+def save_merge_images(images, im_size, save_path, tanh = False):
     
     """
     Save the samples images
@@ -23,7 +23,10 @@ def save_merge_images(images, im_size, save_path):
     """
 
     # normalization of tanh output
-    img = (images + 1.0) / 2.0
+    img = images
+    if tanh:
+        img = (img + 1.0) / 2.0
+
     if len(img.shape) == 2:
         img = np.expand_dims(img, 0)
     # img = images

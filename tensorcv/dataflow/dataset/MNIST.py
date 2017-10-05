@@ -8,7 +8,7 @@ from tensorflow.examples.tutorials.mnist import input_data
 
 from ..base import RNGDataFlow
 
-__all__ = ['MNIST']
+__all__ = ['MNIST', 'MNISTLabel']
 
 def get_mnist_im_label(name, mnist_data):
     if name == 'train':
@@ -104,6 +104,6 @@ class MNISTLabel(MNIST):
    
 
 if __name__ == '__main__':
-    a = MNISTLabel('train','D:\\Qian\\GitHub\\workspace\\tensorflow-DCGAN\\MNIST_data\\')
+    a = MNISTLabel('val','D:\\Qian\\GitHub\\workspace\\tensorflow-DCGAN\\MNIST_data\\')
     t = a.next_batch()
     print(t)

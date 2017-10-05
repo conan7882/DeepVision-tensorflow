@@ -2,6 +2,7 @@
 # Author: Qian Ge <geqian1001@gmail.com>
 
 import os
+import scipy.io
 import scipy.misc
 
 import tensorflow as tf
@@ -9,7 +10,7 @@ import numpy as np
 
 from ..utils.common import get_tensors_by_names, save_merge_images
 
-__all__ = ['PredictionImage']
+__all__ = ['PredictionImage', 'PredictionScalar', 'PredictionMat']
 
 def assert_type(v, tp):
     assert isinstance(v, tp), \
@@ -68,7 +69,7 @@ class PredictionBase(object):
 
 class PredictionImage(PredictionBase):
     def __init__(self, prediction_image_tensors, 
-                save_prefix, merge_im = False):
+                save_prefix, merge_im = False, tanh = False):
         """
         Args:
             prediction_image_tensors (list): a list of tensor names
@@ -77,6 +78,7 @@ class PredictionImage(PredictionBase):
             merge_im (bool): merge output of one batch or not
         """
         self._merge = merge_im
+        self._tanh = tanh
         super(PredictionImage, self).__init__(prediction_tensors = prediction_image_tensors, 
                                              save_prefix = save_prefix)
 
@@ -89,7 +91,7 @@ class PredictionImage(PredictionBase):
                 save_path = os.path.join(self._save_dir, 
                                str(cur_global_ind) + '_' + prefix + '.png')
                 save_merge_images(np.squeeze(re), 
-                                [grid_size, grid_size], save_path)
+                                [grid_size, grid_size], save_path, tanh = self._tanh)
                 cur_global_ind += 1
             else:
                 for im in re:
@@ -105,6 +107,34 @@ class PredictionImage(PredictionBase):
         except AttributeError:
             self._grid_size = np.ceil(batch_size**0.5).astype(int)
             return self._grid_size
+
+class PredictionScalar(PredictionBase):
+    def __init__(self, prediction_scalar_tensors, print_prefix):
+        """
+        Args:
+            prediction_scalar_tensors (list): a list of tensor names
+            print_prefix (list): a list of name prefix for printing 
+                                each tensor in prediction_scalar_tensors
+        """
+
+        super(PredictionScalar, self).__init__(prediction_tensors = prediction_scalar_tensors, 
+                                             save_prefix = print_prefix)
+
+    def _save_prediction(self, results):
+
+        for re, prefix in zip(results, self._prefix_list):
+            print('{} = {}'.format(prefix, re))
+
+class PredictionMat(PredictionBase):
+    def _save_prediction(self, results):
+        save_path = os.path.join(self._save_dir, 
+                               str(self._global_ind) + '_' + 'test' + '.mat')
+        scipy.io.savemat(save_path, {name: np.squeeze(val) for name, val 
+              in zip(self._prefix_list, results)})
+
+        self._global_ind += 1
+
+
         
 
  

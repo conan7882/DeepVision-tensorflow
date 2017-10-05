@@ -103,6 +103,7 @@ class ImageFromFile(DataFromFile):
             input_im_list.extend(im)
 
         input_im_list = np.array(input_im_list)
+        # input_im_list = np.array(input_im_list)*1.0/255.0
 
         if self._normalize == 'tanh':
             try:

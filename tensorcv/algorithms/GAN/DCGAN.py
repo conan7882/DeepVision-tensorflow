@@ -171,7 +171,7 @@ def get_config(FLAGS):
 def get_predictConfig(FLAGS):
     random_feed = RandomVec(len_vec = FLAGS.len_vec)
     prediction_list = PredictionImage('generate_image', 
-                                      'test', merge_im = True)
+                                      'test', merge_im = True, tanh = True)
     im_size = [FLAGS.h, FLAGS.w]
     return PridectConfig(
                          dataflow = random_feed,
