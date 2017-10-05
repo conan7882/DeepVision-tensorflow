@@ -10,7 +10,7 @@ import numpy as np
 
 from ..utils.common import get_tensors_by_names, save_merge_images
 
-__all__ = ['PredictionImage', 'PredictionScalar', 'PredictionMat']
+__all__ = ['PredictionImage', 'PredictionScalar', 'PredictionMat', 'PredictionMeanScalar']
 
 def assert_type(v, tp):
     assert isinstance(v, tp), \
@@ -67,7 +67,20 @@ class PredictionBase(object):
     def _save_prediction(self, results):
         pass
 
+    def after_finish_predict(self):
+        """ process after all prediction steps """
+        self._after_finish_predict()
+
+    def _after_finish_predict(self):
+        pass
+
 class PredictionImage(PredictionBase):
+    """ Predict image output and save as files.
+
+    Images are saved every batch. Each batch result can be 
+    save in one image or individule images.
+    
+    """
     def __init__(self, prediction_image_tensors, 
                 save_prefix, merge_im = False, tanh = False):
         """
@@ -121,9 +134,28 @@ class PredictionScalar(PredictionBase):
                                              save_prefix = print_prefix)
 
     def _save_prediction(self, results):
-
         for re, prefix in zip(results, self._prefix_list):
             print('{} = {}'.format(prefix, re))
+
+class PredictionMeanScalar(PredictionScalar):
+    def __init__(self, prediction_scalar_tensors, print_prefix):
+
+        super(PredictionMeanScalar, self).__init__(prediction_scalar_tensors = prediction_scalar_tensors, 
+                                             print_prefix = print_prefix)
+
+        self.scalar_list = [[] for i in range(0, len(self._predictions))]
+
+    def _save_prediction(self, results):
+        cnt = 0
+        for re, prefix in zip(results, self._prefix_list):
+            print('{} = {}'.format(prefix, re))
+            self.scalar_list[cnt].append(re)
+            cnt += 1
+
+    def _after_finish_predict(self):
+        for i, prefix in enumerate(self._prefix_list):
+            print('{} = {}'.format(prefix, np.mean(self.scalar_list[i])))
+
 
 class PredictionMat(PredictionBase):
     def _save_prediction(self, results):
@@ -133,6 +165,8 @@ class PredictionMat(PredictionBase):
               in zip(self._prefix_list, results)})
 
         self._global_ind += 1
+
+
 
 
         
