@@ -71,11 +71,19 @@ class InferImages(InferencerBase):
     def _after_inference(self):
         # TODO add process_image to monitors
         batch_size = len(self._result_im[0])
-        grid_size = [8, 8] if batch_size == 64 else [6, 6]
+        grid_size = self._get_grid_size(batch_size)
+        # grid_size = [8, 8] if batch_size == 64 else [6, 6]
         for im, save_name in zip(self._result_im, self._prefix): 
-            save_merge_images(im, grid_size, 
+            save_merge_images(im, [grid_size, grid_size], 
                 self._save_dir + save_name + '_' + str(self.global_step) + '.png')
         return None
+
+    def _get_grid_size(self, batch_size):
+        try:
+            return self._grid_size 
+        except AttributeError:
+            self._grid_size = np.ceil(batch_size**0.5).astype(int)
+            return self._grid_size
 
 class InferScalars(InferencerBase):
     def __init__(self, scaler_names, summary_names = None):

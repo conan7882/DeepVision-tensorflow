@@ -7,6 +7,7 @@ import numpy as np
 from scipy import misc
 
 from .common import *
+from .normalization import *
 from .base import RNGDataFlow
 from ..utils.common import check_dir
 
@@ -16,12 +17,14 @@ class DataFromFile(RNGDataFlow):
     """ Base class for image from files """
     def __init__(self, ext_name, data_dir = '', 
                  num_channel = None,
-                 shuffle = True, normalize = None):
+                 shuffle = True, normalize = None,
+                 normalize_fnc = identity):
 
         check_dir(data_dir)
         self.data_dir = data_dir
         self._shuffle = shuffle
         self._normalize = normalize
+        self._normalize_fnc = normalize_fnc
 
         self.setup(epoch_val = 0, batch_size = 1)
 
@@ -65,14 +68,36 @@ class DataFromFile(RNGDataFlow):
     def _load_data(self, start, end):
         raise NotImplementedError()
 
+    # TODO to be modified 
+    def _get_max_in_val(self):
+        try:
+            return self._max_in_val
+        except AttributeError:
+            self._max_in_val, self._half_in_val =\
+             input_val_range(self.get_sample_data())
+            return self._max_in_val
+
+    def _get_half_in_val(self):
+        try:
+            return self._half_in_val
+        except AttributeError:
+            self._max_in_val, self._half_in_val =\
+             input_val_range(self.get_sample_data())
+            return self._half_in_val
+
     def _input_val_range(self, sample_data):
         # TODO to be modified  
         self._max_in_val, self._half_in_val = input_val_range(sample_data)
 
+    def get_sample_data(self):
+        return self._get_sample_data()
+
 class ImageFromFile(DataFromFile):
     def __init__(self, ext_name, data_dir = '', 
                  num_channel = None,
-                 shuffle = True, normalize = None):
+                 shuffle = True, normalize = None,
+                 normalize_fnc = identity):
+    
         if num_channel is not None:
             self.num_channels = num_channel
             self._read_channel = num_channel
@@ -82,7 +107,8 @@ class ImageFromFile(DataFromFile):
         super(ImageFromFile, self).__init__(ext_name, 
                                         data_dir = data_dir,
                                         shuffle = shuffle, 
-                                        normalize = normalize)
+                                        normalize = normalize,
+                                        normalize_fnc = normalize_fnc)
 
     def _load_file_list(self, ext_name):
         im_dir = os.path.join(self.data_dir)
@@ -102,18 +128,15 @@ class ImageFromFile(DataFromFile):
             im = load_image(im_path, read_channel = self._read_channel)
             input_im_list.extend(im)
 
-        input_im_list = np.array(input_im_list)
-        # input_im_list = np.array(input_im_list)*1.0/255.0
+        # TODO to be modified 
+        input_im_list = self._normalize_fnc(np.array(input_im_list), 
+                                          self._get_max_in_val(), 
+                                          self._get_half_in_val())
 
-        if self._normalize == 'tanh':
-            try:
-                input_im_list = (input_im_list*1.0 - self._half_in_val)/\
-                                 self._half_in_val
-            except AttributeError:
-                self._input_val_range(input_im_list[0])
-                input_im_list = (input_im_list*1.0 - self._half_in_val)/\
-                                 self._half_in_val
         return [input_im_list]
+
+    def _get_sample_data(self):
+        return load_image(self._im_list[0], read_channel = self._read_channel)
 
     def _get_im_size(self):
         im = load_image(self._im_list[0], read_channel = self._read_channel)

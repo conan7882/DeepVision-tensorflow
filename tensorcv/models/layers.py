@@ -353,6 +353,11 @@ def batch_flatten(x):
         return tf.reshape(x, [-1, int(np.prod(shape))])
     return tf.reshape(x, tf.stack([tf.shape(x)[0], -1]))
 
+# def variable_with_weight_decay(name, shape, init):
+#     var = tf.get_variable(name, shape = shape, 
+#                            initializer = initializer)
+
+
 # From tensorflow tutorial
 # def _variable_with_weight_decay(name, shape, stddev, wd):
 #   """Helper to create an initialized Variable with weight decay.
