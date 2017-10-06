@@ -26,13 +26,15 @@ def assert_type(v, tp):
 class InferenceBase(Callback):
     """ base class for Inference """
     def __init__(self, inputs = None, periodic = 1, 
-                 inferencers = None, extra_cbs = None):
+                 inferencers = None, extra_cbs = None,
+                 infer_batch_size = None):
         """
         Args:
             extra_cbs (list[Callback])
         """
         self._inputs = inputs
         self._periodic = periodic
+        self._infer_batch_size = infer_batch_size
 
         assert inferencers is not None or extra_cbs is not None,\
         "Inferencers and extra_cbs cannot be both None!"
@@ -68,6 +70,11 @@ class InferenceBase(Callback):
         for infer in self._inference_list:
             assert_type(infer, InferencerBase)
             infer.setup_graph(self.trainer)
+
+        if self._infer_batch_size is None:
+            self._inputs.set_batch_size(self.trainer.config.batch_size)
+        else:
+            self._inputs.set_batch_size(self._infer_batch_size)
 
     def _setup_inference(self):
         """ setup extra default callbacks for inference """
@@ -114,14 +121,16 @@ class FeedInference(InferenceBase):
         inference_list = InferImages('generator/gen_image', prefix = 'gen')
     """
     def __init__(self, inputs, periodic = 1, 
-                 inferencers = [], extra_cbs = None):
+                 inferencers = [], extra_cbs = None,
+                 infer_batch_size = None):
         assert_type(inputs, DataFlow)
 
         # inferencers.append(InferImages('default', prefix = 'gen'))
         super(FeedInference, self).__init__(inputs = inputs, 
                                             periodic = periodic, 
                                             inferencers = inferencers,
-                                            extra_cbs = extra_cbs)
+                                            extra_cbs = extra_cbs,
+                                            infer_batch_size = infer_batch_size)
 
     def _setup_inference(self):
         placeholders = self.model.get_train_placeholder()
@@ -137,12 +146,14 @@ class FeedInferenceBatch(FeedInference):
     """ do not use all validation data """
     def __init__(self, inputs, periodic = 1, 
                  batch_count = 10,
-                 inferencers = [], extra_cbs = None):
+                 inferencers = [], extra_cbs = None,
+                 infer_batch_size = None):
         self._batch_count = batch_count
         super(FeedInferenceBatch, self).__init__(inputs = inputs, 
                                                 periodic = periodic, 
                                                 inferencers = inferencers, 
-                                                extra_cbs = extra_cbs)
+                                                extra_cbs = extra_cbs,
+                                                infer_batch_size = infer_batch_size)
     def _inference_step(self):
         model_feed = self.model.get_graph_feed()
         for i in range(self._batch_count):

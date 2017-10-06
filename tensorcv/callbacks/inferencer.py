@@ -7,7 +7,8 @@ import numpy as np
 import tensorflow as tf
 
 from .base import Callback
-from ..utils.common import get_tensors_by_names, check_dir, save_merge_images, match_tensor_save_name
+from ..utils.common import get_tensors_by_names, check_dir, match_tensor_save_name
+from ..utils.viz import *
 
 __all__ = ['InferencerBase', 'InferImages', 'InferScalars']
 
@@ -55,8 +56,10 @@ class InferencerBase(Callback):
         return None
 
 class InferImages(InferencerBase):
-    def __init__(self, gen_name, prefix = None):
+    def __init__(self, gen_name, prefix = None, color = False, tanh = False):
         self._names, self._prefix = match_tensor_save_name(gen_name, prefix)
+        self._color = color
+        self._tanh = tanh
 
     def _setup_inference(self, default_dirs = None):
         try:
@@ -75,7 +78,9 @@ class InferImages(InferencerBase):
         # grid_size = [8, 8] if batch_size == 64 else [6, 6]
         for im, save_name in zip(self._result_im, self._prefix): 
             save_merge_images(im, [grid_size, grid_size], 
-                self._save_dir + save_name + '_' + str(self.global_step) + '.png')
+                self._save_dir + save_name + '_' + str(self.global_step) + '.png',
+                color = self._color,
+                tanh = self._tanh)
         return None
 
     def _get_grid_size(self, batch_size):

@@ -32,9 +32,9 @@ class FeedInput(Callback):
     def _before_run(self, _):
         cur_batch = self.dataflow.next_batch()
         
-        assert len(cur_batch) == len(self.placeholders), \
-        "[FeedInput] lenght of input {} is not equal to length of placeholders {}"\
-        .format(len(cur_batch), len(self.placeholders))
+        # assert len(cur_batch) == len(self.placeholders), \
+        # "[FeedInput] lenght of input {} is not equal to length of placeholders {}"\
+        # .format(len(cur_batch), len(self.placeholders))
 
         feed = dict(zip(self.placeholders, cur_batch))
         return tf.train.SessionRunArgs(fetches=[], feed_dict=feed)

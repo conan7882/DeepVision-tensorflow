@@ -78,6 +78,10 @@ def load_image(im_path, read_channel = None):
 
     return im
 
+
+def print_warning(warning_str):
+    print('[**** warning ****] {}'.format(warning_str))
+
     
 
 

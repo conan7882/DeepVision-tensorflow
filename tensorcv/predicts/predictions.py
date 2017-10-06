@@ -8,7 +8,8 @@ import scipy.misc
 import tensorflow as tf
 import numpy as np
 
-from ..utils.common import get_tensors_by_names, save_merge_images
+from ..utils.common import get_tensors_by_names
+from ..utils.viz import *
 
 __all__ = ['PredictionImage', 'PredictionScalar', 'PredictionMat', 'PredictionMeanScalar']
 
@@ -82,7 +83,8 @@ class PredictionImage(PredictionBase):
     
     """
     def __init__(self, prediction_image_tensors, 
-                save_prefix, merge_im = False, tanh = False):
+                save_prefix, merge_im = False, 
+                tanh = False, color = False):
         """
         Args:
             prediction_image_tensors (list): a list of tensor names
@@ -92,6 +94,7 @@ class PredictionImage(PredictionBase):
         """
         self._merge = merge_im
         self._tanh = tanh
+        self._color = color
         super(PredictionImage, self).__init__(prediction_tensors = prediction_image_tensors, 
                                              save_prefix = save_prefix)
 
@@ -104,7 +107,8 @@ class PredictionImage(PredictionBase):
                 save_path = os.path.join(self._save_dir, 
                                str(cur_global_ind) + '_' + prefix + '.png')
                 save_merge_images(np.squeeze(re), 
-                                [grid_size, grid_size], save_path, tanh = self._tanh)
+                                [grid_size, grid_size], save_path, 
+                                tanh = self._tanh, color = self._color)
                 cur_global_ind += 1
             else:
                 for im in re:
@@ -154,7 +158,7 @@ class PredictionMeanScalar(PredictionScalar):
 
     def _after_finish_predict(self):
         for i, prefix in enumerate(self._prefix_list):
-            print('{} = {}'.format(prefix, np.mean(self.scalar_list[i])))
+            print('Overall {} = {}'.format(prefix, np.mean(self.scalar_list[i])))
 
 
 class PredictionMat(PredictionBase):

@@ -29,6 +29,9 @@ class DataFromFile(RNGDataFlow):
         self.setup(epoch_val = 0, batch_size = 1)
 
         self._load_file_list(ext_name.lower())
+        if self.size() == 0:
+            print_warning('No {} files in folder {}'.\
+                format(ext_name, data_dir))
         self.num_channels, self.im_size = self._get_im_size()
         self._data_id = 0
 
