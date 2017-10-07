@@ -10,7 +10,9 @@ def conv(x, filter_size, out_dim,
          name = 'conv', stride = 1, 
          padding = 'SAME',
          nl = tf.identity,
-         init_w = None, init_b = None):
+         data_dict = None,
+         init_w = None, init_b = None,
+         trainable = True):
     """ 
     2D convolution 
 
@@ -42,8 +44,10 @@ def conv(x, filter_size, out_dim,
     convolve = lambda i, k: tf.nn.conv2d(i, k, strid_shape, padding)
 
     with tf.variable_scope(name) as scope:
-        weights = new_weights('weights', 0, filter_shape, initializer = init_w)
-        biases = new_biases('biases', 1, [out_dim], initializer = init_b)
+        weights = new_weights('weights', 0, filter_shape, initializer = init_w,
+                              data_dict = data_dict, trainable = trainable)
+        biases = new_biases('biases', 1, [out_dim], initializer = init_b,
+                            data_dict = data_dict, trainable = trainable)
 
         conv = convolve(x, weights)
         bias = tf.nn.bias_add(conv, biases)
@@ -58,7 +62,9 @@ def dconv(x, filter_size, out_dim = None,
          name = 'dconv', stride = 2, 
          padding = 'SAME',
          nl = tf.identity,
-         init_w = None, init_b = None):
+         data_dict = None,
+         init_w = None, init_b = None,
+         trainable = True):
     """ 
     2D deconvolution 
 
@@ -112,8 +118,10 @@ def dconv(x, filter_size, out_dim = None,
     filter_shape = get_shape2D(filter_size) + [out_dim, in_dim]
 
     with tf.variable_scope(name) as scope:
-        weights = new_weights('weights', 0, filter_shape, initializer = init_w)
-        biases = new_biases('biases', 1, [out_dim], initializer = init_b)
+        weights = new_weights('weights', 0, filter_shape, initializer = init_w,
+                             data_dict = data_dict, trainable = trainable)
+        biases = new_biases('biases', 1, [out_dim], initializer = init_b,
+                           data_dict = data_dict, trainable = trainable)
         dconv = tf.nn.conv2d_transpose(x, weights, 
                                output_shape = out_shape, 
                                strides = stride, 
@@ -125,7 +133,10 @@ def dconv(x, filter_size, out_dim = None,
         output = nl(bias, name = 'output')
         return output
 
-def fc(x, out_dim, name ='fc', nl = tf.identity, init_w = None, init_b = None):
+def fc(x, out_dim, name ='fc', nl = tf.identity, 
+       init_w = None, init_b = None,
+       data_dict = None, 
+       trainable = True):
     """ 
     Fully connected layer 
 
@@ -147,8 +158,10 @@ def fc(x, out_dim, name ='fc', nl = tf.identity, init_w = None, init_b = None):
     in_dim = x_shape[1]
 
     with tf.variable_scope(name) as scope:
-        weights = new_weights('weights', 0, [in_dim, out_dim], initializer = init_w)
-        biases = new_biases('biases', 1, [out_dim], initializer = init_b)
+        weights = new_weights('weights', 0, [in_dim, out_dim], initializer = init_w,
+                              data_dict = data_dict, trainable = trainable)
+        biases = new_biases('biases', 1, [out_dim], initializer = init_b,
+                            data_dict = data_dict, trainable = trainable)
         act = tf.nn.xw_plus_b(x_flatten, weights, biases)
 
         output = nl(act, name = 'output')
@@ -280,29 +293,48 @@ def new_variable(name, idx, shape, initializer = None):
     # var_dict[(name, idx)] = var
     return var
 
-def new_weights(name, idx, shape, initializer = None, wd = None):
-    if wd is not None:
+def new_weights(name, idx, shape, initializer = None, wd = None, 
+                data_dict = None,
+                trainable = True): 
+    cur_name_scope = tf.get_default_graph().get_name_scope()
+    if data_dict is not None and cur_name_scope in data_dict:
+        load_data = data_dict[cur_name_scope][0]
+        load_data = tf.reshape(load_data, shape)
+        initializer = tf.constant_initializer(load_data)
+        var = tf.get_variable(name, shape = shape, 
+                                  initializer = initializer,
+                                  trainable = trainable)
+    elif wd is not None:
         if initializer is None:
             initializer = tf.truncated_normal_initializer(stddev = 0.01)
         var = tf.get_variable(name, shape = shape, 
-                                  initializer = initializer) 
+                                  initializer = initializer,
+                                  trainable = trainable) 
         weight_decay = tf.multiply(tf.nn.l2_loss(var), wd, name='weight_loss')
         tf.add_to_collection('losses', weight_decay)
     else:
         if initializer is None:
             initializer = tf.random_normal_initializer(stddev = 0.002)
             var = tf.get_variable(name, shape = shape, 
-                                  initializer = initializer) 
+                                  initializer = initializer,
+                                  trainable = trainable) 
     # var_dict[(name, idx)] = var
     return var
 
-def new_biases(name, idx, shape, initializer = None):
-    if initializer is None:
+def new_biases(name, idx, shape, initializer = None,
+                data_dict = None, trainable = True):
+    cur_name_scope = tf.get_default_graph().get_name_scope()
+    if data_dict is not None and cur_name_scope in data_dict:
+        load_data = data_dict[cur_name_scope][1]
+        load_data = tf.reshape(load_data, shape)
+        initializer = tf.constant_initializer(load_data)
+    elif initializer is None:
         initializer = tf.random_normal_initializer(stddev = 0.002)
         # initializer = tf.constant_initializer(0)
 
     var = tf.get_variable(name, shape = shape, 
-                           initializer = initializer) 
+                           initializer = initializer,
+                           trainable = trainable) 
     # var_dict[(name, idx)] = var
     return var
 
