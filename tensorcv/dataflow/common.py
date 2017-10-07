@@ -62,7 +62,7 @@ def reverse_label_dict(label_dict):
         label_dict_reverse[value] = key
     return label_dict_reverse
 
-def load_image(im_path, read_channel = None):
+def load_image(im_path, read_channel = None, reshape = None):
     # im = cv2.imread(im_path, self._cv_read)
     if read_channel is None:
         im = misc.imread(im_path)
@@ -72,16 +72,42 @@ def load_image(im_path, read_channel = None):
         im = misc.imread(im_path, flatten = True)
 
     if len(im.shape) < 3:
+        try:
+            im = misc.imresize(im, (reshape[0], reshape[1], 1))
+        except TypeError:
+            pass
         im = np.reshape(im, [1, im.shape[0], im.shape[1], 1])
     else:
+        try:
+            im = misc.imresize(im, (reshape[0], reshape[1], im.shape[2]))
+        except TypeError:
+            pass
         im = np.reshape(im, [1, im.shape[0], im.shape[1], im.shape[2]])
-
     return im
 
 
 def print_warning(warning_str):
     print('[**** warning ****] {}'.format(warning_str))
 
+
+def get_shape2D(in_val):
+    """
+    Return a 2D shape 
+
+    Args:
+        in_val (int or list with length 2) 
+
+    Returns:
+        list with length 2
+    """
+    if in_val is None:
+        return None
+    if isinstance(in_val, int):
+        return [in_val, in_val]
+    if isinstance(in_val, list):
+        assert len(in_val) == 2
+        return in_val
+    raise RuntimeError('Illegal shape: {}'.format(in_val))
     
 
 
