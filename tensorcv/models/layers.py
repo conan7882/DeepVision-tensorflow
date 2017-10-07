@@ -3,9 +3,10 @@
 # Reference code: https://github.com/ppwwyyxx/tensorpack/blob/master/tensorpack/models/
 
 import tensorflow as tf
+from tensorflow.contrib.framework import add_arg_scope
 import numpy as np
 
-
+@add_arg_scope
 def conv(x, filter_size, out_dim, 
          name = 'conv', stride = 1, 
          padding = 'SAME',
@@ -299,7 +300,7 @@ def new_weights(name, idx, shape, initializer = None, wd = None,
     cur_name_scope = tf.get_default_graph().get_name_scope()
     if data_dict is not None and cur_name_scope in data_dict:
         load_data = data_dict[cur_name_scope][0]
-        load_data = tf.reshape(load_data, shape)
+        load_data = np.reshape(load_data, shape)
         initializer = tf.constant_initializer(load_data)
         var = tf.get_variable(name, shape = shape, 
                                   initializer = initializer,
@@ -326,7 +327,7 @@ def new_biases(name, idx, shape, initializer = None,
     cur_name_scope = tf.get_default_graph().get_name_scope()
     if data_dict is not None and cur_name_scope in data_dict:
         load_data = data_dict[cur_name_scope][1]
-        load_data = tf.reshape(load_data, shape)
+        load_data = np.reshape(load_data, shape)
         initializer = tf.constant_initializer(load_data)
     elif initializer is None:
         initializer = tf.random_normal_initializer(stddev = 0.002)
