@@ -135,42 +135,37 @@ class PredictionOverlay(PredictionImage):
             prediction_image_tensors = [prediction_image_tensors]
         assert len(prediction_image_tensors) == 2,\
         '[PredictionOverlay] requires two image tensors but the input len = {}.'.\
-        format(len(prediction_image_tensors) )
+        format(len(prediction_image_tensors))
 
         super(PredictionOverlay, self).__init__(prediction_image_tensors, 
                                             save_prefix, merge_im = merge_im, 
                                             tanh = tanh, color = color)
 
+        self._overlay_prefix = '{}_{}'.format(self._prefix_list[0], self._prefix_list[1])
+
     def _save_prediction(self, results):
         cur_global_ind = self._global_ind
-        im_front = results[0]
-        im_back = results[1]
-        if self._color:
-            im_front = intensity_to_rgb(np.squeeze(im_front), normalize=True)
-            im_back = intensity_to_rgb(np.squeeze(im_back), normalize=True)
-        overlay_im = im_front*0.5 + im_back*0.5
-        save_path = os.path.join(self._save_dir, 
-                               str(cur_global_ind) + '_' + self._prefix_list[0] + '.png')
-        scipy.misc.imsave(save_path, np.squeeze(overlay_im))
-        cur_global_ind += 1
 
-        # for re, prefix in zip(results, self._prefix_list):
-        #     cur_global_ind = self._global_ind
-            
-            # if self._merge and re.shape[0] > 1:
-            #     grid_size = self._get_grid_size(re.shape[0])
-            #     save_path = os.path.join(self._save_dir, 
-            #                    str(cur_global_ind) + '_' + prefix + '.png')
-            #     save_merge_images(np.squeeze(re), 
-            #                     [grid_size, grid_size], save_path, 
-            #                     tanh = self._tanh, color = self._color)
-            #     cur_global_ind += 1
-            # else:
-                # for im in re:
-                #     save_path = os.path.join(self._save_dir, 
-                #                str(cur_global_ind) + '_' + prefix + '.png')
-                #     scipy.misc.imsave(save_path, np.squeeze(im))
-                #     cur_global_ind += 1
+        if self._merge and results[0].shape[0] > 1:
+            overlay_im_list = []
+            for im_1, im_2 in zip(results[0], results[1]):
+                overlay_im = image_overlay(im_1, im_2, color = self._color)
+                overlay_im_list.append(overlay_im)
+
+            grid_size = self._get_grid_size(results[0].shape[0])
+            save_path = os.path.join(self._save_dir, 
+                    str(cur_global_ind) + '_' + self._overlay_prefix + '.png')
+            save_merge_images(np.squeeze(overlay_im_list), 
+                                [grid_size, grid_size], save_path, 
+                                tanh = self._tanh, color = False)
+            cur_global_ind += 1
+        else:
+            for im_1, im_2 in zip(results[0], results[1]):
+                overlay_im = image_overlay(im_1, im_2, color = self._color)
+                save_path = os.path.join(self._save_dir, 
+                    str(cur_global_ind) + '_' + self._overlay_prefix + '.png')
+                scipy.misc.imsave(save_path, np.squeeze(overlay_im))
+                cur_global_ind += 1
         self._global_ind = cur_global_ind
 
 class PredictionScalar(PredictionBase):
@@ -212,7 +207,7 @@ class PredictionMeanScalar(PredictionScalar):
 class PredictionMat(PredictionBase):
     def _save_prediction(self, results):
         save_path = os.path.join(self._save_dir, 
-                               str(self._global_ind) + '_' + 'test' + '.mat')
+                               str(self._global_ind) + '_' + 'batch_test' + '.mat')
         scipy.io.savemat(save_path, {name: np.squeeze(val) for name, val 
               in zip(self._prefix_list, results)})
 

@@ -131,14 +131,14 @@ class ImageFromFile(DataFromFile):
         input_im_list = []
         for k in range(start, end):
             im_path = self._im_list[k]
-            im = load_image(im_path, read_channel = self._read_channel)
+            im = load_image(im_path, read_channel = self._read_channel,
+                            reshape = self._reshape)
             input_im_list.extend(im)
 
         # TODO to be modified 
         input_im_list = self._normalize_fnc(np.array(input_im_list), 
                                           self._get_max_in_val(), 
                                           self._get_half_in_val())
-
         return [input_im_list]
 
     def _get_sample_data(self):

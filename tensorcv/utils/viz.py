@@ -67,3 +67,14 @@ def save_merge_images(images, im_size, save_path, color = False, tanh = False):
         merge_img[j*h:j*h+h, i*w:i*w+w, :] = image
     
     return scipy.misc.imsave(save_path, merge_img)
+
+def image_overlay(im_1, im_2, color = True, cmap = 'cubehelix', normalize = True):
+    """
+    Args:
+        im_1, im_2: two images with size [HEIGHT, WIDTH, CHANNEL]
+    """
+    if color:
+        im_1 = intensity_to_rgb(np.squeeze(im_1), cmap = cmap, normalize = normalize)
+        im_2 = intensity_to_rgb(np.squeeze(im_2), cmap = cmap, normalize = normalize)
+        
+    return im_1*0.5 + im_2*0.5
