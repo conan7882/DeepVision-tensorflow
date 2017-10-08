@@ -11,7 +11,7 @@ import numpy as np
 from ..utils.common import get_tensors_by_names
 from ..utils.viz import *
 
-__all__ = ['PredictionImage', 'PredictionScalar', 'PredictionMat', 'PredictionMeanScalar']
+__all__ = ['PredictionImage', 'PredictionScalar', 'PredictionMat', 'PredictionMeanScalar', 'PredictionOverlay']
 
 def assert_type(v, tp):
     assert isinstance(v, tp), \
@@ -114,6 +114,8 @@ class PredictionImage(PredictionBase):
                 for im in re:
                     save_path = os.path.join(self._save_dir, 
                                str(cur_global_ind) + '_' + prefix + '.png')
+                    if self._color:
+                        im = intensity_to_rgb(np.squeeze(im), normalize=True)
                     scipy.misc.imsave(save_path, np.squeeze(im))
                     cur_global_ind += 1
         self._global_ind = cur_global_ind
@@ -124,6 +126,52 @@ class PredictionImage(PredictionBase):
         except AttributeError:
             self._grid_size = np.ceil(batch_size**0.5).astype(int)
             return self._grid_size
+
+class PredictionOverlay(PredictionImage):
+    def __init__(self, prediction_image_tensors, 
+                save_prefix, merge_im = False, 
+                tanh = False, color = False):
+        if not isinstance(prediction_image_tensors, list):
+            prediction_image_tensors = [prediction_image_tensors]
+        assert len(prediction_image_tensors) == 2,\
+        '[PredictionOverlay] requires two image tensors but the input len = {}.'.\
+        format(len(prediction_image_tensors) )
+
+        super(PredictionOverlay, self).__init__(prediction_image_tensors, 
+                                            save_prefix, merge_im = merge_im, 
+                                            tanh = tanh, color = color)
+
+    def _save_prediction(self, results):
+        cur_global_ind = self._global_ind
+        im_front = results[0]
+        im_back = results[1]
+        if self._color:
+            im_front = intensity_to_rgb(np.squeeze(im_front), normalize=True)
+            im_back = intensity_to_rgb(np.squeeze(im_back), normalize=True)
+        overlay_im = im_front*0.5 + im_back*0.5
+        save_path = os.path.join(self._save_dir, 
+                               str(cur_global_ind) + '_' + self._prefix_list[0] + '.png')
+        scipy.misc.imsave(save_path, np.squeeze(overlay_im))
+        cur_global_ind += 1
+
+        # for re, prefix in zip(results, self._prefix_list):
+        #     cur_global_ind = self._global_ind
+            
+            # if self._merge and re.shape[0] > 1:
+            #     grid_size = self._get_grid_size(re.shape[0])
+            #     save_path = os.path.join(self._save_dir, 
+            #                    str(cur_global_ind) + '_' + prefix + '.png')
+            #     save_merge_images(np.squeeze(re), 
+            #                     [grid_size, grid_size], save_path, 
+            #                     tanh = self._tanh, color = self._color)
+            #     cur_global_ind += 1
+            # else:
+                # for im in re:
+                #     save_path = os.path.join(self._save_dir, 
+                #                str(cur_global_ind) + '_' + prefix + '.png')
+                #     scipy.misc.imsave(save_path, np.squeeze(im))
+                #     cur_global_ind += 1
+        self._global_ind = cur_global_ind
 
 class PredictionScalar(PredictionBase):
     def __init__(self, prediction_scalar_tensors, print_prefix):

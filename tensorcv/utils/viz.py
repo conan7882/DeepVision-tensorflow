@@ -17,12 +17,16 @@ def intensity_to_rgb(intensity, cmap='cubehelix', normalize=False):
     Returns:
         np.ndarray: an RGB float32 image in range [0, 255], a colored heatmap.
     """
-    assert intensity.ndim == 2, intensity.shape
+    # assert intensity.ndim == 2, intensity.shape
+
     intensity = intensity.astype("float")
 
     if normalize:
         intensity -= intensity.min()
         intensity /= intensity.max()
+
+    if intensity.ndim == 3:
+        return intensity.astype('float32') * 255.0
 
     cmap = plt.get_cmap(cmap)
     intensity = cmap(intensity)[..., :3]
