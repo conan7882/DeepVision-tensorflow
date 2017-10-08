@@ -169,17 +169,18 @@ class ImageLabelFromFolder(ImageFromFile):
            label_dict (dict): empty or full
         """
 
-        if num_channel is not None:
-            self.num_channels = num_channel
-            self._read_channel = num_channel
-        else:
-            self._read_channel = None
+        # if num_channel is not None:
+        #     self.num_channels = num_channel
+        #     self._read_channel = num_channel
+        # else:
+        #     self._read_channel = None
 
         self._num_class = num_class
         self._one_hot = one_hot
         self.label_dict = label_dict
         super(ImageLabelFromFolder, self).__init__(ext_name, 
                                         data_dir = data_dir,
+                                        num_channel = num_channel,
                                         shuffle = shuffle, 
                                         normalize = normalize,
                                         reshape = reshape)
