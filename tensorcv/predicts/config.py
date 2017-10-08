@@ -31,13 +31,13 @@ class PridectConfig(object):
             self.model_dir = os.path.join(default_dirs.model_dir)
             check_dir(self.model_dir)
         except AttributeError:
-            raise AttributeError('summary_dir is not set in model_dir.py!')
+            raise AttributeError('model_dir is not set!')
 
         try:
             self.result_dir = os.path.join(default_dirs.result_dir)
             check_dir(self.result_dir)
         except AttributeError:
-            raise AttributeError('summary_dir is not set in result_dir.py!')
+            raise AttributeError('result_dir is not set!')
 
         assert dataflow is not None, "dataflow cannot be None!"
         assert_type(dataflow, DataFlow)

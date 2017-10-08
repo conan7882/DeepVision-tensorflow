@@ -47,15 +47,10 @@ class Predictor(object):
 
     def run_predict(self):
         self._predict_step()
-        self._after_finish_predict()
 
     def _predict_step(self):
         model_feed = self.model.get_graph_feed()
         self.hooked_sess.run(fetches = [], feed_dict = model_feed)
-
-    def _after_finish_predict(self):
-        for pred in self.config.predictions:
-            pred.after_finish_predict()
 
     # # def after_predict(self):
     # #     self._after_predict()

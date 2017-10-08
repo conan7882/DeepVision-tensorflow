@@ -136,6 +136,7 @@ def dconv(x, filter_size, out_dim = None,
         output = nl(bias, name = 'output')
         return output
 
+@add_arg_scope
 def fc(x, out_dim, name ='fc', nl = tf.identity, 
        init_w = None, init_b = None,
        data_dict = None,
@@ -313,7 +314,7 @@ def new_weights(name, idx, shape, initializer = None, wd = None,
             initializer = tf.truncated_normal_initializer(stddev = 0.01)
         var = tf.get_variable(name, shape = shape, 
                                   initializer = initializer,
-                                  trainable = trainable) 
+                                  trainable = True) 
         weight_decay = tf.multiply(tf.nn.l2_loss(var), wd, name='weight_loss')
         tf.add_to_collection('losses', weight_decay)
     else:
@@ -321,7 +322,7 @@ def new_weights(name, idx, shape, initializer = None, wd = None,
             initializer = tf.random_normal_initializer(stddev = 0.002)
             var = tf.get_variable(name, shape = shape, 
                                   initializer = initializer,
-                                  trainable = trainable) 
+                                  trainable = True) 
     # var_dict[(name, idx)] = var
     return var
 
@@ -332,9 +333,11 @@ def new_biases(name, idx, shape, initializer = None,
         load_data = data_dict[cur_name_scope][1]
         load_data = np.reshape(load_data, shape)
         initializer = tf.constant_initializer(load_data)
-    elif initializer is None:
-        initializer = tf.random_normal_initializer(stddev = 0.002)
-        # initializer = tf.constant_initializer(0)
+    else:
+        trainable = True
+        if initializer is None:
+            initializer = tf.random_normal_initializer(stddev = 0.002)
+            # initializer = tf.constant_initializer(0)
 
     var = tf.get_variable(name, shape = shape, 
                            initializer = initializer,
