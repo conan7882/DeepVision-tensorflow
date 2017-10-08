@@ -13,6 +13,7 @@ def conv(x, filter_size, out_dim,
          nl = tf.identity,
          data_dict = None,
          init_w = None, init_b = None,
+         wd = None,
          trainable = True):
     """ 
     2D convolution 
@@ -46,7 +47,7 @@ def conv(x, filter_size, out_dim,
 
     with tf.variable_scope(name) as scope:
         weights = new_weights('weights', 0, filter_shape, initializer = init_w,
-                              data_dict = data_dict, trainable = trainable)
+                              data_dict = data_dict, trainable = trainable, wd = wd)
         biases = new_biases('biases', 1, [out_dim], initializer = init_b,
                             data_dict = data_dict, trainable = trainable)
 
@@ -65,6 +66,7 @@ def dconv(x, filter_size, out_dim = None,
          nl = tf.identity,
          data_dict = None,
          init_w = None, init_b = None,
+         wd = None,
          trainable = True):
     """ 
     2D deconvolution 
@@ -120,7 +122,7 @@ def dconv(x, filter_size, out_dim = None,
 
     with tf.variable_scope(name) as scope:
         weights = new_weights('weights', 0, filter_shape, initializer = init_w,
-                             data_dict = data_dict, trainable = trainable)
+                             data_dict = data_dict, trainable = trainable, wd = wd)
         biases = new_biases('biases', 1, [out_dim], initializer = init_b,
                            data_dict = data_dict, trainable = trainable)
         dconv = tf.nn.conv2d_transpose(x, weights, 
@@ -136,7 +138,8 @@ def dconv(x, filter_size, out_dim = None,
 
 def fc(x, out_dim, name ='fc', nl = tf.identity, 
        init_w = None, init_b = None,
-       data_dict = None, 
+       data_dict = None,
+       wd = None, 
        trainable = True):
     """ 
     Fully connected layer 
@@ -160,7 +163,7 @@ def fc(x, out_dim, name ='fc', nl = tf.identity,
 
     with tf.variable_scope(name) as scope:
         weights = new_weights('weights', 0, [in_dim, out_dim], initializer = init_w,
-                              data_dict = data_dict, trainable = trainable)
+                              data_dict = data_dict, trainable = trainable, wd = wd)
         biases = new_biases('biases', 1, [out_dim], initializer = init_b,
                             data_dict = data_dict, trainable = trainable)
         act = tf.nn.xw_plus_b(x_flatten, weights, biases)
