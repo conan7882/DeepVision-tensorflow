@@ -112,11 +112,10 @@ class InferOverlay(InferImages):
         for im_1, im_2 in zip(self._result_im[0], self._result_im[1]):
             overlay_im = image_overlay(im_1, im_2, color = self._color)
             overlay_im_list.append(overlay_im)
-        save_merge_images(overlay_im_list, [grid_size, grid_size], 
+        save_merge_images(np.squeeze(overlay_im_list), [grid_size, grid_size], 
             self._save_dir + self._overlay_prefix + '_' +\
             str(self.global_step) + '.png',
-            color = self._color,
-            tanh = self._tanh)
+            color = False, tanh = self._tanh)
         return None
 
 class InferScalars(InferencerBase):

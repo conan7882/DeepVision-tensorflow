@@ -51,8 +51,12 @@ def save_merge_images(images, im_size, save_path, color = False, tanh = False):
 
     if color:
     	# TODO
-        img = intensity_to_rgb(np.squeeze(img), normalize=True)
-        img = np.expand_dims(img, 0)
+        img_list = []
+        for im in np.squeeze(img):
+            im = intensity_to_rgb(np.squeeze(im), normalize=True)
+            img_list.append(im)
+        img = np.array(img_list)
+        # img = np.expand_dims(img, 0)
 
     if len(img.shape) == 2:
         img = np.expand_dims(img, 0)
