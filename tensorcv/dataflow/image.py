@@ -100,7 +100,7 @@ class ImageFromFile(DataFromFile):
                  num_channel = None,
                  shuffle = True, normalize = None,
                  normalize_fnc = identity,
-                 reshape = None):
+                 resize = None):
     
         if num_channel is not None:
             self.num_channels = num_channel
@@ -108,7 +108,7 @@ class ImageFromFile(DataFromFile):
         else:
             self._read_channel = None
 
-        self._reshape = get_shape2D(reshape)
+        self._resize = get_shape2D(resize)
 
         super(ImageFromFile, self).__init__(ext_name, 
                                         data_dir = data_dir,
@@ -132,7 +132,7 @@ class ImageFromFile(DataFromFile):
         for k in range(start, end):
             im_path = self._im_list[k]
             im = load_image(im_path, read_channel = self._read_channel,
-                            reshape = self._reshape)
+                            resize = self._resize)
             input_im_list.extend(im)
 
         # TODO to be modified 
@@ -143,11 +143,11 @@ class ImageFromFile(DataFromFile):
 
     def _get_sample_data(self):
         return load_image(self._im_list[0], read_channel = self._read_channel,
-                          reshape = self._reshape)
+                          resize = self._resize)
 
     def _get_im_size(self):
         im = load_image(self._im_list[0], read_channel = self._read_channel,
-                        reshape = self._reshape)
+                        resize = self._resize)
         if self._read_channel is None:
             self.num_channels = im.shape[3]
         self.im_size = [im.shape[1], im.shape[2]]
@@ -163,7 +163,7 @@ class ImageLabelFromFolder(ImageFromFile):
                  label_dict = None, num_class = None,
                  one_hot = False,
                  shuffle = True, normalize = None,
-                 reshape = None):
+                 resize = None):
         """
         Args:
            label_dict (dict): empty or full
@@ -183,7 +183,7 @@ class ImageLabelFromFolder(ImageFromFile):
                                         num_channel = num_channel,
                                         shuffle = shuffle, 
                                         normalize = normalize,
-                                        reshape = reshape)
+                                        resize = resize)
         
         self.label_dict_reverse = reverse_label_dict(self.label_dict)
 
@@ -229,7 +229,7 @@ class ImageLabelFromFolder(ImageFromFile):
         for k in range(start, end):
             im_path = self._im_list[k]
             im = load_image(im_path, read_channel = self._read_channel, 
-                            reshape = self._reshape)
+                            resize = self._resize)
 
             # if self._cv_read is not None:
             #     im = cv2.imread(im_path, self._cv_read)
@@ -284,7 +284,7 @@ class ImageLabelFromFile(ImageLabelFromFolder):
                  num_channel = None, one_hot = False,
                  label_dict = {}, num_class = None,
                  shuffle = True, normalize = None,
-                 reshape = None):
+                 resize = None):
 
         self._label_file_name = label_file_name
         super(ImageLabelFromFile, self).__init__(ext_name, 
@@ -295,7 +295,7 @@ class ImageLabelFromFile(ImageLabelFromFolder):
                                     one_hot = one_hot,
                                     shuffle = shuffle, 
                                     normalize = normalize,
-                                    reshape = reshape)
+                                    resize = resize)
         
     def _get_label_list(self):
         label_file = open(os.path.join(self.data_dir, 

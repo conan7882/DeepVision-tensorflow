@@ -62,7 +62,7 @@ def reverse_label_dict(label_dict):
         label_dict_reverse[value] = key
     return label_dict_reverse
 
-def load_image(im_path, read_channel = None, reshape = None):
+def load_image(im_path, read_channel = None, resize = None):
     # im = cv2.imread(im_path, self._cv_read)
     if read_channel is None:
         im = misc.imread(im_path)
@@ -73,13 +73,13 @@ def load_image(im_path, read_channel = None, reshape = None):
 
     if len(im.shape) < 3:
         try:
-            im = misc.imresize(im, (reshape[0], reshape[1], 1))
+            im = misc.imresize(im, (resize[0], resize[1], 1))
         except TypeError:
             pass
         im = np.reshape(im, [1, im.shape[0], im.shape[1], 1])
     else:
         try:
-            im = misc.imresize(im, (reshape[0], reshape[1], im.shape[2]))
+            im = misc.imresize(im, (resize[0], resize[1], im.shape[2]))
         except TypeError:
             pass
         im = np.reshape(im, [1, im.shape[0], im.shape[1], im.shape[2]])

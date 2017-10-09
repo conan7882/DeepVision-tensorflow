@@ -2,8 +2,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.misc
 
-# copy from https://github.com/ppwwyyxx/tensorpack/blob/master/tensorpack/utils/viz.py
-def intensity_to_rgb(intensity, cmap='cubehelix', normalize=False):
+
+def intensity_to_rgb(intensity, cmap='jet', normalize=False):
+    # copy from https://github.com/ppwwyyxx/tensorpack/blob/master/tensorpack/utils/viz.py
     """
     Convert a 1-channel matrix of intensities to an RGB image employing a colormap.
     This function requires matplotlib. See `matplotlib colormaps
@@ -50,7 +51,7 @@ def save_merge_images(images, im_size, save_path, color = False, tanh = False):
 
     if color:
     	# TODO
-        img = intensity_to_rgb(np.squeeze(img), cmap='cubehelix', normalize=True)
+        img = intensity_to_rgb(np.squeeze(img), normalize=True)
         img = np.expand_dims(img, 0)
 
     if len(img.shape) == 2:
@@ -68,13 +69,13 @@ def save_merge_images(images, im_size, save_path, color = False, tanh = False):
     
     return scipy.misc.imsave(save_path, merge_img)
 
-def image_overlay(im_1, im_2, color = True, cmap = 'cubehelix', normalize = True):
+def image_overlay(im_1, im_2, color = True, normalize = True):
     """
     Args:
         im_1, im_2: two images with size [HEIGHT, WIDTH, CHANNEL]
     """
     if color:
-        im_1 = intensity_to_rgb(np.squeeze(im_1), cmap = cmap, normalize = normalize)
-        im_2 = intensity_to_rgb(np.squeeze(im_2), cmap = cmap, normalize = normalize)
+        im_1 = intensity_to_rgb(np.squeeze(im_1), normalize = normalize)
+        im_2 = intensity_to_rgb(np.squeeze(im_2), normalize = normalize)
         
     return im_1*0.5 + im_2*0.5
