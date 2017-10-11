@@ -20,7 +20,7 @@ def get_mnist_im_label(name, mnist_data):
 
 # TODO read data without tensorflow
 class MNIST(RNGDataFlow):
-    def __init__(self, name, data_dir = '', shuffle = True, normalize = None):
+    def __init__(self, name, data_dir='', shuffle=True, normalize=None):
 
         self.num_channels = 1
         self.im_size = [28, 28]
@@ -32,7 +32,7 @@ class MNIST(RNGDataFlow):
         self._normalize = normalize
 
         assert name in ['train', 'test', 'val']
-        self.setup(epoch_val = 0, batch_size = 1)
+        self.setup(epoch_val=0, batch_size=1)
 
         self._load_files(name)
         self._num_image = self.size()

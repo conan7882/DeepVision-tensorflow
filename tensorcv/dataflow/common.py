@@ -62,14 +62,14 @@ def reverse_label_dict(label_dict):
         label_dict_reverse[value] = key
     return label_dict_reverse
 
-def load_image(im_path, read_channel = None, resize = None):
+def load_image(im_path, read_channel=None, resize=None):
     # im = cv2.imread(im_path, self._cv_read)
     if read_channel is None:
         im = misc.imread(im_path)
     elif read_channel == 3:
-        im = misc.imread(im_path, mode = 'RGB')
+        im = misc.imread(im_path, mode='RGB')
     else:
-        im = misc.imread(im_path, flatten = True)
+        im = misc.imread(im_path, flatten=True)
 
     if len(im.shape) < 3:
         try:

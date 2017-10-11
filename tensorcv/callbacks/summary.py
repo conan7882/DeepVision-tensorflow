@@ -10,8 +10,8 @@ __all__ = ['TrainSummary']
 
 class TrainSummary(Callback):
 	def __init__(self, 
-		         key = None,
-		         periodic = 1):
+		         key=None,
+		         periodic=1):
 
 	    self.periodic = periodic
 	    if not key is None and not isinstance(key, list):

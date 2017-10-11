@@ -83,8 +83,8 @@ class PredictionImage(PredictionBase):
     
     """
     def __init__(self, prediction_image_tensors, 
-                save_prefix, merge_im = False, 
-                tanh = False, color = False):
+                save_prefix, merge_im=False, 
+                tanh=False, color=False):
         """
         Args:
             prediction_image_tensors (list): a list of tensor names
@@ -95,8 +95,8 @@ class PredictionImage(PredictionBase):
         self._merge = merge_im
         self._tanh = tanh
         self._color = color
-        super(PredictionImage, self).__init__(prediction_tensors = prediction_image_tensors, 
-                                             save_prefix = save_prefix)
+        super(PredictionImage, self).__init__(prediction_tensors=prediction_image_tensors, 
+                                             save_prefix=save_prefix)
 
     def _save_prediction(self, results):
 
@@ -108,7 +108,7 @@ class PredictionImage(PredictionBase):
                                str(cur_global_ind) + '_' + prefix + '.png')
                 save_merge_images(np.squeeze(re), 
                                 [grid_size, grid_size], save_path, 
-                                tanh = self._tanh, color = self._color)
+                                tanh=self._tanh, color=self._color)
                 cur_global_ind += 1
             else:
                 for im in re:
@@ -129,8 +129,8 @@ class PredictionImage(PredictionBase):
 
 class PredictionOverlay(PredictionImage):
     def __init__(self, prediction_image_tensors, 
-                save_prefix, merge_im = False, 
-                tanh = False, color = False):
+                save_prefix, merge_im=False, 
+                tanh=False, color=False):
         if not isinstance(prediction_image_tensors, list):
             prediction_image_tensors = [prediction_image_tensors]
         assert len(prediction_image_tensors) == 2,\
@@ -138,8 +138,8 @@ class PredictionOverlay(PredictionImage):
         format(len(prediction_image_tensors))
 
         super(PredictionOverlay, self).__init__(prediction_image_tensors, 
-                                            save_prefix, merge_im = merge_im, 
-                                            tanh = tanh, color = color)
+                                            save_prefix, merge_im=merge_im, 
+                                            tanh=tanh, color=color)
 
         self._overlay_prefix = '{}_{}'.format(self._prefix_list[0], self._prefix_list[1])
 
@@ -149,7 +149,7 @@ class PredictionOverlay(PredictionImage):
         if self._merge and results[0].shape[0] > 1:
             overlay_im_list = []
             for im_1, im_2 in zip(results[0], results[1]):
-                overlay_im = image_overlay(im_1, im_2, color = self._color)
+                overlay_im = image_overlay(im_1, im_2, color=self._color)
                 overlay_im_list.append(overlay_im)
 
             grid_size = self._get_grid_size(results[0].shape[0])
@@ -157,11 +157,11 @@ class PredictionOverlay(PredictionImage):
                     str(cur_global_ind) + '_' + self._overlay_prefix + '.png')
             save_merge_images(np.squeeze(overlay_im_list), 
                                 [grid_size, grid_size], save_path, 
-                                tanh = self._tanh, color = False)
+                                tanh=self._tanh, color=False)
             cur_global_ind += 1
         else:
             for im_1, im_2 in zip(results[0], results[1]):
-                overlay_im = image_overlay(im_1, im_2, color = self._color)
+                overlay_im = image_overlay(im_1, im_2, color=self._color)
                 save_path = os.path.join(self._save_dir, 
                     str(cur_global_ind) + '_' + self._overlay_prefix + '.png')
                 scipy.misc.imsave(save_path, np.squeeze(overlay_im))
@@ -177,8 +177,8 @@ class PredictionScalar(PredictionBase):
                                 each tensor in prediction_scalar_tensors
         """
 
-        super(PredictionScalar, self).__init__(prediction_tensors = prediction_scalar_tensors, 
-                                             save_prefix = print_prefix)
+        super(PredictionScalar, self).__init__(prediction_tensors=prediction_scalar_tensors, 
+                                             save_prefix=print_prefix)
 
     def _save_prediction(self, results):
         for re, prefix in zip(results, self._prefix_list):
@@ -187,8 +187,8 @@ class PredictionScalar(PredictionBase):
 class PredictionMeanScalar(PredictionScalar):
     def __init__(self, prediction_scalar_tensors, print_prefix):
 
-        super(PredictionMeanScalar, self).__init__(prediction_scalar_tensors = prediction_scalar_tensors, 
-                                             print_prefix = print_prefix)
+        super(PredictionMeanScalar, self).__init__(prediction_scalar_tensors=prediction_scalar_tensors, 
+                                             print_prefix=print_prefix)
 
         self.scalar_list = [[] for i in range(0, len(self._predictions))]
 

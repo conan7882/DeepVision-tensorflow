@@ -14,13 +14,13 @@ __all__ = ['MatlabData']
 class MatlabData(RNGDataFlow):
     """ dataflow from .mat file with mask """
     def __init__(self, 
-                 data_dir = '',
-                 mat_name_list = None, 
-                 mat_type_list = None,
-                 shuffle = True,
-                 normalize = None):
+                 data_dir='',
+                 mat_name_list=None, 
+                 mat_type_list=None,
+                 shuffle=True,
+                 normalize=None):
 
-        self.setup(epoch_val = 0, batch_size = 1)
+        self.setup(epoch_val=0, batch_size=1)
 
         self.shuffle = shuffle
         self._normalize = normalize
@@ -120,9 +120,9 @@ def load_image_from_mat(matfile, name, datatype):
     return mat
 
 if __name__ == '__main__':
-    a = MatlabData(data_dir = 'D:\\GoogleDrive_Qian\\Foram\\Training\\CNN_GAN_ORIGINAL_64\\', 
-                   mat_name_list = ['level1Edge'],
-                   normalize = 'tanh')
+    a = MatlabData(data_dir='D:\\GoogleDrive_Qian\\Foram\\Training\\CNN_GAN_ORIGINAL_64\\', 
+                   mat_name_list=['level1Edge'],
+                   normalize='tanh')
     print(a.next_batch()[0].shape)
     print(a.next_batch()[0][:,30:40,30:40,:])
     print(np.amax(a.next_batch()[0]))

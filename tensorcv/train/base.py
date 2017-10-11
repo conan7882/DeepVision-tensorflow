@@ -58,7 +58,7 @@ class Trainer(object):
         hooks = self._callbacks.get_hooks()
         self.sess = self.config.session_creator.create_session()
         self.hooked_sess = tf.train.MonitoredSession(
-            session_creator = ReuseSessionCreator(self.sess), hooks = hooks)
+            session_creator=ReuseSessionCreator(self.sess), hooks=hooks)
 
     def main_loop(self):
         with self.sess.as_default():
@@ -82,7 +82,7 @@ class Trainer(object):
     @abstractmethod
     def _run_step(self):
         model_feed = self.model.get_graph_feed()
-        self.hooked_sess.run(self.train_op, feed_dict = model_feed)
+        self.hooked_sess.run(self.train_op, feed_dict=model_feed)
 
     def setup(self):
         # setup graph from model

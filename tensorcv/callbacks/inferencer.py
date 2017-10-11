@@ -20,7 +20,7 @@ class InferencerBase(Callback):
         self._names = get_tensors_by_names(self._names)
         self._setup_inference(self.trainer.default_dirs)
 
-    def _setup_inference(self, default_dirs = None):
+    def _setup_inference(self, default_dirs=None):
         pass
 
     def put_fetch(self):
@@ -56,12 +56,12 @@ class InferencerBase(Callback):
         return None
 
 class InferImages(InferencerBase):
-    def __init__(self, im_name, prefix = None, color = False, tanh = False):
+    def __init__(self, im_name, prefix=None, color=False, tanh=False):
         self._names, self._prefix = match_tensor_save_name(im_name, prefix)
         self._color = color
         self._tanh = tanh
 
-    def _setup_inference(self, default_dirs = None):
+    def _setup_inference(self, default_dirs=None):
         try:
             self._save_dir = os.path.join(self.trainer.default_dirs.infer_dir)
             check_dir(self._save_dir)
@@ -91,16 +91,16 @@ class InferImages(InferencerBase):
             return self._grid_size
 
 class InferOverlay(InferImages):
-    def __init__(self, im_name, prefix = None, color = False, tanh = False):
+    def __init__(self, im_name, prefix=None, color=False, tanh=False):
         if not isinstance(im_name, list):
             im_name = [im_name]
         assert len(im_name) == 2,\
         '[InferOverlay] requires two image tensors but the input len = {}.'.\
         format(len(im_name))
-        super(InferOverlay, self).__init__(im_name = im_name,
-                                           prefix = prefix,
-                                           color = color,
-                                           tanh = tanh)
+        super(InferOverlay, self).__init__(im_name=im_name,
+                                           prefix=prefix,
+                                           color=color,
+                                           tanh=tanh)
         self._overlay_prefix = '{}_{}'.format(self._prefix[0], self._prefix[1])
 
     def _after_inference(self):
@@ -119,7 +119,7 @@ class InferOverlay(InferImages):
         return None
 
 class InferScalars(InferencerBase):
-    def __init__(self, scaler_names, summary_names = None):
+    def __init__(self, scaler_names, summary_names=None):
         if not isinstance(scaler_names, list): 
             scaler_names = [scaler_names]
         self._names = scaler_names

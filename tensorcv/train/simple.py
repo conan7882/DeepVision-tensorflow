@@ -31,7 +31,7 @@ class SimpleFeedTrainer(Trainer):
 
         grads = self.model.get_grads()
         opt = self.model.get_optimizer()
-        self.train_op = opt.apply_gradients(grads, name = 'train')
+        self.train_op = opt.apply_gradients(grads, name='train')
 
 class GANFeedTrainer(Trainer):
     def __init__(self, config):
@@ -53,12 +53,12 @@ class GANFeedTrainer(Trainer):
         dis_grads = self.model.get_discriminator_grads()
         dis_opt = self.model.get_discriminator_optimizer()
         self.dis_train_op = dis_opt.apply_gradients(dis_grads, 
-                                        name = 'discriminator_train')
+                                        name='discriminator_train')
 
         gen_grads = self.model.get_generator_grads()
         gen_opt = self.model.get_generator_optimizer()
         self.gen_train_op = gen_opt.apply_gradients(gen_grads, 
-                                        name = 'generator_train')
+                                        name='generator_train')
 
     def _create_session(self):
         self._dis_callbacks = Callbacks([cb 
@@ -70,19 +70,19 @@ class GANFeedTrainer(Trainer):
 
         self.sess = self.config.session_creator.create_session()
         self.dis_hooked_sess = tf.train.MonitoredSession(
-            session_creator = ReuseSessionCreator(self.sess), 
-            hooks = dis_hooks + self.feed_input_hook)
+            session_creator=ReuseSessionCreator(self.sess), 
+            hooks=dis_hooks + self.feed_input_hook)
         self.gen_hooked_sess = tf.train.MonitoredSession(
-            session_creator = ReuseSessionCreator(self.sess), 
-            hooks = gen_hooks)
+            session_creator=ReuseSessionCreator(self.sess), 
+            hooks=gen_hooks)
 
     def _run_step(self):
         model_feed = self.model.get_graph_feed()
-        self.dis_hooked_sess.run(self.dis_train_op, feed_dict = model_feed)
+        self.dis_hooked_sess.run(self.dis_train_op, feed_dict=model_feed)
 
         for k in range(0,2):
             model_feed = self.model.get_graph_feed()
-            self.gen_hooked_sess.run(self.gen_train_op, feed_dict = model_feed)
+            self.gen_hooked_sess.run(self.gen_train_op, feed_dict=ßmodel_feed)
 
 
 

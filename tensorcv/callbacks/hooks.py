@@ -29,7 +29,7 @@ class Infer2Hook(tf.train.SessionRunHook):
 		self.inferencer = inferencer
 
 	def before_run(self, rct):
-		return tf.train.SessionRunArgs(fetches = self.inferencer.put_fetch())
+		return tf.train.SessionRunArgs(fetches=self.inferencer.put_fetch())
 
 	def after_run(self, rct, val):
 		self.inferencer.get_fetch(val)
@@ -41,7 +41,7 @@ class Prediction2Hook(tf.train.SessionRunHook):
 
 	def before_run(self, rct):
 		
-		return tf.train.SessionRunArgs(fetches = self.prediction.get_predictions())
+		return tf.train.SessionRunArgs(fetches=self.prediction.get_predictions())
 
 	def after_run(self, rct, val):
 		self.prediction.after_prediction(val.results)

@@ -15,10 +15,10 @@ __all__ = ['ImageData', 'DataFromFile', 'ImageLabelFromFolder', 'ImageLabelFromF
 
 class DataFromFile(RNGDataFlow):
     """ Base class for image from files """
-    def __init__(self, ext_name, data_dir = '', 
-                 num_channel = None,
-                 shuffle = True, normalize = None,
-                 normalize_fnc = identity):
+    def __init__(self, ext_name, data_dir='', 
+                 num_channel=None,
+                 shuffle=True, normalize=None,
+                 normalize_fnc=identity):
 
         check_dir(data_dir)
         self.data_dir = data_dir
@@ -26,7 +26,7 @@ class DataFromFile(RNGDataFlow):
         self._normalize = normalize
         self._normalize_fnc = normalize_fnc
 
-        self.setup(epoch_val = 0, batch_size = 1)
+        self.setup(epoch_val=0, batch_size=1)
 
         self._load_file_list(ext_name.lower())
         if self.size() == 0:
@@ -96,11 +96,11 @@ class DataFromFile(RNGDataFlow):
         return self._get_sample_data()
 
 class ImageFromFile(DataFromFile):
-    def __init__(self, ext_name, data_dir = '', 
-                 num_channel = None,
-                 shuffle = True, normalize = None,
-                 normalize_fnc = identity,
-                 resize = None):
+    def __init__(self, ext_name, data_dir='', 
+                 num_channel=None,
+                 shuffle=True, normalize=None,
+                 normalize_fnc=identity,
+                 resize=None):
     
         if num_channel is not None:
             self.num_channels = num_channel
@@ -111,10 +111,10 @@ class ImageFromFile(DataFromFile):
         self._resize = get_shape2D(resize)
 
         super(ImageFromFile, self).__init__(ext_name, 
-                                        data_dir = data_dir,
-                                        shuffle = shuffle, 
-                                        normalize = normalize,
-                                        normalize_fnc = normalize_fnc)
+                                        data_dir=data_dir,
+                                        shuffle=shuffle, 
+                                        normalize=normalize,
+                                        normalize_fnc=normalize_fnc)
 
     def _load_file_list(self, ext_name):
         im_dir = os.path.join(self.data_dir)
@@ -131,8 +131,8 @@ class ImageFromFile(DataFromFile):
         input_im_list = []
         for k in range(start, end):
             im_path = self._im_list[k]
-            im = load_image(im_path, read_channel = self._read_channel,
-                            resize = self._resize)
+            im = load_image(im_path, read_channel=self._read_channel,
+                            resize=self._resize)
             input_im_list.extend(im)
 
         # TODO to be modified 
@@ -142,12 +142,12 @@ class ImageFromFile(DataFromFile):
         return [input_im_list]
 
     def _get_sample_data(self):
-        return load_image(self._im_list[0], read_channel = self._read_channel,
-                          resize = self._resize)
+        return load_image(self._im_list[0], read_channel=self._read_channel,
+                          resize=self._resize)
 
     def _get_im_size(self):
-        im = load_image(self._im_list[0], read_channel = self._read_channel,
-                        resize = self._resize)
+        im = load_image(self._im_list[0], read_channel=self._read_channel,
+                        resize=self._resize)
         if self._read_channel is None:
             self.num_channels = im.shape[3]
         self.im_size = [im.shape[1], im.shape[2]]
@@ -158,12 +158,12 @@ class ImageFromFile(DataFromFile):
 
 class ImageLabelFromFolder(ImageFromFile):
     """ read image data with label in subfolder name """
-    def __init__(self, ext_name, data_dir = '', 
-                 num_channel = None,
-                 label_dict = None, num_class = None,
-                 one_hot = False,
-                 shuffle = True, normalize = None,
-                 resize = None):
+    def __init__(self, ext_name, data_dir='', 
+                 num_channel=None,
+                 label_dict=None, num_class=None,
+                 one_hot=False,
+                 shuffle=True, normalize=None,
+                 resize=None):
         """
         Args:
            label_dict (dict): empty or full
@@ -179,11 +179,11 @@ class ImageLabelFromFolder(ImageFromFile):
         self._one_hot = one_hot
         self.label_dict = label_dict
         super(ImageLabelFromFolder, self).__init__(ext_name, 
-                                        data_dir = data_dir,
-                                        num_channel = num_channel,
-                                        shuffle = shuffle, 
-                                        normalize = normalize,
-                                        resize = resize)
+                                        data_dir=data_dir,
+                                        num_channel=num_channel,
+                                        shuffle=shuffle, 
+                                        normalize=normalize,
+                                        resize=resize)
         
         self.label_dict_reverse = reverse_label_dict(self.label_dict)
 
@@ -228,8 +228,8 @@ class ImageLabelFromFolder(ImageFromFile):
         input_label_list = []
         for k in range(start, end):
             im_path = self._im_list[k]
-            im = load_image(im_path, read_channel = self._read_channel, 
-                            resize = self._resize)
+            im = load_image(im_path, read_channel=self._read_channel, 
+                            resize=self._resize)
 
             # if self._cv_read is not None:
             #     im = cv2.imread(im_path, self._cv_read)
@@ -279,23 +279,23 @@ class ImageLabelFromFolder(ImageFromFile):
 
 class ImageLabelFromFile(ImageLabelFromFolder):
     """ read image data with label in a separate file txt """
-    def __init__(self, ext_name, data_dir = '', 
-                 label_file_name = '',
-                 num_channel = None, one_hot = False,
-                 label_dict = {}, num_class = None,
-                 shuffle = True, normalize = None,
-                 resize = None):
+    def __init__(self, ext_name, data_dir='', 
+                 label_file_name='',
+                 num_channel=None, one_hot=False,
+                 label_dict={}, num_class=None,
+                 shuffle=True, normalize=None,
+                 resize=None):
 
         self._label_file_name = label_file_name
         super(ImageLabelFromFile, self).__init__(ext_name, 
-                                    data_dir = data_dir, 
-                                    num_channel = num_channel,
-                                    label_dict = label_dict,
-                                    num_class = num_class,
-                                    one_hot = one_hot,
-                                    shuffle = shuffle, 
-                                    normalize = normalize,
-                                    resize = resize)
+                                    data_dir=data_dir, 
+                                    num_channel=num_channel,
+                                    label_dict=label_dict,
+                                    num_class=num_class,
+                                    one_hot=one_hot,
+                                    shuffle=shuffle, 
+                                    normalize=normalize,
+                                    resize=resize)
         
     def _get_label_list(self):
         label_file = open(os.path.join(self.data_dir, 
@@ -332,15 +332,15 @@ class ImageLabelFromFile(ImageLabelFromFolder):
 
 ## TODO Add batch size
 class ImageData(RNGDataFlow):
-    def __init__(self, ext_name, data_dir = '', 
-                 shuffle = True, normalize = None):
+    def __init__(self, ext_name, data_dir='', 
+                 shuffle=True, normalize=None):
         assert os.path.isdir(data_dir)
         self.data_dir = data_dir
 
         self.shuffle = shuffle
         self._normalize = normalize
 
-        self.setup(epoch_val = 0, batch_size = 1)
+        self.setup(epoch_val=0, batch_size=1)
         self._load_file_list(ext_name.lower())
         self._get_im_size()
         self._data_id = 0
@@ -379,7 +379,7 @@ class ImageData(RNGDataFlow):
             # im = cv2.imread(self.im_list[self._data_id], self._cv_read)
             # print(file_path)
             # im = misc.imread(file_path)
-            im = load_image(file_path, read_channel = self._read_channel)
+            im = load_image(file_path, read_channel=self._read_channel)
             if len(im.shape) < 3:
                 im = np.reshape(im, [1, im.shape[0], im.shape[1], 1])
             else:
@@ -428,16 +428,16 @@ class ImageData(RNGDataFlow):
 
 if __name__ == '__main__':
     b = ImageLabelFromFolder('.jpeg',
-        data_dir = 'D:\\Qian\\GitHub\\workspace\\dataset\\tiny-imagenet-200\\tiny-imagenet-200\\train\\',
-                 shuffle = True, normalize = 'tanh', num_channel = 3, one_hot = True)
+        data_dir='D:\\Qian\\GitHub\\workspace\\dataset\\tiny-imagenet-200\\tiny-imagenet-200\\train\\',
+                 shuffle=True, normalize='tanh', num_channel=3, one_hot=True)
     # print(b.label_dict)
     print(b.next_batch()[0][:,30:40,30:40,:])
     print(b.next_batch()[1])
     
     a = ImageLabelFromFile('.jpeg',
         data_dir = 'D:\\Qian\\GitHub\\workspace\\dataset\\tiny-imagenet-200\\tiny-imagenet-200\\val\\',
-                 shuffle = True, normalize = 'tanh', num_channel = 3,
-                 label_file_name = 'val_annotations.txt', label_dict = b.label_dict, one_hot = True)
+                 shuffle=True, normalize='tanh', num_channel=3,
+                 label_file_name='val_annotations.txt', label_dict=b.label_dict, one_hot=True)
     print(a.next_batch()[0][:,30:40,30:40,:])
     print(a.next_batch()[1])
     # # print(a.next_batch()[0].shape)

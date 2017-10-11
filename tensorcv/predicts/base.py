@@ -37,7 +37,7 @@ class Predictor(object):
 
         self.sess = self.config.session_creator.create_session()
         self.hooked_sess = tf.train.MonitoredSession(
-            session_creator = ReuseSessionCreator(self.sess), hooks = hooks)
+            session_creator=ReuseSessionCreator(self.sess), hooks=hooks)
 
         load_model_path = os.path.join(self.config.model_dir, 
                                     self.config.model_name)
@@ -47,15 +47,10 @@ class Predictor(object):
 
     def run_predict(self):
         self._predict_step()
-        self._after_finish_predict()
 
     def _predict_step(self):
         model_feed = self.model.get_graph_feed()
-        self.hooked_sess.run(fetches = [], feed_dict = model_feed)
-
-    def _after_finish_predict(self):
-        for pred in self.config.predictions:
-            pred.after_finish_predict()
+        self.hooked_sess.run(fetches=[], feed_dict=model_feed)
 
     # # def after_predict(self):
     # #     self._after_predict()

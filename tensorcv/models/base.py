@@ -32,7 +32,7 @@ class ModelDes(object):
     def get_batch_size(self):
         return self._batch_size
 
-    def set_is_training(self, is_training = True):
+    def set_is_training(self, is_training=True):
         self.is_training = is_training
 
     def get_train_placeholder(self):
@@ -47,7 +47,7 @@ class ModelDes(object):
     def _get_train_placeholder(self):
         return []
 
-    def set_train_placeholder(self, plhs = None):
+    def set_train_placeholder(self, plhs=None):
         if not isinstance(plhs, list):
             plhs = [plhs]
         self._train_plhs = plhs
@@ -65,7 +65,7 @@ class ModelDes(object):
     def _get_prediction_placeholder(self):
         return []
 
-    def set_prediction_placeholder(self, plhs = None):
+    def set_prediction_placeholder(self, plhs=None):
         if not isinstance(plhs, list):
             plhs = [plhs]
         self._predict_plhs = plhs
@@ -84,7 +84,7 @@ class ModelDes(object):
         except AttributeError:
             return {}
 
-    def set_dropout(self, dropout_placeholder, keep_prob = 0.5):
+    def set_dropout(self, dropout_placeholder, keep_prob=0.5):
         self._dropout_pl = dropout_placeholder
         self._keep_prob = keep_prob
 
@@ -96,7 +96,7 @@ class ModelDes(object):
         self._create_model()
         self._ex_setup_graph()
 
-    def create_model(self, inputs = None):
+    def create_model(self, inputs=None):
         """ only called when defined inside other model"""
         assert inputs is not None, 'inputs cannot be None!'
         if not isinstance(inputs, list):
@@ -120,7 +120,7 @@ class ModelDes(object):
         except AttributeError:
             raise AttributeError
 
-    def set_model_input(self, inputs = None):
+    def set_model_input(self, inputs=None):
         self._input = inputs
 
     
@@ -254,8 +254,8 @@ class GANBaseModel(ModelDes):
 
     def def_loss(self, dis_loss_fnc, gen_loss_fnc):
         """ updata definintion of loss functions """
-        self.d_loss = dis_loss_fnc(self.d_real, self.d_fake, name = 'd_loss')
-        self.g_loss = gen_loss_fnc(self.d_fake, name = 'g_loss')
+        self.d_loss = dis_loss_fnc(self.d_real, self.d_fake, name='d_loss')
+        self.g_loss = gen_loss_fnc(self.d_fake, name='g_loss')
 
 
     def get_discriminator_optimizer(self):
@@ -275,13 +275,13 @@ class GANBaseModel(ModelDes):
     def _get_discriminator_optimizer(self):
         # TODO use for future
         self.d_optimizer = tf.train.AdamOptimizer(beta1=0.5,
-                        learning_rate = self.dis_learning_rate)
+                        learning_rate=self.dis_learning_rate)
         return self.d_optimizer
 
     def _get_generator_optimizer(self):
         # TODO use for future
         self.g_optimizer = tf.train.AdamOptimizer(beta1=0.5,
-                        learning_rate = self.gen_learning_rate)
+                        learning_rate=self.gen_learning_rate)
         return self.g_optimizer
 
     def get_discriminator_loss(self):
@@ -290,7 +290,7 @@ class GANBaseModel(ModelDes):
         except AttributeError:
             self.d_loss = self._get_discriminator_loss()
             tf.summary.scalar('d_loss_summary', self.d_loss, 
-                              collections = [self.d_collection])
+                              collections=[self.d_collection])
             return self.d_loss
 
     def get_generator_loss(self):
@@ -299,15 +299,15 @@ class GANBaseModel(ModelDes):
         except AttributeError:
             self.g_loss = self._get_generator_loss()
             tf.summary.scalar('g_loss_summary', self.g_loss, 
-                              collections = [self.g_collection])
+                              collections=[self.g_collection])
             return self.g_loss
 
     def _get_discriminator_loss(self):
         return GAN_discriminator_loss(self.d_real, self.d_fake, 
-                                    name = 'd_loss')
+                                    name='d_loss')
 
     def _get_generator_loss(self):
-        return GAN_generator_loss(self.d_fake, name = 'g_loss')
+        return GAN_generator_loss(self.d_fake, name='g_loss')
 
     def get_discriminator_grads(self):
         try:
@@ -318,10 +318,10 @@ class GANBaseModel(ModelDes):
             optimizer = self.get_discriminator_optimizer()
             loss = self.get_discriminator_loss()
             self.d_grads = optimizer.compute_gradients(loss, 
-                                              var_list = d_training_vars)
+                                              var_list=d_training_vars)
 
             [tf.summary.histogram('d_gradient/' + var.name, grad, 
-                        collections = [self.d_collection]) 
+                        collections=[self.d_collection]) 
                         for grad, var in self.d_grads]
             return self.d_grads
 
@@ -334,9 +334,9 @@ class GANBaseModel(ModelDes):
             optimizer = self.get_generator_optimizer()
             loss = self.get_generator_loss()
             self.g_grads = optimizer.compute_gradients(loss, 
-                                             var_list = g_training_vars)
+                                             var_list=g_training_vars)
             [tf.summary.histogram('g_gradient/' + var.name, grad, 
-                        collections = [self.g_collection]) 
+                        collections=[self.g_collection]) 
                         for grad, var in self.g_grads]
             return self.g_grads
 

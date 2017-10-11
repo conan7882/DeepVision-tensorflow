@@ -29,7 +29,7 @@ class SimpleFeedPredictor(Predictor):
         while self.input.epochs_completed < 1:
             cur_batch = self.input.next_batch()
             feed = dict(zip(self._plhs, cur_batch))
-            self.hooked_sess.run(fetches = [], feed_dict = feed)
+            self.hooked_sess.run(fetches=[], feed_dict=feed)
         self.input.reset_epochs_completed(0)
 
  

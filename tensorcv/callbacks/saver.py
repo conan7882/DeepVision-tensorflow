@@ -11,11 +11,11 @@ from ..utils.common import check_dir
 __all__ = ['ModelSaver']
 
 class ModelSaver(Callback):
-    def __init__(self, max_to_keep = 5,
+    def __init__(self, max_to_keep=5,
                  keep_checkpoint_every_n_hours=0.5,
-                 periodic = 1,
-                 checkpoint_dir = None,
-                 var_collections = tf.GraphKeys.GLOBAL_VARIABLES):
+                 periodic=1,
+                 checkpoint_dir=None,
+                 var_collections=tf.GraphKeys.GLOBAL_VARIABLES):
 
         self._periodic = periodic
 

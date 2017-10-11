@@ -18,7 +18,7 @@ class CheckScalar(Callback):
         _tensors
         _names
     """
-    def __init__(self, tensors, periodic = 1):
+    def __init__(self, tensors, periodic=1):
         """ init CheckScalar object
         Args:
             tensors : list[string] A tensor name or list of tensor names

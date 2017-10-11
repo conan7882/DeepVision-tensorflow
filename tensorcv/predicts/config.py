@@ -17,12 +17,12 @@ def assert_type(v, tp):
 
 class PridectConfig(object):
     def __init__(self, 
-                 dataflow = None, model = None,
-                 model_dir = None, model_name = '',
-                 session_creator = None,
-                 predictions = None,
-                 batch_size = 1,
-                 default_dirs = None):
+                 dataflow=None, model=None,
+                 model_dir=None, model_name='',
+                 session_creator=None,
+                 predictions=None,
+                 batch_size=1,
+                 default_dirs=None):
         """
         Args:
         """
@@ -64,7 +64,7 @@ class PridectConfig(object):
 
         if session_creator is None:
             self.session_creator = \
-                 NewSessionCreator(config = get_default_session_config())
+                 NewSessionCreator(config=get_default_session_config())
         else:
             raise ValueError('custormer session creator is \
                                not allowed at this point!')

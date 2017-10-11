@@ -17,13 +17,13 @@ def assert_type(v, tp):
 
 class TrainConfig(object):
     def __init__(self, 
-                 dataflow = None, model = None,
-                 callbacks = [],
-                 session_creator = None,
-                 monitors = None,
-                 batch_size = 1, max_epoch = 100,
-                 summary_periodic = None,
-                 default_dirs = None):
+                 dataflow=None, model=None,
+                 callbacks=[],
+                 session_creator=None,
+                 monitors=None,
+                 batch_size=1, max_epoch=100,
+                 summary_periodic=None,
+                 default_dirs=None):
         self.default_dirs = default_dirs
 
         assert_type(monitors, TFSummaryWriter), \
@@ -55,12 +55,12 @@ class TrainConfig(object):
         # TODO model.default_collection only in BaseModel class
         if isinstance(summary_periodic, int):
             self._callbacks.append(
-                TrainSummary(key = model.default_collection, 
-                            periodic = summary_periodic))
+                TrainSummary(key=model.default_collection, 
+                            periodic=summary_periodic))
 
         if session_creator is None:
             self.session_creator = \
-               NewSessionCreator(config = get_default_session_config())
+               NewSessionCreator(config=get_default_session_config())
         else:
             raise ValueError('custormer session creator is not allowed at this point!')
   
@@ -71,14 +71,15 @@ class TrainConfig(object):
 
 class GANTrainConfig(TrainConfig):
     def __init__(self, 
-                 dataflow = None, model = None,
-                 discriminator_callbacks = [],
-                 generator_callbacks = [],
-                 session_creator = None,
-                 monitors = None,
-                 batch_size = 1, max_epoch = 100,
-                 summary_d_periodic = None, summary_g_periodic = None,
-                 default_dirs = None):
+                 dataflow=None, model=None,
+                 discriminator_callbacks=[],
+                 generator_callbacks=[],
+                 session_creator=None,
+                 monitors=None,
+                 batch_size=1, max_epoch=100,
+                 summary_d_periodic=None, 
+                 summary_g_periodic=None,
+                 default_dirs=None):
 
         assert_type(model, GANBaseModel)
 
@@ -92,22 +93,22 @@ class GANTrainConfig(TrainConfig):
 
         if isinstance(summary_d_periodic, int):
             self._dis_callbacks.append(
-                TrainSummary(key = model.d_collection, 
-                            periodic = summary_d_periodic))
+                TrainSummary(key=model.d_collection, 
+                            periodic=summary_d_periodic))
         if isinstance(summary_g_periodic, int):
             self._dis_callbacks.append(
-                TrainSummary(key = model.g_collection, 
-                            periodic = summary_g_periodic))
+                TrainSummary(key=model.g_collection, 
+                            periodic=summary_g_periodic))
 
         callbacks = self._dis_callbacks + self._gen_callbacks
 
         super(GANTrainConfig, self).__init__(
-                    dataflow = dataflow, model = model,
-                    callbacks = callbacks,
-                    session_creator = session_creator,
-                    monitors = monitors,
-                    batch_size = batch_size, max_epoch = max_epoch,
-                    default_dirs = default_dirs)
+                    dataflow=dataflow, model=model,
+                    callbacks=callbacks,
+                    session_creator=session_creator,
+                    monitors=monitors,
+                    batch_size=batch_size, max_epoch=ßmax_epoch,
+                    default_dirs=default_dirs)
     @property
     def dis_callbacks(self):
         return self._dis_callbacks

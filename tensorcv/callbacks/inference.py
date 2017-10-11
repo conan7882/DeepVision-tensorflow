@@ -25,9 +25,9 @@ def assert_type(v, tp):
 
 class InferenceBase(Callback):
     """ base class for Inference """
-    def __init__(self, inputs = None, periodic = 1, 
-                 inferencers = None, extra_cbs = None,
-                 infer_batch_size = None):
+    def __init__(self, inputs=None, periodic=1, 
+                 inferencers=None, extra_cbs=None,
+                 infer_batch_size=None):
         """
         Args:
             extra_cbs (list[Callback])
@@ -120,17 +120,17 @@ class FeedInference(InferenceBase):
     default inferencer:
         inference_list = InferImages('generator/gen_image', prefix = 'gen')
     """
-    def __init__(self, inputs, periodic = 1, 
-                 inferencers = [], extra_cbs = None,
-                 infer_batch_size = None):
+    def __init__(self, inputs, periodic=1, 
+                 inferencers=[], extra_cbs=None,
+                 infer_batch_size=None):
         assert_type(inputs, DataFlow)
 
         # inferencers.append(InferImages('default', prefix = 'gen'))
-        super(FeedInference, self).__init__(inputs = inputs, 
-                                            periodic = periodic, 
-                                            inferencers = inferencers,
-                                            extra_cbs = extra_cbs,
-                                            infer_batch_size = infer_batch_size)
+        super(FeedInference, self).__init__(inputs=inputs, 
+                                            periodic=periodic, 
+                                            inferencers=inferencers,
+                                            extra_cbs=extra_cbs,
+                                            infer_batch_size=infer_batch_size)
 
     def _setup_inference(self):
         placeholders = self.model.get_train_placeholder()
@@ -144,31 +144,31 @@ class FeedInference(InferenceBase):
 
 class FeedInferenceBatch(FeedInference):
     """ do not use all validation data """
-    def __init__(self, inputs, periodic = 1, 
-                 batch_count = 10,
-                 inferencers = [], extra_cbs = None,
-                 infer_batch_size = None):
+    def __init__(self, inputs, periodic=1, 
+                 batch_count=10,
+                 inferencers=[], extra_cbs=None,
+                 infer_batch_size=None):
         self._batch_count = batch_count
-        super(FeedInferenceBatch, self).__init__(inputs = inputs, 
-                                                periodic = periodic, 
-                                                inferencers = inferencers, 
-                                                extra_cbs = extra_cbs,
-                                                infer_batch_size = infer_batch_size)
+        super(FeedInferenceBatch, self).__init__(inputs=inputs, 
+                                                periodic=periodic, 
+                                                inferencers=inferencers, 
+                                                extra_cbs=extra_cbs,
+                                                infer_batch_size=infer_batch_size)
     def _inference_step(self):
         model_feed = self.model.get_graph_feed()
         for i in range(self._batch_count):
-            self.hooked_sess.run(fetches = [], feed_dict = model_feed)
+            self.hooked_sess.run(fetches=[], feed_dict=model_feed)
 
 
 class GANInference(InferenceBase):
-    def __init__(self, inputs = None, periodic = 1, 
-                 inferencers = None, extra_cbs = None):
+    def __init__(self, inputs=None, periodic=1, 
+                 inferencers=None, extra_cbs=None):
         if inputs is not None:
             assert_type(inputs, RandomVec)
-        super(GANInference, self).__init__(inputs = inputs, 
-                                           periodic = periodic, 
-                                           inferencers = inferencers, 
-                                           extra_cbs = extra_cbs)
+        super(GANInference, self).__init__(inputs=inputs, 
+                                           periodic=periodic, 
+                                           inferencers=inferencers, 
+                                           extra_cbs=extra_cbs)
 
     def _setup_inference(self):
         if self._inputs is not None:
@@ -182,6 +182,6 @@ class GANInference(InferenceBase):
         else:
             model_feed = {}
         # while self._inputs.epochs_completed <= 0:
-        self.hooked_sess.run(fetches = [], feed_dict = model_feed)
+        self.hooked_sess.run(fetches=[], feed_dict=model_feed)
         # self._inputs.reset_epochs_completed(0)
 

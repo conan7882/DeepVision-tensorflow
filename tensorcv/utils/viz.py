@@ -46,6 +46,7 @@ def save_merge_images(images, im_size, save_path, color = False, tanh = False):
 
     # normalization of tanh output
     img = images
+
     if tanh:
         img = (img + 1.0) / 2.0
 
@@ -58,7 +59,7 @@ def save_merge_images(images, im_size, save_path, color = False, tanh = False):
         img = np.array(img_list)
         # img = np.expand_dims(img, 0)
 
-    if len(img.shape) == 2:
+    if len(img.shape) == 2 or (len(img.shape) == 3 and img.shape[2] <= 4):
         img = np.expand_dims(img, 0)
     # img = images
     h, w = img.shape[1], img.shape[2]
@@ -73,13 +74,13 @@ def save_merge_images(images, im_size, save_path, color = False, tanh = False):
     
     return scipy.misc.imsave(save_path, merge_img)
 
-def image_overlay(im_1, im_2, color = True, normalize = True):
+def image_overlay(im_1, im_2, color=True, normalize=True):
     """
     Args:
         im_1, im_2: two images with size [HEIGHT, WIDTH, CHANNEL]
     """
     if color:
-        im_1 = intensity_to_rgb(np.squeeze(im_1), normalize = normalize)
-        im_2 = intensity_to_rgb(np.squeeze(im_2), normalize = normalize)
+        im_1 = intensity_to_rgb(np.squeeze(im_1), normalize=normalize)
+        im_2 = intensity_to_rgb(np.squeeze(im_2), normalize=normalize)
         
     return im_1*0.5 + im_2*0.5

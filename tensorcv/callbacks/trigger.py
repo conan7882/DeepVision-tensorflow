@@ -16,7 +16,7 @@ def assert_type(v, tp):
 
 class PeriodicTrigger(ProxyCallback):
 	""" may not need """
-	def __init__(self, trigger_cb, every_k_steps = None, every_k_epochs = None):
+	def __init__(self, trigger_cb, every_k_steps=None, every_k_epochs=None):
 
 		assert_type(trigger_cb, Callback)
 		super(PeriodicTrigger, self).__init__(trigger_cb)

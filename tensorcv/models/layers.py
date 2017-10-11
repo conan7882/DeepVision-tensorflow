@@ -8,13 +8,14 @@ import numpy as np
 
 @add_arg_scope
 def conv(x, filter_size, out_dim, 
-         name = 'conv', stride = 1, 
-         padding = 'SAME',
-         nl = tf.identity,
-         data_dict = None,
-         init_w = None, init_b = None,
-         wd = None,
-         trainable = True):
+         name='conv', stride=1, 
+         padding='SAME',
+         nl=tf.identity,
+         data_dict=None,
+         init_w=None, init_b=None,
+         use_bias=True,
+         wd=None,
+         trainable=True):
     """ 
     2D convolution 
 
@@ -46,28 +47,29 @@ def conv(x, filter_size, out_dim,
     convolve = lambda i, k: tf.nn.conv2d(i, k, strid_shape, padding)
 
     with tf.variable_scope(name) as scope:
-        weights = new_weights('weights', 0, filter_shape, initializer = init_w,
-                              data_dict = data_dict, trainable = trainable, wd = wd)
-        biases = new_biases('biases', 1, [out_dim], initializer = init_b,
-                            data_dict = data_dict, trainable = trainable)
+        weights = new_weights('weights', 0, filter_shape, initializer=init_w,
+                              data_dict=data_dict, trainable=trainable, wd=wd)
+        out = convolve(x, weights)
 
-        conv = convolve(x, weights)
-        bias = tf.nn.bias_add(conv, biases)
-        # bias = tf.reshape(tf.nn.bias_add(conv, biases), conv.get_shape().as_list())
+        if use_bias:
+            biases = new_biases('biases', 1, [out_dim], initializer=init_b,
+                            data_dict=data_dict, trainable=trainable)
+            out = tf.nn.bias_add(out, biases)
+            # bias = tf.reshape(tf.nn.bias_add(conv, biases), conv.get_shape().as_list())
         
-        output = nl(bias, name = 'output')
+        output = nl(out, name = 'output')
         return output
 
-def dconv(x, filter_size, out_dim = None, 
-         out_shape = None,
-         out_shape_by_tensor = None,
-         name = 'dconv', stride = 2, 
-         padding = 'SAME',
-         nl = tf.identity,
-         data_dict = None,
-         init_w = None, init_b = None,
-         wd = None,
-         trainable = True):
+def dconv(x, filter_size, out_dim=None, 
+         out_shape=None,
+         out_shape_by_tensor=None,
+         name='dconv', stride=2, 
+         padding='SAME',
+         nl=tf.identity,
+         data_dict=None,
+         init_w=None, init_b=None,
+         wd=None,
+         trainable=True):
     """ 
     2D deconvolution 
 
@@ -121,27 +123,27 @@ def dconv(x, filter_size, out_dim = None,
     filter_shape = get_shape2D(filter_size) + [out_dim, in_dim]
 
     with tf.variable_scope(name) as scope:
-        weights = new_weights('weights', 0, filter_shape, initializer = init_w,
-                             data_dict = data_dict, trainable = trainable, wd = wd)
-        biases = new_biases('biases', 1, [out_dim], initializer = init_b,
-                           data_dict = data_dict, trainable = trainable)
+        weights = new_weights('weights', 0, filter_shape, initializer=init_w,
+                             data_dict=data_dict, trainable=trainable, wd=wd)
+        biases = new_biases('biases', 1, [out_dim], initializer=init_b,
+                           data_dict=data_dict, trainable=trainable)
         dconv = tf.nn.conv2d_transpose(x, weights, 
-                               output_shape = out_shape, 
-                               strides = stride, 
-                               padding = padding, 
-                               name = scope.name)
+                               output_shape=out_shape, 
+                               strides=stride, 
+                               padding=padding, 
+                               name=scope.name)
         bias = tf.nn.bias_add(dconv, biases)
         # make explicit shape
         bias = tf.reshape(bias, out_shape)
-        output = nl(bias, name = 'output')
+        output = nl(bias, name='output')
         return output
 
 @add_arg_scope
-def fc(x, out_dim, name ='fc', nl = tf.identity, 
-       init_w = None, init_b = None,
-       data_dict = None,
-       wd = None, 
-       trainable = True):
+def fc(x, out_dim, name='fc', nl=tf.identity, 
+       init_w=None, init_b=None,
+       data_dict=None,
+       wd=None, 
+       trainable=True):
     """ 
     Fully connected layer 
 
@@ -163,16 +165,16 @@ def fc(x, out_dim, name ='fc', nl = tf.identity,
     in_dim = x_shape[1]
 
     with tf.variable_scope(name) as scope:
-        weights = new_weights('weights', 0, [in_dim, out_dim], initializer = init_w,
-                              data_dict = data_dict, trainable = trainable, wd = wd)
-        biases = new_biases('biases', 1, [out_dim], initializer = init_b,
-                            data_dict = data_dict, trainable = trainable)
+        weights = new_weights('weights', 0, [in_dim, out_dim], initializer=init_w,
+                              data_dict=data_dict, trainable=trainable, wd=wd)
+        biases = new_biases('biases', 1, [out_dim], initializer=init_b,
+                            data_dict=data_dict, trainable=trainable)
         act = tf.nn.xw_plus_b(x_flatten, weights, biases)
 
-        output = nl(act, name = 'output')
+        output = nl(act, name='output')
     return output
 
-def max_pool(x, name = 'max_pool', filter_size = 2, stride = None, padding = 'VALID'):
+def max_pool(x, name='max_pool', filter_size=2, stride=None, padding='VALID'):
     """ 
     Max pooling layer 
 
@@ -194,15 +196,15 @@ def max_pool(x, name = 'max_pool', filter_size = 2, stride = None, padding = 'VA
     else:
         stride = get_shape4D(stride)
 
-    return tf.nn.max_pool(x, ksize = filter_shape, 
-                          strides = stride, 
-                          padding = padding, name = name)
+    return tf.nn.max_pool(x, ksize=filter_shape, 
+                          strides=stride, 
+                          padding=padding, name=name)
 
-def global_avg_pool(x, name = 'global_avg_pool', data_format = 'NHWC'):
+def global_avg_pool(x, name='global_avg_pool', data_format='NHWC'):
     assert x.shape.ndims == 4
     assert data_format in ['NHWC', 'NCHW']
     axis = [1, 2] if data_format == 'NHWC' else [2, 3]
-    return tf.reduce_mean(x, axis, name = name)
+    return tf.reduce_mean(x, axis, name=name)
 
 # def avg_pool(x, name = 'avg_pool', filter_size = 2, stride = None, padding = 'VALID'):
 #     """ 
@@ -231,7 +233,7 @@ def global_avg_pool(x, name = 'global_avg_pool', data_format = 'NHWC'):
 #                         # strides = stride, 
 #                         name = name)
 
-def dropout(x, keep_prob, is_training, name = 'dropout'):
+def dropout(x, keep_prob, is_training, name='dropout'):
     """ 
     Dropout 
 
@@ -247,11 +249,11 @@ def dropout(x, keep_prob, is_training, name = 'dropout'):
 
     # tf.nn.dropout does not have 'is_training' argument
     # return tf.nn.dropout(x, keep_prob)
-    return tf.layers.dropout(x, rate = 1 - keep_prob, 
-                            training = is_training, name = name)
+    return tf.layers.dropout(x, rate=1 - keep_prob, 
+                            training=is_training, name=name)
     
 
-def batch_norm(x, train = True, name = 'bn'):
+def batch_norm(x, train=True, name='bn'):
     """ 
     batch normal 
 
@@ -263,12 +265,12 @@ def batch_norm(x, train = True, name = 'bn'):
     Returns:
         tf.tensor with name 'name'
     """
-    return tf.contrib.layers.batch_norm(x, decay = 0.9, 
-                          updates_collections = None,
-                          epsilon = 1e-5, scale = False,
-                          is_training = train, scope = name)
+    return tf.contrib.layers.batch_norm(x, decay=0.9, 
+                          updates_collections=None,
+                          epsilon=1e-5, scale=False,
+                          is_training=train, scope=name)
 
-def leaky_relu(x, leak = 0.2, name = 'LeakyRelu'):
+def leaky_relu(x, leak=0.2, name='LeakyRelu'):
     """ 
     leaky_relu 
         Allow a small non-zero gradient when the unit is not active
@@ -280,54 +282,55 @@ def leaky_relu(x, leak = 0.2, name = 'LeakyRelu'):
     Returns:
         tf.tensor with name 'name'
     """
-    return tf.maximum(x, leak*x, name = name)
+    return tf.maximum(x, leak*x, name=name)
 
-def new_normal_variable(name, shape = None, trainable = True, stddev = 0.002):
-    return tf.get_variable(name, shape = shape, trainable = trainable, 
-                 initializer = tf.random_normal_initializer(stddev = stddev))
+def new_normal_variable(name, shape=None, trainable=True, stddev=0.002):
+    return tf.get_variable(name, shape=shape, trainable=trainable, 
+                 initializer=tf.random_normal_initializer(stddev=stddev))
 
-def new_variable(name, idx, shape, initializer = None):
+def new_variable(name, idx, shape, initializer=None):
     # initial_value = tf.truncated_normal(shape, 0.0, 0.001)
     # var = tf.get_variable(name, 
     #                        initializer = initial_value)
     # initializer = tf.random_normal_initializer(stddev = 0.002)
 
-    var = tf.get_variable(name, shape = shape, 
-                           initializer = initializer) 
+    var = tf.get_variable(name, shape=shape, 
+                           initializer=initializer) 
 
     # var_dict[(name, idx)] = var
     return var
 
-def new_weights(name, idx, shape, initializer = None, wd = None, 
-                data_dict = None,
-                trainable = True): 
+def new_weights(name, idx, shape, initializer=None, wd=None, 
+                data_dict=None,
+                trainable=True): 
     cur_name_scope = tf.get_default_graph().get_name_scope()
     if data_dict is not None and cur_name_scope in data_dict:
         load_data = data_dict[cur_name_scope][0]
         load_data = np.reshape(load_data, shape)
         initializer = tf.constant_initializer(load_data)
-        var = tf.get_variable(name, shape = shape, 
-                                  initializer = initializer,
-                                  trainable = trainable)
+        var = tf.get_variable(name, shape=shape, 
+                                  initializer=initializer,
+                                  trainable=trainable)
     elif wd is not None:
         if initializer is None:
-            initializer = tf.truncated_normal_initializer(stddev = 0.01)
-        var = tf.get_variable(name, shape = shape, 
-                                  initializer = initializer,
-                                  trainable = True) 
+            initializer = tf.truncated_normal_initializer(stddev=0.01)
+            # initializer = tf.random_normal_initializer(stddev = 0.002)
+        var = tf.get_variable(name, shape=shape, 
+                                  initializer=initializer,
+                                  trainable=True) 
         weight_decay = tf.multiply(tf.nn.l2_loss(var), wd, name='weight_loss')
         tf.add_to_collection('losses', weight_decay)
     else:
         if initializer is None:
-            initializer = tf.random_normal_initializer(stddev = 0.002)
-            var = tf.get_variable(name, shape = shape, 
-                                  initializer = initializer,
-                                  trainable = True) 
+            initializer = tf.random_normal_initializer(stddev=0.002)
+        var = tf.get_variable(name, shape=shape, 
+                            initializer=initializer,
+                            trainable=True) 
     # var_dict[(name, idx)] = var
     return var
 
-def new_biases(name, idx, shape, initializer = None,
-                data_dict = None, trainable = True):
+def new_biases(name, idx, shape, initializer=None,
+                data_dict=None, trainable=True):
     cur_name_scope = tf.get_default_graph().get_name_scope()
     if data_dict is not None and cur_name_scope in data_dict:
         load_data = data_dict[cur_name_scope][1]
@@ -336,12 +339,12 @@ def new_biases(name, idx, shape, initializer = None,
     else:
         trainable = True
         if initializer is None:
-            initializer = tf.random_normal_initializer(stddev = 0.002)
+            initializer = tf.random_normal_initializer(stddev=0.002)
             # initializer = tf.constant_initializer(0)
 
-    var = tf.get_variable(name, shape = shape, 
-                           initializer = initializer,
-                           trainable = trainable) 
+    var = tf.get_variable(name, shape=shape, 
+                           initializer=initializer,
+                           trainable=trainable) 
     # var_dict[(name, idx)] = var
     return var
 
