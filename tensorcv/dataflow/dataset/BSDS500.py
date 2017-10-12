@@ -1,78 +1,96 @@
 import os
-from scipy.io import loadmat
 
-import cv2
 import numpy as np 
+from scipy.io import loadmat
 import tensorflow as tf
 
-from ..common import get_file_list
-from ..base import RNGDataFlow
+from ..common import *
+from ..normalization import *
+from ..image import ImageFromFile
 
 __all__ = ['BSDS500']
 
-## TODO Add batch size
-class BSDS500(RNGDataFlow):
-    def __init__(self, name, data_dir='', shuffle=True, normalize=None):
-        assert os.path.isdir(data_dir)
-        self.data_dir = data_dir
-
-        self.shuffle = shuffle
-        self._normalize = normalize
+class BSDS500(ImageFromFile):
+    def __init__(self, name, 
+                 data_dir='', 
+                 shuffle=True, 
+                 normalize=None,
+                 is_mask=False,
+                 normalize_fnc=identity,
+                 resize=None):
 
         assert name in ['train', 'test', 'val']
-        self.setup(epoch_val=0, batch_size=1)
-        self._load_file_list(name)
-        self._data_id = 0
-    
-    def _load_file_list(self, name):
-        im_dir = os.path.join(self.data_dir, 'images', name)
-        self.im_list = get_file_list(im_dir, '.jpg')
+        self._load_name = name
+        self._is_mask = is_mask
 
-        gt_dir = os.path.join(self.data_dir, 'groundTruth', name)
-        self.gt_list = get_file_list(gt_dir, '.mat')
+        super(BSDS500, self).__init__('.jpg', 
+                                        data_dir=data_dir, 
+                                        num_channel=3,
+                                        shuffle=shuffle, 
+                                        normalize=normalize,
+                                        normalize_fnc=normalize_fnc,
+                                        resize=resize)
 
-        mask_dir = os.path.join(self.data_dir, 'mask', name)
-        self.mask_list = get_file_list(mask_dir, '.mat')
+    def _load_file_list(self, _):
+        im_dir = os.path.join(self.data_dir, 'images', self._load_name)
+        self._im_list = get_file_list(im_dir, '.jpg')
 
-        if self.shuffle:
+        gt_dir = os.path.join(self.data_dir, 'groundTruth', self._load_name)
+        self._gt_list = get_file_list(gt_dir, '.mat')
+
+        # TODO may remove later
+        if self._is_mask:
+            mask_dir = os.path.join(self.data_dir, 'mask', self._load_name)
+            self._mask_list = get_file_list(mask_dir, '.mat')
+
+        if self._shuffle:
             self._suffle_file_list()
 
-    def _load_data(self):
-        if self._data_id >= self.size():
-            self._data_id = 0
-            self._epochs_completed += 1
-            if self.shuffle:
-                self._suffle_file_list()
-                
+    def _load_data(self, start, end):
+        input_im_list = []
+        input_label_list = []
+        if self._is_mask:
+            input_mask_list = []
 
-        im = cv2.imread(self.im_list[self._data_id], cv2.IMREAD_COLOR)
-        gt = loadmat(self.gt_list[self._data_id])['groundTruth'][0]
-        mask = loadmat(self.mask_list[self._data_id])['Mask']
-        self._data_id += 1
+        for k in range(start, end):
+            cur_path = self._im_list[k] 
+            im = load_image(cur_path, read_channel=self._read_channel,
+                            resize=self._resize)
+            input_im_list.extend(im)
 
-        num_gt = gt.shape[0]
-        gt = sum(gt[k]['Boundaries'][0][0] for k in range(num_gt))
-        gt = gt.astype('float32')
-        gt = 1.0*gt/num_gt
-        im = np.reshape(im, [1, im.shape[0], im.shape[1], 3])
-        gt = np.reshape(gt, [1, gt.shape[0], gt.shape[1]])
-        mask = np.reshape(gt, [1, mask.shape[0], mask.shape[1]])
+            gt = loadmat(self._gt_list[k])['groundTruth'][0]
+            num_gt = gt.shape[0]
+            gt = sum(gt[k]['Boundaries'][0][0] for k in range(num_gt))
+            gt = gt.astype('float32')
+            gt = 1.0*gt/num_gt
+            gt = np.reshape(gt, [1, gt.shape[0], gt.shape[1]])
+            input_label_list.extend(gt)
 
-        return im, gt, mask
+            if self._is_mask:
+                mask = np.reshape(gt, [1, mask.shape[0], mask.shape[1]])
+                input_mask_list.extend(mask)
+
+        input_im_list = self._normalize_fnc(np.array(input_im_list), 
+                                          self._get_max_in_val(), 
+                                          self._get_half_in_val())
+
+        input_label_list = np.array(input_label_list)
+        if self._is_mask:
+            input_mask_list = np.array(input_mask_list)
+            return [input_im_list, input_label_list, input_mask_list]
+        else:
+            return [input_im_list, input_label_list]
 
     def _suffle_file_list(self):
         idxs = np.arange(self.size())
         self.rng.shuffle(idxs)
-        self.im_list = self.im_list[idxs]
-        self.gt_list = self.gt_list[idxs]
-        self.mask_list = self.mask_list[idxs]
-
-    def size(self):
-        return self.im_list.shape[0]
-
-    def next_batch(self):
-        return self._load_data()
+        self._im_list = self._im_list[idxs]
+        self._gt_list = self._gt_list[idxs]
+        try:
+            self._mask_list = self._mask_list[idxs]
+        except AttributeError:
+            pass
 
 if __name__ == '__main__':
-    a = BSDS500('val','D:\\Qian\\Dataset\\Segmentation\\BSR_bsds500\\BSR\\BSDS500\\data\\')
-    print(a.epochs_completed)
+    a = BSDS500('val','E:\\GITHUB\\workspace\\CNN\\dataset\\BSR_bsds500\\BSR\\BSDS500\\data\\')
+    print(a.next_batch())
