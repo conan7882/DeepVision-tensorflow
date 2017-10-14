@@ -67,20 +67,29 @@ class InferImages(InferencerBase):
             check_dir(self._save_dir)
         except AttributeError:
             raise AttributeError('summary_dir is not set in infer_dir.py!')
+
+    def _before_inference(self):
+        self._result_list = []
         
     def _get_fetch(self, val):
-        self._result_im = val.results
+        self._result_list.append(val.results)
+        # self._result_im = val.results
 
     def _after_inference(self):
         # TODO add process_image to monitors
-        batch_size = len(self._result_im[0])
+        # batch_size = len(self._result_im[0])
+        batch_size = len(self._result_list[0][0])
         grid_size = self._get_grid_size(batch_size)
         # grid_size = [8, 8] if batch_size == 64 else [6, 6]
-        for im, save_name in zip(self._result_im, self._prefix): 
-            save_merge_images(im, [grid_size, grid_size], 
-                self._save_dir + save_name + '_' + str(self.global_step) + '.png',
-                color = self._color,
-                tanh = self._tanh)
+        local_step = 0
+        for result_im in self._result_list:
+            for im, save_name in zip(result_im, self._prefix): 
+                save_merge_images(im, [grid_size, grid_size], 
+                    self._save_dir + save_name + '_step_' + str(self.global_step) +\
+                    '_b_' + str(local_step) + '.png',
+                    color = self._color,
+                    tanh = self._tanh)
+            local_step += 1
         return None
 
     def _get_grid_size(self, batch_size):
@@ -105,17 +114,21 @@ class InferOverlay(InferImages):
 
     def _after_inference(self):
         # TODO add process_image to monitors
-        batch_size = len(self._result_im[0])
+        # batch_size = len(self._result_im[0])
+        batch_size = len(self._result_list[0][0])
         grid_size = self._get_grid_size(batch_size)
         # grid_size = [8, 8] if batch_size == 64 else [6, 6]
-        overlay_im_list = []
-        for im_1, im_2 in zip(self._result_im[0], self._result_im[1]):
-            overlay_im = image_overlay(im_1, im_2, color = self._color)
-            overlay_im_list.append(overlay_im)
-        save_merge_images(np.squeeze(overlay_im_list), [grid_size, grid_size], 
-            self._save_dir + self._overlay_prefix + '_' +\
-            str(self.global_step) + '.png',
-            color = False, tanh = self._tanh)
+        local_step = 0
+        for result_im in self._result_list:
+            overlay_im_list = []
+            for im_1, im_2 in zip(result_im[0], result_im[1]):
+                overlay_im = image_overlay(im_1, im_2, color = self._color)
+                overlay_im_list.append(overlay_im)
+                save_merge_images(np.squeeze(overlay_im_list), [grid_size, grid_size], 
+                self._save_dir + self._overlay_prefix + '_step' +str(self.global_step) +\
+                '_b_' + str(local_step) + '.png',
+                color = False, tanh = self._tanh)
+            local_step += 1
         return None
 
 class InferScalars(InferencerBase):

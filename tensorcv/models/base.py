@@ -11,7 +11,8 @@ __all__ = ['ModelDes', 'BaseModel', 'GANBaseModel']
 class ModelDes(object):
     """ base model for ModelDes """
 
-    def ex_init_model(self, dataflow):
+    def ex_init_model(self, dataflow, trainer):
+        self.trainer = trainer
         # may move in create_graph
         try:
             self.im_height = dataflow.im_size[0]
@@ -25,6 +26,11 @@ class ModelDes(object):
         except AttributeError:
             pass
             # self.num_channels = self.num_channels
+
+    @property
+    def get_global_step(self):
+        return self.trainer.get_global_step
+
 
     def set_batch_size(self, val):
         self._batch_size = val

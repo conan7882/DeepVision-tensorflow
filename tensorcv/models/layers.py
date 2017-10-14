@@ -133,8 +133,13 @@ def dconv(x, filter_size, out_dim=None,
                                padding=padding, 
                                name=scope.name)
         bias = tf.nn.bias_add(dconv, biases)
-        # make explicit shape
-        bias = tf.reshape(bias, out_shape)
+        # TODO need test
+        bias.set_shape([None, None, None, out_dim])
+        # if in_shape[1]:
+        #     in_shape[1] *= stride[1]
+        # if in_shape[2]:
+        #     in_shape[2]*= stride[2]
+        # bias.set_shape(in_shape)
         output = nl(bias, name='output')
         return output
 
