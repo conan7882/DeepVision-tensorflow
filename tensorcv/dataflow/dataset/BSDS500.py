@@ -62,6 +62,7 @@ class BSDS500(ImageFromFile):
             num_gt = gt.shape[0]
             gt = sum(gt[k]['Boundaries'][0][0] for k in range(num_gt))
             gt = gt.astype('float32')
+            gt = gt * 1.0 / np.amax(gt)
             # gt = 1.0*gt/num_gt
             try:
                 gt = misc.imresize(gt, (self._resize[0], self._resize[1]))
@@ -117,7 +118,7 @@ class BSDS500HED(BSDS500):
 
             gt = load_image(self._gt_list[k], read_channel=1,
                             resize=self._resize)
-            gt = gt * 1.0 / 255.0 * 5.0
+            gt = gt * 1.0 / np.amax(gt)
 
             # gt = loadmat(self._gt_list[k])['groundTruth'][0]
             # num_gt = gt.shape[0]

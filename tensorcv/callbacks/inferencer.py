@@ -10,7 +10,7 @@ from .base import Callback
 from ..utils.common import get_tensors_by_names, check_dir, match_tensor_save_name
 from ..utils.viz import *
 
-__all__ = ['InferencerBase', 'InferImages', 'InferScalars', 'InferOverlay']
+__all__ = ['InferencerBase', 'InferImages', 'InferScalars', 'InferOverlay', 'InferMat']
 
 class InferencerBase(Callback):
 
@@ -54,6 +54,8 @@ class InferencerBase(Callback):
 
     def _after_inference(self):
         return None
+
+
 
 class InferImages(InferencerBase):
     def __init__(self, im_name, prefix=None, color=False, tanh=False):
@@ -125,10 +127,24 @@ class InferOverlay(InferImages):
                 overlay_im = image_overlay(im_1, im_2, color = self._color)
                 overlay_im_list.append(overlay_im)
                 save_merge_images(np.squeeze(overlay_im_list), [grid_size, grid_size], 
-                self._save_dir + self._overlay_prefix + '_step' +str(self.global_step) +\
+                self._save_dir + self._overlay_prefix + '_step_' +str(self.global_step) +\
                 '_b_' + str(local_step) + '.png',
                 color = False, tanh = self._tanh)
             local_step += 1
+        return None
+
+class InferMat(InferImages):
+    def __init__(self, infer_save_name, mat_name, prefix=None):
+        self._infer_save_name = str(infer_save_name)
+        super(InferMat, self).__init__(im_name = mat_name, prefix=prefix, 
+                                        color=False, tanh=False)
+    def _after_inference(self):
+        for idx, batch_result in enumerate(self._result_list):
+            save_path = os.path.join(self._save_dir, 
+                '{}_step_{}_b_{}.mat'.format(self._infer_save_name, self.global_step, idx))
+                               # self._infer_save_name + '_b_' + str(idx) + str(self.global_step) + '.mat')
+            scipy.io.savemat(save_path, {name: np.squeeze(val) for name, val 
+              in zip(self._prefix, batch_result)})
         return None
 
 class InferScalars(InferencerBase):

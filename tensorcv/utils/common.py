@@ -15,6 +15,9 @@ __all__ = ['get_file_list', 'apply_mask']
 def apply_mask(input_matrix, mask):
     return tf.dynamic_partition(input_matrix, mask, 2)[1]
 
+def apply_mask_inverse(input_matrix, mask):
+    return tf.dynamic_partition(input_matrix, mask, 2)[0]
+
 def get_tensors_by_names(names):
     # TODO assume there is no repeativie names
     if not isinstance(names, list):
