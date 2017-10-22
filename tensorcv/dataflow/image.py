@@ -11,7 +11,7 @@ from .normalization import *
 from .base import RNGDataFlow
 from ..utils.common import check_dir
 
-__all__ = ['ImageData', 'DataFromFile', 'ImageLabelFromFolder', 'ImageLabelFromFile', 'ImageFromFile']
+__all__ = ['ImageData', 'DataFromFile', 'ImageLabelFromFolder', 'ImageLabelFromFile', 'ImageFromFile', 'ImageDenseLabel']
 
 class DataFromFile(RNGDataFlow):
     """ Base class for image from files """
@@ -329,6 +329,55 @@ class ImageLabelFromFile(ImageLabelFromFolder):
         if self._shuffle:
             self._suffle_file_list()
 
+class ImageDenseLabel(ImageFromFile):
+    def __init__(self, ext_name, im_pre, label_pre, 
+                 data_dir='',
+                 num_channel=None,
+                 shuffle=True, normalize=None,
+                 normalize_fnc=identity,
+                 resize=None):
+
+        self._im_pre = im_pre.lower()
+        self._label_pre = label_pre.lower()
+
+        super(ImageDenseLabel, self).__init__(ext_name=ext_name, 
+                                              data_dir=data_dir, 
+                                              num_channel=num_channel,
+                                              shuffle=shuffle, 
+                                              normalize=normalize,
+                                              normalize_fnc=normalize_fnc,
+                                              resize=resize)
+    def _load_file_list(self, ext_name):
+        im_dir = os.path.join(self.data_dir)
+        gt_dir = os.path.join(self.data_dir)
+        self._im_list = get_file_list(im_dir, ext_name, sub_name=self._im_pre)
+        self._gt_list = get_file_list(gt_dir, ext_name, sub_name=self._label_pre)
+        if self._shuffle:
+            self._suffle_file_list()
+
+    def _suffle_file_list(self):
+        idxs = np.arange(self.size())
+        self.rng.shuffle(idxs)
+        self._im_list = self._im_list[idxs]
+        self._gt_list = self._gt_list[idxs]
+
+    def _load_data(self, start, end):
+        input_im_list = []
+        input_gt_list = []
+        for k in range(start, end):
+            im = load_image(self._im_list[k], read_channel=self._read_channel,
+                            resize=self._resize)
+            input_im_list.extend(im)
+            gt = load_image(self._gt_list[k], read_channel=1,
+                            resize=self._resize)
+            input_gt_list.extend(gt)
+
+        # TODO to be modified 
+        input_im_list = self._normalize_fnc(np.array(input_im_list), 
+                                          self._get_max_in_val(), 
+                                          self._get_half_in_val())
+        return [input_im_list, input_gt_list]
+
 
 ## TODO Add batch size
 class ImageData(RNGDataFlow):
@@ -427,17 +476,17 @@ class ImageData(RNGDataFlow):
         return self.im_list.shape[0]  
 
 if __name__ == '__main__':
-    b = ImageLabelFromFolder('.jpeg',
-        data_dir='D:\\Qian\\GitHub\\workspace\\dataset\\tiny-imagenet-200\\tiny-imagenet-200\\train\\',
-                 shuffle=True, normalize='tanh', num_channel=3, one_hot=True)
+    b = ImageDenseLabel('.png', 'contour', 'label',
+        data_dir='E:\\Google Drive\\Foram\\Training\\distmap\\',
+                 shuffle=False, num_channel=3)
     # print(b.label_dict)
-    print(b.next_batch()[0][:,30:40,30:40,:])
+    print(b.next_batch()[0])
     print(b.next_batch()[1])
     
-    a = ImageLabelFromFile('.jpeg',
-        data_dir = 'D:\\Qian\\GitHub\\workspace\\dataset\\tiny-imagenet-200\\tiny-imagenet-200\\val\\',
-                 shuffle=True, normalize='tanh', num_channel=3,
-                 label_file_name='val_annotations.txt', label_dict=b.label_dict, one_hot=True)
-    print(a.next_batch()[0][:,30:40,30:40,:])
-    print(a.next_batch()[1])
+    # a = ImageLabelFromFile('.jpeg',
+    #     data_dir = 'D:\\Qian\\GitHub\\workspace\\dataset\\tiny-imagenet-200\\tiny-imagenet-200\\val\\',
+    #              shuffle=True, normalize='tanh', num_channel=3,
+    #              label_file_name='val_annotations.txt', label_dict=b.label_dict, one_hot=True)
+    # print(a.next_batch()[0][:,30:40,30:40,:])
+    # print(a.next_batch()[1])
     # # print(a.next_batch()[0].shape)

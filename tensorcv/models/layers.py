@@ -58,6 +58,7 @@ def conv(x, filter_size, out_dim,
             # bias = tf.reshape(tf.nn.bias_add(conv, biases), conv.get_shape().as_list())
         
         output = nl(out, name = 'output')
+        # output = nl(out)
         return output
 
 def dconv(x, filter_size, out_dim=None, 
@@ -311,6 +312,7 @@ def new_weights(name, idx, shape, initializer=None, wd=None,
     cur_name_scope = tf.get_default_graph().get_name_scope()
     if data_dict is not None and cur_name_scope in data_dict:
         load_data = data_dict[cur_name_scope][0]
+
         load_data = np.reshape(load_data, shape)
         initializer = tf.constant_initializer(load_data)
         var = tf.get_variable(name, shape=shape, 

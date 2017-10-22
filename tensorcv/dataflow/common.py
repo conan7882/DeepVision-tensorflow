@@ -8,12 +8,18 @@ from scipy import misc
 import numpy as np 
 
 
-def get_file_list(file_dir, file_ext):
-    assert file_ext in ['.mat', '.png', '.jpg', '.jpeg']
+def get_file_list(file_dir, file_ext, sub_name=None):
+    # assert file_ext in ['.mat', '.png', '.jpg', '.jpeg']
     re_list = []
-    return np.array([os.path.join(root, name)
-        for root, dirs, files in os.walk(file_dir) 
-        for name in files if name.lower().endswith(file_ext)])
+
+    if sub_name is None:
+        return np.array([os.path.join(root, name)
+            for root, dirs, files in os.walk(file_dir) 
+            for name in files if name.lower().endswith(file_ext)])
+    else:
+        return np.array([os.path.join(root, name)
+            for root, dirs, files in os.walk(file_dir) 
+            for name in files if name.lower().endswith(file_ext) and sub_name in name.lower()])
     # for root, dirs, files in os.walk(file_dir):
     #     for name in files:
     #         if name.lower().endswith(file_ext):
