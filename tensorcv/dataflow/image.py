@@ -15,7 +15,8 @@ __all__ = ['ImageData', 'DataFromFile', 'ImageLabelFromFolder', 'ImageLabelFromF
 
 class DataFromFile(RNGDataFlow):
     """ Base class for image from files """
-    def __init__(self, ext_name, data_dir='', 
+    def __init__(self, ext_name, sub_name=None,
+                 data_dir='', 
                  num_channel=None,
                  shuffle=True, normalize=None,
                  normalize_fnc=identity):
@@ -25,6 +26,7 @@ class DataFromFile(RNGDataFlow):
         self._shuffle = shuffle
         self._normalize = normalize
         self._normalize_fnc = normalize_fnc
+        self._sub_name = sub_name
 
         self.setup(epoch_val=0, batch_size=1)
 
@@ -96,7 +98,8 @@ class DataFromFile(RNGDataFlow):
         return self._get_sample_data()
 
 class ImageFromFile(DataFromFile):
-    def __init__(self, ext_name, data_dir='', 
+    def __init__(self, ext_name, sub_name=None,
+                 data_dir='', 
                  num_channel=None,
                  shuffle=True, normalize=None,
                  normalize_fnc=identity,
@@ -111,6 +114,7 @@ class ImageFromFile(DataFromFile):
         self._resize = get_shape2D(resize)
 
         super(ImageFromFile, self).__init__(ext_name, 
+                                        sub_name=sub_name,
                                         data_dir=data_dir,
                                         shuffle=shuffle, 
                                         normalize=normalize,
@@ -118,7 +122,7 @@ class ImageFromFile(DataFromFile):
 
     def _load_file_list(self, ext_name):
         im_dir = os.path.join(self.data_dir)
-        self._im_list = get_file_list(im_dir, ext_name)
+        self._im_list = get_file_list(im_dir, ext_name, sub_name=self._sub_name)
         if self._shuffle:
             self._suffle_file_list()
 
@@ -158,7 +162,8 @@ class ImageFromFile(DataFromFile):
 
 class ImageLabelFromFolder(ImageFromFile):
     """ read image data with label in subfolder name """
-    def __init__(self, ext_name, data_dir='', 
+    def __init__(self, ext_name, sub_name=None,
+                 data_dir='', 
                  num_channel=None,
                  label_dict=None, num_class=None,
                  one_hot=False,
@@ -178,7 +183,8 @@ class ImageLabelFromFolder(ImageFromFile):
         self._num_class = num_class
         self._one_hot = one_hot
         self.label_dict = label_dict
-        super(ImageLabelFromFolder, self).__init__(ext_name, 
+        super(ImageLabelFromFolder, self).__init__(ext_name,
+                                        sub_name=sub_name, 
                                         data_dir=data_dir,
                                         num_channel=num_channel,
                                         shuffle=shuffle, 
@@ -204,7 +210,7 @@ class ImageLabelFromFolder(ImageFromFile):
 
         for folder_path, folder_name in zip(get_folder_list(self.data_dir), 
                                             get_folder_names(self.data_dir)):
-            cur_folder_list = get_file_list(folder_path, ext_name)
+            cur_folder_list = get_file_list(folder_path, ext_name, sub_name=self._sub_name)
             self._im_list.extend(cur_folder_list)
             self._label_list.extend([self.label_dict[folder_name] for i in range(len(cur_folder_list))])
 
@@ -279,7 +285,8 @@ class ImageLabelFromFolder(ImageFromFile):
 
 class ImageLabelFromFile(ImageLabelFromFolder):
     """ read image data with label in a separate file txt """
-    def __init__(self, ext_name, data_dir='', 
+    def __init__(self, ext_name, sub_name=None, 
+                 data_dir='', 
                  label_file_name='',
                  num_channel=None, one_hot=False,
                  label_dict={}, num_class=None,
@@ -288,6 +295,7 @@ class ImageLabelFromFile(ImageLabelFromFolder):
 
         self._label_file_name = label_file_name
         super(ImageLabelFromFile, self).__init__(ext_name, 
+                                    sub_name=sub_name,
                                     data_dir=data_dir, 
                                     num_channel=num_channel,
                                     label_dict=label_dict,
@@ -320,7 +328,7 @@ class ImageLabelFromFile(ImageLabelFromFolder):
                         for cur_label in label_list])
 
     def _load_file_list(self, ext_name):
-        self._im_list = get_file_list(self.data_dir, ext_name)
+        self._im_list = get_file_list(self.data_dir, ext_name, sub_name=self._sub_name)
         self._label_list = self._get_label_list()
 
         if self._one_hot:
