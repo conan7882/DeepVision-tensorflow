@@ -1,5 +1,6 @@
 from abc import abstractmethod
 import weakref
+import os
 
 import tensorflow as tf
 
@@ -20,12 +21,12 @@ class Trainer(object):
     """ base class for trainer """
     def __init__(self, config):
         assert_type(config, TrainConfig)
+        self._is_load = config.is_load
         self.config = config
         self.model = config.model
         self.model.ex_init_model(config.dataflow, weakref.proxy(self))
         self.dataflow = config.dataflow
         # self.monitors = self.config.monitors
-
         self._global_step = 0
         self._callbacks = []
         self.monitors = []
@@ -57,8 +58,15 @@ class Trainer(object):
     def _create_session(self):
         hooks = self._callbacks.get_hooks()
         self.sess = self.config.session_creator.create_session()
+        
         self.hooked_sess = tf.train.MonitoredSession(
             session_creator=ReuseSessionCreator(self.sess), hooks=hooks)
+
+        if self._is_load:
+            load_model_path = os.path.join(self.config.model_dir, 
+                                        self.config.model_name)
+            saver = tf.train.Saver()
+            saver.restore(self.sess, load_model_path)
 
     def main_loop(self):
         with self.sess.as_default():

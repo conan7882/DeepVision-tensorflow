@@ -8,6 +8,7 @@ from ..utils.default import get_default_session_config
 from ..utils.sesscreate import NewSessionCreator
 from ..callbacks.monitors import TFSummaryWriter
 from ..callbacks.summary import TrainSummary
+from ..utils.common import check_dir
 
 __all__ = ['TrainConfig', 'GANTrainConfig']
 
@@ -23,6 +24,8 @@ class TrainConfig(object):
                  monitors=None,
                  batch_size=1, max_epoch=100,
                  summary_periodic=None,
+                 is_load=False,
+                 model_name=None,
                  default_dirs=None):
         self.default_dirs = default_dirs
 
@@ -44,7 +47,18 @@ class TrainConfig(object):
         self.dataflow.set_batch_size(batch_size)
         self.model.set_batch_size(batch_size)
         self.batch_size = batch_size
-        self.max_epoch = max_epoch        
+        self.max_epoch = max_epoch 
+
+        self.is_load = is_load
+        if is_load:
+            assert not model_name is None,\
+            '[TrainConfig]: model_name cannot be None when is_load is True!' 
+            self.model_name = model_name 
+            try:
+                self.model_dir = os.path.join(default_dirs.model_dir)
+                check_dir(self.model_dir)
+            except AttributeError:
+                raise AttributeError('model_dir is not set!')   
         
         # if callbacks is None:
         #     callbacks = []
