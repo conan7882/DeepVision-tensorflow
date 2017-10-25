@@ -128,10 +128,15 @@ class VGG19(BaseVGG):
             conv5_4 = conv(conv5_3, 3, 512, 'conv5_4')
             pool5 = max_pool(conv5_4, 'pool5', padding='SAME')
 
+            self.layer['conv1_1'] = conv1_1
             self.layer['conv1_2'] = conv1_2
+            self.layer['conv2_1'] = conv2_1
             self.layer['conv2_2'] = conv2_2
+            self.layer['conv3_1'] = conv3_1
             self.layer['conv3_4'] = conv3_4
+            self.layer['conv4_1'] = conv4_1
             self.layer['conv4_4'] = conv4_4
+            self.layer['conv5_1'] = conv5_1
             self.layer['pool5'] = pool5
             self.layer['conv_out'] = self.layer['conv5_4'] = conv5_4
 
