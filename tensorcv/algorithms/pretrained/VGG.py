@@ -56,7 +56,8 @@ class BaseVGG(BaseModel):
                  learning_rate=0.0001,
                  is_load=False,
                  pre_train_path=None,
-                 is_rescale=False):
+                 is_rescale=False,
+                 trainable=False):
         """ 
         Args:
             num_class (int): number of image classes
@@ -72,6 +73,7 @@ class BaseVGG(BaseModel):
         self.im_width = im_width
         self.num_class = num_class
         self._is_rescale = is_rescale
+        self._trainable = trainable
 
         self.layer = {}
 
@@ -101,7 +103,7 @@ class VGG19(BaseVGG):
     def _create_conv(self, input_im, data_dict):
 
         arg_scope = tf.contrib.framework.arg_scope
-        with arg_scope([conv], nl=tf.nn.relu, trainable=True, data_dict=data_dict):
+        with arg_scope([conv], nl=tf.nn.relu, trainable=self._trainable, data_dict=data_dict):
             conv1_1 = conv(input_im, 3, 64, 'conv1_1')
             conv1_2 = conv(conv1_1, 3, 64, 'conv1_2')
             pool1 = max_pool(conv1_2, 'pool1', padding='SAME')
@@ -168,7 +170,7 @@ class VGG19(BaseVGG):
         conv_output = self._create_conv(input_bgr, data_dict)
         
         arg_scope = tf.contrib.framework.arg_scope
-        with arg_scope([fc], trainable=True, data_dict=data_dict):
+        with arg_scope([fc], trainable=self._trainable, data_dict=data_dict):
             fc6 = fc(conv_output, 4096, 'fc6', nl=tf.nn.relu)
             dropout_fc6 = dropout(fc6, keep_prob, self.is_training)
 
@@ -211,7 +213,7 @@ class VGG19_FCN(VGG19):
         conv_outptu = self._create_conv(input_bgr, data_dict)
 
         arg_scope = tf.contrib.framework.arg_scope
-        with arg_scope([conv], trainable=True, data_dict=data_dict):
+        with arg_scope([conv], trainable=self._trainable, data_dict=data_dict):
 
             fc6 = conv(conv_outptu, 7, 4096, 'fc6', nl=tf.nn.relu, padding='VALID')
             dropout_fc6 = dropout(fc6, keep_prob, self.is_training)
