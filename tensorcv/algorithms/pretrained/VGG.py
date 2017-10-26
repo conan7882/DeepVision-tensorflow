@@ -137,6 +137,7 @@ class VGG19(BaseVGG):
             self.layer['conv3_1'] = conv3_1
             self.layer['conv3_4'] = conv3_4
             self.layer['conv4_1'] = conv4_1
+            self.layer['conv4_2'] = conv4_2
             self.layer['conv4_4'] = conv4_4
             self.layer['conv5_1'] = conv5_1
             self.layer['pool5'] = pool5
