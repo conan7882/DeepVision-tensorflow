@@ -1,4 +1,4 @@
-import tensorcv.utils.debug 
+import tensorcv.utils.debug as debug
 
 
 debug.hello_cv()
