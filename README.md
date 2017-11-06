@@ -6,3 +6,9 @@ This package is for practicing and reproducing learning-based computer vision al
 
 It is a simplified version of [tensorpack](https://github.com/ppwwyyxx/tensorpack), which is the reference code of this package.
 
+# Install
+'''
+pip install -r requirements.txt
+pip install -U git+https://github.com/conan7882/DeepVision-tensorflow.git
+'''
+
