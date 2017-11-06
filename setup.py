@@ -7,6 +7,6 @@ setup(name='tensorcv',
       author='Qian Ge',
       author_email='geqian1001@gmail.com',
       packages=['tensorcv', 'tensorcv.utils', 'tensorcv.algorithms', 'tensorcv.callbacks',
-                'tensorcv.data', , 'tensorcv.dataflow', 'tensorcv.dataflow.dataset',
+                'tensorcv.data', 'tensorcv.dataflow', 'tensorcv.dataflow.dataset',
                 'tensorcv.models', 'tensorcv.predicts', 'tensorcv.train'],
       zip_safe=False)
