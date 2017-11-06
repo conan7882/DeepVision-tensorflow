@@ -8,7 +8,7 @@ install:
 script:
   # - flake8 . --ignore=F405,F403
   - python test.py
-  # - coverage run --source=. generate.py cv.yaml --markdown
-# after_success:
-#   - coveralls
+  - coverage run --source=. test.py
+after_success:
+  - coveralls
 
