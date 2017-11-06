@@ -6,5 +6,5 @@ setup(name='tensorcv',
       url='https://github.com/conan7882/DeepVision-tensorflow',
       author='Qian Ge',
       author_email='geqian1001@gmail.com',
-      packages=['tensorcv'],
+      packages=['tensorcv', 'tensorcv.utils'],
       zip_safe=False)
