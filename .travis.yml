@@ -1,0 +1,19 @@
+language: python
+python: 
+  - "3.4"
+install:
+  - pip install -r requirements.txt
+  # - pip install flake8
+  # - pip install coveralls
+script:
+  # - flake8 . --ignore=F405,F403
+  - python test.py
+  # - coverage run --source=. generate.py cv.yaml --markdown
+# after_success:
+#   - coveralls
+# group:
+#   - stable
+# dist: 
+#   - trusty
+# os: 
+#   - linux

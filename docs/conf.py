@@ -1,6 +1,9 @@
-import sys, os, re
+import sys
+import os
+import re
 import mock
-import inspect
+
+from recommonmark.parser import CommonMarkParser
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -60,7 +63,7 @@ intersphinx_mapping = {'python': ('https://docs.python.org/3.6', None)}
 templates_path = ['_templates']
 
 # to support markdown
-from recommonmark.parser import CommonMarkParser
+
 source_parsers = {
     '.md': CommonMarkParser,
 }

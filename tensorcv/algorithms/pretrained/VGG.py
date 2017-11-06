@@ -226,7 +226,7 @@ class VGG19_FCN(VGG19):
             self.layer['input'] = input_im
 
             # Convert rgb image to bgr image
-            red, green, blue = tf.split(axis=3, num_or_size_splits=3, 
+            red, green, blue = tf.split(axis=3, num_or_size_splits=3,
                                         value=input_im)
 
             input_bgr = tf.concat(axis=3, values=[
@@ -244,10 +244,12 @@ class VGG19_FCN(VGG19):
         arg_scope = tf.contrib.framework.arg_scope
         with arg_scope([conv], trainable=self._trainable, data_dict=data_dict):
 
-            fc6 = conv(conv_outptu, 7, 4096, 'fc6', nl=tf.nn.relu, padding='VALID')
+            fc6 = conv(conv_outptu, 7, 4096, 'fc6',
+                       nl=tf.nn.relu, padding='VALID')
             dropout_fc6 = dropout(fc6, keep_prob, self.is_training)
 
-            fc7 = conv(dropout_fc6, 1, 4096, 'fc7', nl=tf.nn.relu, padding='VALID')
+            fc7 = conv(dropout_fc6, 1, 4096, 'fc7',
+                       nl=tf.nn.relu, padding='VALID')
             dropout_fc7 = dropout(fc7, keep_prob, self.is_training)
 
             fc8 = conv(dropout_fc7, 1, self.num_class, 'fc8', padding='VALID')
@@ -255,21 +257,16 @@ class VGG19_FCN(VGG19):
             self.layer['fc6'] = fc6
             self.layer['fc7'] = fc7
             self.layer['fc8'] = self.layer['output'] = fc8
-            
 
         self.output = tf.identity(fc8, 'model_output')
-        filter_size = [tf.shape(fc8)[1], tf.shape(fc8)[2]]
-
         self.avg_output = global_avg_pool(fc8)
 
- 
 
 # if __name__ == '__main__':
-#     VGG = VGG19(num_class=1000, 
-#                 num_channels=3, 
-#                 im_height=224, 
+#     VGG = VGG19(num_class=1000,
+#                 num_channels=3,
+#                 im_height=224,
 #                 im_width=224)
-    
 #     VGG.create_graph()
 
 #     writer = tf.summary.FileWriter(config.summary_dir)
@@ -278,7 +275,3 @@ class VGG19_FCN(VGG19):
 #         writer.add_graph(sess.graph)
 
 #     writer.close()
-
-
-
- 
