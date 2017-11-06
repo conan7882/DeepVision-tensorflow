@@ -11,9 +11,4 @@ script:
   # - coverage run --source=. generate.py cv.yaml --markdown
 # after_success:
 #   - coveralls
-# group:
-#   - stable
-# dist: 
-#   - trusty
-# os: 
-#   - linux
+
