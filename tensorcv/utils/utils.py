@@ -12,8 +12,8 @@ __all__ = ['get_rng']
 _RNG_SEED = None
 
 
-# Adapted from https://github.com/ppwwyyxx/tensorpack/blob/master/tensorpack/utils/utils.py
 def get_rng(obj=None):
+    # Adapted from https://github.com/ppwwyyxx/tensorpack/blob/master/tensorpack/utils/utils.py
     """
     Get a good RNG seeded with time, pid and the object.
     Args:
