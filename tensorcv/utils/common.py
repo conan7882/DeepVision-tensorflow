@@ -8,7 +8,8 @@ import os
 
 import tensorflow as tf
 
-__all__ = ['apply_mask', 'apply_mask_inverse', 'get_tensors_by_names', 'deconv_size']
+__all__ = ['apply_mask', 'apply_mask_inverse', 'get_tensors_by_names',
+           'deconv_size']
 
 
 def apply_mask(input_matrix, mask):
@@ -17,8 +18,8 @@ def apply_mask(input_matrix, mask):
 
     Args:
         input_matrix (Tensor): A Tensor
-        mask (int): A Tensor of type int32 with indices in {0, 1}. Shape 
-        has to be the same as input_matrix.
+        mask (int): A Tensor of type int32 with indices in {0, 1}. Shape
+            has to be the same as input_matrix.
 
     Return:
         A Tensor with elements from data with entries in mask equal to 1.
@@ -32,8 +33,8 @@ def apply_mask_inverse(input_matrix, mask):
 
     Args:
         input_matrix (Tensor): A Tensor
-        mask (int): A Tensor of type int32 with indices in {0, 1}. Shape 
-        has to be the same as input_matrix.
+        mask (int): A Tensor of type int32 with indices in {0, 1}. Shape
+            has to be the same as input_matrix.
 
     Return:
         A Tensor with elements from data with entries in mask equal to 0.
@@ -73,7 +74,7 @@ def deconv_size(input_height, input_width, stride = 2):
     Args:
         input_height, input_width (int): Size of original feature
         stride (int): Stride of the filter
-        
+ 
     Return:
         height, width. Size of feature after filtering. 
     """
@@ -82,12 +83,25 @@ def deconv_size(input_height, input_width, stride = 2):
 
 
 def check_dir(input_dir):
-    # print(inspect.stack())
     assert input_dir is not None, "dir cannot be None!"
     assert os.path.isdir(input_dir), input_dir + ' does not exist!'
 
 
 def match_tensor_save_name(tensor_names, save_names):
+    """
+    Match tensor_names and corresponding save_names for saving the results of 
+    the tenors. If the number of tensors is less or equal to the length 
+    of save names, tensors will be saved using the corresponding names in 
+    save_names. Otherwise, tensors will be saved using their own names. 
+    Used for prediction or inference.
+
+    Args:
+        tensor_names (str): List of tensor names
+        save_names (str): List of names for saving tensors
+
+    Return:
+        List of tensor names and list of names to save the tensors. 
+    """
     if not isinstance(tensor_names, list):
         tensor_names = [tensor_names]
     if save_names is None:
