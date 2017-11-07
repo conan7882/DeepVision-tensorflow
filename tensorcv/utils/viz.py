@@ -1,3 +1,7 @@
+#!/usr/bin/env python
+# File: viz.py
+# Author: Qian Ge <geqian1001@gmail.com>
+
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.misc
@@ -10,16 +14,18 @@ def intensity_to_rgb(intensity, cmap='jet', normalize=False):
     This function requires matplotlib. See `matplotlib colormaps
     <http://matplotlib.org/examples/color/colormaps_reference.html>`_ for a
     list of available colormap.
+
     Args:
         intensity (np.ndarray): array of intensities such as saliency.
         cmap (str): name of the colormap to use.
         normalize (bool): if True, will normalize the intensity so that it has
             minimum 0 and maximum 1.
+
     Returns:
         np.ndarray: an RGB float32 image in range [0, 255], a colored heatmap.
     """
-    # assert intensity.ndim == 2, intensity.shape
 
+    # assert intensity.ndim == 2, intensity.shape
     intensity = intensity.astype("float")
 
     if normalize:
@@ -33,9 +39,10 @@ def intensity_to_rgb(intensity, cmap='jet', normalize=False):
     intensity = cmap(intensity)[..., :3]
     return intensity.astype('float32') * 255.0
 
+
 def save_merge_images(images, im_size, save_path, color = False, tanh = False):
-    
-    """
+    """Save multiple images with same size into one larger image
+
     Save the samples images
     The best size number is
             int(max(sqrt(image.shape[0]),sqrt(image.shape[1]))) + 1
@@ -51,7 +58,7 @@ def save_merge_images(images, im_size, save_path, color = False, tanh = False):
         img = (img + 1.0) / 2.0
 
     if color:
-    	# TODO
+        # TODO
         img_list = []
         for im in np.squeeze(img):
             im = intensity_to_rgb(np.squeeze(im), normalize=True)
