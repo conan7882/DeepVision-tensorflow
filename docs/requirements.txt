@@ -3,6 +3,6 @@ numpy
 tqdm
 Sphinx>=1.6
 recommonmark==0.4.0
-sphinx_rtd_theme
+guzzle_sphinx_theme
 mock
 tensorflow
