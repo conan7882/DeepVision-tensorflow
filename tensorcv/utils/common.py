@@ -42,6 +42,7 @@ def apply_mask_inverse(input_matrix, mask):
 
 def get_tensors_by_names(names):
     """Get a list of tensors by the input name list.
+    
     If more than one tensor have the same name in the graph. This function
     will only return the tensor with name NAME:0.
 

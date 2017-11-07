@@ -1,3 +1,7 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# File: default.py
+# Author: Qian Ge <geqian1001@gmail.com>
 
 import tensorflow as tf
 
