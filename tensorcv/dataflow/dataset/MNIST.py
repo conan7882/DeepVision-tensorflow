@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: UTF-8 -*-
 # File: MNIST.py
 # Author: Qian Ge <geqian1001@gmail.com>
 
@@ -20,6 +22,9 @@ def get_mnist_im_label(name, mnist_data):
 
 # TODO read data without tensorflow
 class MNIST(RNGDataFlow):
+    """
+
+    """
     def __init__(self, name, data_dir='', shuffle=True, normalize=None):
 
         self.num_channels = 1
