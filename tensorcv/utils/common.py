@@ -98,7 +98,7 @@ def match_tensor_save_name(tensor_names, save_names):
 
     Return:
         (list, list): List of tensor names and list of names to save
-            the tensors.
+        the tensors.
     """
     if not isinstance(tensor_names, list):
         tensor_names = [tensor_names]

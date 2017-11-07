@@ -5,7 +5,7 @@ __all__ = ['get_default_session_config']
 
 
 def get_default_session_config(memory_fraction=1):
-    """Default config a TensorFlow session
+    """Default config of a TensorFlow session
 
     Args:
         memory_fraction (float): Memory fraction of GPU for this session
