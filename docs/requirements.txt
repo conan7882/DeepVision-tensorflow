@@ -7,3 +7,4 @@ guzzle_sphinx_theme
 mock
 tensorflow
 matplotlib
+Pillow
