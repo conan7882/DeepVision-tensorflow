@@ -17,7 +17,8 @@ def apply_mask(input_matrix, mask):
 
     Args:
         input_matrix (Tensor): A Tensor
-        mask (int): A Tensor of type int32 with indices in {0, 1}. Shape has to be the same as input_matrix.
+        mask (int): A Tensor of type int32 with indices in {0, 1}. Shape 
+        has to be the same as input_matrix.
 
     Return:
         A Tensor with elements from data with entries in mask equal to 1.
@@ -31,7 +32,8 @@ def apply_mask_inverse(input_matrix, mask):
 
     Args:
         input_matrix (Tensor): A Tensor
-        mask (int): A Tensor of type int32 with indices in {0, 1}. Shape has to be the same as input_matrix.
+        mask (int): A Tensor of type int32 with indices in {0, 1}. Shape 
+        has to be the same as input_matrix.
 
     Return:
         A Tensor with elements from data with entries in mask equal to 0.
@@ -41,7 +43,9 @@ def apply_mask_inverse(input_matrix, mask):
 
 def get_tensors_by_names(names):
     """
-    Get a list of tensors by the input name list. If more than one tensor have the same name in the graph. This function will only return the tensor with name NAME:0.
+    Get a list of tensors by the input name list. If more than one tensor 
+    have the same name in the graph. This function will only return the 
+    tensor with name NAME:0.
 
     Args:
         names (str): A str or a list of str
