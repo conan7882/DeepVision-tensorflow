@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 # File: default.py
 # Author: Qian Ge <geqian1001@gmail.com>
-# Modified from https://github.com/ppwwyyxx/tensorpack/blob/master/tensorpack/tfutils/sesscreate.py
+# Modified from[1]
+# [1]: https://github.com/ppwwyyxx/tensorpack/blob/master/tensorpack/tfutils/sesscreate.py
 
 import tensorflow as tf
 
@@ -22,8 +23,8 @@ class NewSessionCreator(tf.train.SessionCreator):
 
         Args:
             target, graph, config: same as :meth:`tf.Session.__init__()`.
-            config: default to 
-                :func:`utils.default.get_default_session_config()`
+            config: default to
+                :func:`utils.default.get_default_session_config()`.
         """
         self.target = target
         if config is not None:

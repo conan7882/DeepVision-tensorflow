@@ -36,6 +36,14 @@ tensorcv\.utils\.utils module
     :undoc-members:
     :show-inheritance:
 
+tensorcv\.utils\.viz module
+-----------------------------
+
+.. automodule:: tensorcv.utils.viz
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------
