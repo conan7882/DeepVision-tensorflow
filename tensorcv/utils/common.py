@@ -42,15 +42,16 @@ def apply_mask_inverse(input_matrix, mask):
 
 def get_tensors_by_names(names):
     """Get a list of tensors by the input name list.
-    
-    If more than one tensor have the same name in the graph. This function
-    will only return the tensor with name NAME:0.
 
     Args:
         names (str): A str or a list of str
 
     Return:
         A list of tensors with name in input names.
+
+    Warning:
+        If more than one tensor have the same name in the graph. This function
+            will only return the tensor with name NAME:0.
     """
     if not isinstance(names, list):
         names = [names]
@@ -70,8 +71,9 @@ def deconv_size(input_height, input_width, stride=2):
     a specific stride. Mostly used for setting the shape for deconvolution.
 
     Args:
-        input_height, input_width (int): Size of original feature
-        stride (int): Stride of the filter
+        input_height (int): height of input feature
+        input_width (int): width of input feature
+        stride (int): stride of the filter
 
     Return:
         (int, int): Height and width of feature after filtering.

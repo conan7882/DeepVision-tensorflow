@@ -8,8 +8,9 @@ import scipy.misc
 
 
 def intensity_to_rgb(intensity, cmap='jet', normalize=False):
-    # copy from https://github.com/ppwwyyxx/tensorpack/blob/master/tensorpack/utils/viz.py
     """
+    This function is copied from `tensorpack 
+    <https://github.com/ppwwyyxx/tensorpack/blob/master/tensorpack/utils/viz.py>`__.
     Convert a 1-channel matrix of intensities to an RGB image employing
     a colormap.
     This function requires matplotlib. See `matplotlib colormaps
@@ -41,13 +42,19 @@ def intensity_to_rgb(intensity, cmap='jet', normalize=False):
     return intensity.astype('float32') * 255.0
 
 
-def save_merge_images(images, im_size, save_path, color=False, tanh=False):
-    """Save multiple images with same size into one larger image
+def save_merge_images(images, merge_grid, save_path, color=False, tanh=False):
+    """Save multiple images with same size into one larger image.
 
-    Save the samples images
-    The best size number is
-            int(max(sqrt(image.shape[0]),sqrt(image.shape[1]))) + 1
-    example:
+    The best size number is int(max(sqrt(image.shape[0]),sqrt(image.shape[1]))) + 1
+
+    Args:
+        images (np.ndarray): A batch of image array to be merged with size
+            [BATCH_SIZE, HEIGHT, WIDTH, CHANNEL].
+        merge_grid (list): List of length 2. The grid size for merge images.
+        save_path (str): Path for saving the merged image.
+        color (bool)  
+
+    Example:
         The batch_size is 64, then the size is recommended [8, 8]
         The batch_size is 32, then the size is recommended [6, 6]
     """
@@ -71,13 +78,13 @@ def save_merge_images(images, im_size, save_path, color=False, tanh=False):
         img = np.expand_dims(img, 0)
     # img = images
     h, w = img.shape[1], img.shape[2]
-    merge_img = np.zeros((h * im_size[0], w * im_size[1], 3))
+    merge_img = np.zeros((h * merge_grid[0], w * merge_grid[1], 3))
     if len(img.shape) < 4:
         img = np.expand_dims(img, -1)
 
     for idx, image in enumerate(img):
-        i = idx % im_size[1]
-        j = idx // im_size[1]
+        i = idx % merge_grid[1]
+        j = idx // merge_grid[1]
         merge_img[j*h:j*h+h, i*w:i*w+w, :] = image
 
     return scipy.misc.imsave(save_path, merge_img)
@@ -85,8 +92,12 @@ def save_merge_images(images, im_size, save_path, color=False, tanh=False):
 
 def image_overlay(im_1, im_2, color=True, normalize=True):
     """
+
+    Image size 
+
     Args:
-        im_1 and im_2: two images with size [HEIGHT, WIDTH, CHANNEL]
+        im_1 (np.ndarray): image arrary  
+        im_2 (np.ndarray): image arrary
     """
     if color:
         im_1 = intensity_to_rgb(np.squeeze(im_1), normalize=normalize)
