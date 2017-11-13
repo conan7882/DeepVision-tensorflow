@@ -2,7 +2,6 @@ import os
 
 import numpy as np 
 from scipy.io import loadmat
-import tensorflow as tf
 
 from ..common import *
 from ..normalization import *

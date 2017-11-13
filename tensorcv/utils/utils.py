@@ -27,3 +27,16 @@ def get_rng(obj=None):
     if _RNG_SEED is not None:
         seed = _RNG_SEED
     return np.random.RandomState(seed)
+
+
+def check_dir(input_dir):
+    assert input_dir is not None, "dir cannot be None!"
+    assert os.path.isdir(input_dir), input_dir + ' does not exist!'
+
+
+def assert_type(v, tp):
+    """
+    Assert type of input v be type tp
+    """
+    assert isinstance(v, tp),\
+        "Expect " + str(tp) + ", but " + str(v.__class__) + " is given!"

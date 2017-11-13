@@ -111,11 +111,13 @@ def match_tensor_save_name(tensor_names, save_names):
 
 
 def check_dir(input_dir):
+    print('***** WARNING ********: check_dir is moved to utils.utils.py')
     assert input_dir is not None, "dir cannot be None!"
     assert os.path.isdir(input_dir), input_dir + ' does not exist!'
 
 
 def assert_type(v, tp):
+    print('***** WARNING ********: assert_type is moved to utils.utils.py')
     """
     Assert type of input v be type tp
     """

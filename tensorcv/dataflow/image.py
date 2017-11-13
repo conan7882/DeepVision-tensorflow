@@ -8,7 +8,7 @@ from scipy import misc
 from .common import *
 from .normalization import *
 from .base import RNGDataFlow
-from ..utils.common import check_dir
+from ..utils.utils import check_dir
 
 __all__ = ['ImageData', 'DataFromFile', 'ImageLabelFromFolder', 'ImageLabelFromFile', 'ImageFromFile', 'ImageDenseLabel']
 
