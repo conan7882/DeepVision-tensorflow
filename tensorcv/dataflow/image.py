@@ -2,7 +2,6 @@
 # Author: Qian Ge <geqian1001@gmail.com>
 import os
 
-import cv2
 import numpy as np 
 from scipy import misc
 

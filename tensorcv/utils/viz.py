@@ -9,7 +9,7 @@ import scipy.misc
 
 def intensity_to_rgb(intensity, cmap='jet', normalize=False):
     """
-    This function is copied from `tensorpack 
+    This function is copied from `tensorpack
     <https://github.com/ppwwyyxx/tensorpack/blob/master/tensorpack/utils/viz.py>`__.
     Convert a 1-channel matrix of intensities to an RGB image employing
     a colormap.
@@ -45,18 +45,21 @@ def intensity_to_rgb(intensity, cmap='jet', normalize=False):
 def save_merge_images(images, merge_grid, save_path, color=False, tanh=False):
     """Save multiple images with same size into one larger image.
 
-    The best size number is int(max(sqrt(image.shape[0]),sqrt(image.shape[1]))) + 1
+    The best size number is
+    int(max(sqrt(image.shape[0]),sqrt(image.shape[1]))) + 1
 
     Args:
         images (np.ndarray): A batch of image array to be merged with size
             [BATCH_SIZE, HEIGHT, WIDTH, CHANNEL].
         merge_grid (list): List of length 2. The grid size for merge images.
         save_path (str): Path for saving the merged image.
-        color (bool)  
+        color (bool): Whether convert intensity image to color image.
+        tanh (bool): If True, will normalize the image in range [-1, 1]
+            to [0, 1] (for GAN models).
 
     Example:
-        The batch_size is 64, then the size is recommended [8, 8]
-        The batch_size is 32, then the size is recommended [6, 6]
+        The batch_size is 64, then the size is recommended [8, 8].
+        The batch_size is 32, then the size is recommended [6, 6].
     """
 
     # normalization of tanh output
@@ -87,17 +90,21 @@ def save_merge_images(images, merge_grid, save_path, color=False, tanh=False):
         j = idx // merge_grid[1]
         merge_img[j*h:j*h+h, i*w:i*w+w, :] = image
 
-    return scipy.misc.imsave(save_path, merge_img)
+    scipy.misc.imsave(save_path, merge_img)
 
 
 def image_overlay(im_1, im_2, color=True, normalize=True):
-    """
-
-    Image size 
+    """Overlay two images with the same size.
 
     Args:
-        im_1 (np.ndarray): image arrary  
+        im_1 (np.ndarray): image arrary
         im_2 (np.ndarray): image arrary
+        color (bool): Whether convert intensity image to color image.
+        normalize (bool): If both color and normalize are True, will
+            normalize the intensity so that it has minimum 0 and maximum 1.
+
+    Returns:
+        np.ndarray: an overlay image of im_1*0.5 + im_2*0.5
     """
     if color:
         im_1 = intensity_to_rgb(np.squeeze(im_1), normalize=normalize)

@@ -1,75 +1,75 @@
-from abc import abstractmethod
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# File: base.py
+# Author: Qian Ge <geqian1001@gmail.com>
+
 import os
 
 import tensorflow as tf
 
-from .config import PridectConfig 
-from .predictions import PredictionBase
+from .config import PridectConfig
 from ..utils.sesscreate import ReuseSessionCreator
+from ..utils.common import assert_type
 from ..callbacks.hooks import Prediction2Hook
 
 __all__ = ['Predictor']
 
-def assert_type(v, tp):
-    assert isinstance(v, tp), \
-    "Expect " + str(tp) + ", but " + str(v.__class__) + " is given!"
 
 class Predictor(object):
-    """ base class for predictor """
-    # 
-    def __init__(self, config):
-        assert_type(config, PridectConfig)
-        self.config = config
-        self.model = config.model
+    """Base class for a predictor. Used to run all predictions.
 
-        self.input = config.dataflow
-        
-        self.result_dir = config.result_dir
+    Attributes:
+        config (PridectConfig): the config used for this predictor
+        model (ModelDes):
+        input (DataFlow):
+        sess (tf.Session):
+        hooked_sess (tf.train.MonitoredSession):
+    """
+    def __init__(self, config):
+        """ Inits Predictor with config (PridectConfig).
+
+        Will create session as well as monitored sessions for
+        each predictions, and load pre-trained parameters.
+
+        Args:
+            config (PridectConfig): the config used for this predictor
+        """
+        assert_type(config, PridectConfig)
+        self._config = config
+        self._model = config.model
+
+        self._input = config.dataflow
+        self._result_dir = config.result_dir
 
         # TODO to be modified
-        self.model.set_is_training(False)
-        self.model.create_graph()
-        # predictions = self.model.get_prediction_list()
-        for pred in self.config.predictions:
-            pred.setup(self.result_dir)
-            
-        hooks = [Prediction2Hook(pred) for pred in self.config.predictions]
+        self._model.set_is_training(False)
+        self._model.create_graph()
 
-        self.sess = self.config.session_creator.create_session()
+        # pass saving directory to predictions
+        for pred in self._config.predictions:
+            pred.setup(self._result_dir)
+
+        hooks = [Prediction2Hook(pred) for pred in self._config.predictions]
+
+        self.sess = self._config.session_creator.create_session()
         self.hooked_sess = tf.train.MonitoredSession(
             session_creator=ReuseSessionCreator(self.sess), hooks=hooks)
 
-        load_model_path = os.path.join(self.config.model_dir, 
-                                    self.config.model_name)
-        # assert os.path.isdir(load_model_path), load_model_path
+        # load pre-trained parameters
+        load_model_path = os.path.join(self._config.model_dir,
+                                       self._config.model_name)
         saver = tf.train.Saver()
         saver.restore(self.sess, load_model_path)
 
     def run_predict(self):
+        """
+        Run predictions and the process after finishing predictions.
+        """
         self._predict_step()
-        for pred in self.config.predictions:
+        for pred in self._config.predictions:
             pred.after_finish_predict()
 
     def _predict_step(self):
+        """ Run predictions. Defined in subclass.
+        """
         pass
-        # model_feed = self.model.get_graph_feed()
-        # self.hooked_sess.run(fetches=[], feed_dict=model_feed)
-
-    # # def after_predict(self):
-    # #     self._after_predict()
-
-    # def _after_predict(self, result_list):
-    #     """ process after prediction. e.x. save """
-    #     for pred in self.prediction:
-    #         pred.save_prediction(result_list) 
-
- 
-
-
-    
-
-
-
-
-
-

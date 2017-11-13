@@ -6,4 +6,5 @@ recommonmark==0.4.0
 guzzle_sphinx_theme
 mock
 tensorflow
+matplotlib
 Pillow

@@ -14,7 +14,7 @@ _RNG_SEED = None
 
 def get_rng(obj=None):
     """
-    This function is copied from `tensorpack 
+    This function is copied from `tensorpack
     <https://github.com/ppwwyyxx/tensorpack/blob/master/tensorpack/utils/utils.py>`__.
     Get a good RNG seeded with time, pid and the object.
     Args:

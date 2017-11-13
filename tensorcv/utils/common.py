@@ -51,7 +51,7 @@ def get_tensors_by_names(names):
 
     Warning:
         If more than one tensor have the same name in the graph. This function
-            will only return the tensor with name NAME:0.
+        will only return the tensor with name NAME:0.
     """
     if not isinstance(names, list):
         names = [names]
@@ -82,11 +82,6 @@ def deconv_size(input_height, input_width, stride=2):
         int(math.ceil(float(input_width) / float(stride)))
 
 
-def check_dir(input_dir):
-    assert input_dir is not None, "dir cannot be None!"
-    assert os.path.isdir(input_dir), input_dir + ' does not exist!'
-
-
 def match_tensor_save_name(tensor_names, save_names):
     """
     Match tensor_names and corresponding save_names for saving the results of
@@ -113,3 +108,16 @@ def match_tensor_save_name(tensor_names, save_names):
         return tensor_names, tensor_names
     else:
         return tensor_names, save_names
+
+
+def check_dir(input_dir):
+    assert input_dir is not None, "dir cannot be None!"
+    assert os.path.isdir(input_dir), input_dir + ' does not exist!'
+
+
+def assert_type(v, tp):
+    """
+    Assert type of input v be type tp
+    """
+    assert isinstance(v, tp),\
+        "Expect " + str(tp) + ", but " + str(v.__class__) + " is given!"

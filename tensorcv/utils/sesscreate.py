@@ -12,10 +12,8 @@ __all__ = ['NewSessionCreator', 'ReuseSessionCreator']
 
 
 class NewSessionCreator(tf.train.SessionCreator):
-    """ tf.train.SessionCreator for a new session
-
-    Attributes:
-        create_session: Create session.
+    """
+    tf.train.SessionCreator for a new session
     """
     def __init__(self, target='', graph=None, config=None):
         """ Inits NewSessionCreator with targe, graph and config.
@@ -48,10 +46,8 @@ class NewSessionCreator(tf.train.SessionCreator):
 
 
 class ReuseSessionCreator(tf.train.SessionCreator):
-    """ tf.train.SessionCreator for reuse an existed session
-
-    Attributes:
-        create_session: Create session.
+    """
+    tf.train.SessionCreator for reuse an existed session
     """
     def __init__(self, sess):
         """ Inits ReuseSessionCreator with an existed session.
