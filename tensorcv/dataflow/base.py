@@ -1,8 +1,6 @@
 from abc import abstractmethod, ABCMeta
 import numpy as np 
 
-import tensorflow as tf
-
 from ..utils.utils import get_rng
 
 __all__ = ['DataFlow', 'RNGDataFlow']
