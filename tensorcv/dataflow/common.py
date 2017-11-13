@@ -3,7 +3,6 @@
 
 import os
 
-import cv2
 from scipy import misc
 import numpy as np 
 
