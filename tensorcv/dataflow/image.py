@@ -61,6 +61,7 @@ class DataFromFile(RNGDataFlow):
         # batch_file_range = range(start, end)
 
         if self._data_id + self._batch_size > self.size():
+            end = self.size() - 1
             self._epochs_completed += 1
             self._data_id = 0
             if self._shuffle:

@@ -31,7 +31,7 @@ class ModelSaver(Callback):
             checkpoint_dir = os.path.join(self.trainer.default_dirs.checkpoint_dir)
             check_dir(checkpoint_dir)
         except AttributeError:
-            raise AttributeError('summary_dir is not set in checkpoint_dir.py!')
+            raise AttributeError('checkpoint_dir is not set in config_path!')
 
         self._save_path = os.path.join(checkpoint_dir, 'model')
         self._saver = tf.train.Saver()
