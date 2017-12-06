@@ -324,6 +324,7 @@ def new_weights(name, idx, shape, initializer=None, wd=None,
                                   initializer=initializer,
                                   trainable=trainable)
     elif wd is not None:
+        print('Random init {} weights with weight decay...'.format(cur_name_scope))
         if initializer is None:
             initializer = tf.truncated_normal_initializer(stddev=0.01)
             # initializer = tf.random_normal_initializer(stddev = 0.002)
@@ -333,6 +334,7 @@ def new_weights(name, idx, shape, initializer=None, wd=None,
         weight_decay = tf.multiply(tf.nn.l2_loss(var), wd, name='weight_loss')
         tf.add_to_collection('losses', weight_decay)
     else:
+        print('Random init {} weights...'.format(cur_name_scope))
         if initializer is None:
             initializer = tf.random_normal_initializer(stddev=0.002)
         var = tf.get_variable(name, shape=shape, 
@@ -354,6 +356,7 @@ def new_biases(name, idx, shape, initializer=None,
         load_data = np.reshape(load_data, shape)
         initializer = tf.constant_initializer(load_data)
     else:
+        print('Random init {} biases...'.format(cur_name_scope))
         # trainable = True
         if initializer is None:
             initializer = tf.random_normal_initializer(stddev=0.002)
