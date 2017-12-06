@@ -67,7 +67,11 @@ class DataFlow(object):
 class RNGDataFlow(DataFlow):
     def _reset_state(self):
         self.rng = get_rng(self)
+
     def _suffle_file_list(self):
         idxs = np.arange(self.size())
         self.rng.shuffle(idxs)
         self.file_list = self.file_list[idxs]
+
+    def suffle_data(self):
+        self._suffle_file_list()

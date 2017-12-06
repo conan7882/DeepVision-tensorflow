@@ -178,7 +178,7 @@ def fc(x, out_dim, name='fc', nl=tf.identity,
         act = tf.nn.xw_plus_b(x_flatten, weights, biases)
 
         output = nl(act, name='output')
-    return output
+        return output
 
 def max_pool(x, name='max_pool', filter_size=2, stride=None, padding='VALID'):
     """ 
@@ -209,8 +209,9 @@ def max_pool(x, name='max_pool', filter_size=2, stride=None, padding='VALID'):
 def global_avg_pool(x, name='global_avg_pool', data_format='NHWC'):
     assert x.shape.ndims == 4
     assert data_format in ['NHWC', 'NCHW']
-    axis = [1, 2] if data_format == 'NHWC' else [2, 3]
-    return tf.reduce_mean(x, axis, name=name)
+    with tf.name_scope(name):
+        axis = [1, 2] if data_format == 'NHWC' else [2, 3]
+        return tf.reduce_mean(x, axis)
 
 # def avg_pool(x, name = 'avg_pool', filter_size = 2, stride = None, padding = 'VALID'):
 #     """ 
@@ -311,7 +312,10 @@ def new_weights(name, idx, shape, initializer=None, wd=None,
                 trainable=True): 
     cur_name_scope = tf.get_default_graph().get_name_scope()
     if data_dict is not None and cur_name_scope in data_dict:
-        load_data = data_dict[cur_name_scope][0]
+        try:
+            load_data = data_dict[cur_name_scope][0]
+        except KeyError:
+            load_data = data_dict[cur_name_scope]['weights']
 
         load_data = np.reshape(load_data, shape)
         initializer = tf.constant_initializer(load_data)
@@ -340,7 +344,11 @@ def new_biases(name, idx, shape, initializer=None,
                 data_dict=None, trainable=True):
     cur_name_scope = tf.get_default_graph().get_name_scope()
     if data_dict is not None and cur_name_scope in data_dict:
-        load_data = data_dict[cur_name_scope][1]
+        try:
+            load_data = data_dict[cur_name_scope][1]
+        except KeyError:
+            load_data = data_dict[cur_name_scope]['biases']
+
         load_data = np.reshape(load_data, shape)
         initializer = tf.constant_initializer(load_data)
     else:
