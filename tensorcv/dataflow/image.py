@@ -51,23 +51,6 @@ class DataFromFile(RNGDataFlow):
     def _suffle_file_list(self):
         pass
 
-    # def next_batch(self):
-    #     assert self._batch_size <= self.size(), \
-    #     "batch_size cannot be larger than data size"
-
-    #     start = self._data_id
-    #     self._data_id += self._batch_size
-    #     end = self._data_id
-    #     # batch_file_range = range(start, end)
-
-    #     if self._data_id + self._batch_size > self.size():
-    #         # end = self.size() - 1
-    #         self._epochs_completed += 1
-    #         self._data_id = 0
-    #         if self._shuffle:
-    #             self._suffle_file_list()
-    #     return self._load_data(start, end)
-
     def next_batch(self):
         assert self._batch_size <= self.size(), \
         "batch_size cannot be larger than data size"
@@ -75,19 +58,41 @@ class DataFromFile(RNGDataFlow):
         if self._data_id + self._batch_size > self.size():
             start = self._data_id
             end = self.size()
-            print(end)
-            self._epochs_completed += 1
-            self._data_id = 0
-            if self._shuffle:
-                self._suffle_file_list()
         else:
-
             start = self._data_id
             self._data_id += self._batch_size
             end = self._data_id
         # batch_file_range = range(start, end)
+        batch_data = self._load_data(start, end)
 
-        return self._load_data(start, end)
+        if end == self.size():
+            # end = self.size() - 1
+            self._epochs_completed += 1
+            self._data_id = 0
+            if self._shuffle:
+                self._suffle_file_list()
+        return batch_data
+
+    # def next_batch(self):
+    #     assert self._batch_size <= self.size(), \
+    #     "batch_size cannot be larger than data size"
+
+    #     if self._data_id + self._batch_size > self.size():
+    #         start = self._data_id
+    #         end = self.size()
+    #         print(end)
+    #         self._epochs_completed += 1
+    #         self._data_id = 0
+    #         if self._shuffle:
+    #             self._suffle_file_list()
+    #     else:
+
+    #         start = self._data_id
+    #         self._data_id += self._batch_size
+    #         end = self._data_id
+    #     # batch_file_range = range(start, end)
+
+    #     return self._load_data(start, end)
 
     def _load_data(self, start, end):
         raise NotImplementedError()
