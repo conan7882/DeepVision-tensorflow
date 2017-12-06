@@ -316,6 +316,7 @@ def new_weights(name, idx, shape, initializer=None, wd=None,
             load_data = data_dict[cur_name_scope][0]
         except KeyError:
             load_data = data_dict[cur_name_scope]['weights']
+        print('Load {} weights!'.format(cur_name_scope))
 
         load_data = np.reshape(load_data, shape)
         initializer = tf.constant_initializer(load_data)
@@ -348,6 +349,7 @@ def new_biases(name, idx, shape, initializer=None,
             load_data = data_dict[cur_name_scope][1]
         except KeyError:
             load_data = data_dict[cur_name_scope]['biases']
+        print('Load {} biases!'.format(cur_name_scope))
 
         load_data = np.reshape(load_data, shape)
         initializer = tf.constant_initializer(load_data)
