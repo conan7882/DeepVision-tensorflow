@@ -28,16 +28,15 @@ def resize_image_with_smallest_side(image, small_size):
 
     if height <= width:
         new_height = int(small_size)
-        new_width = int(new_height/height * width)
+        new_width = int(width * new_height/height)
     else:
         new_width = int(small_size)
-        new_height = int(new_width/width * height)
+        new_height = int(height * new_width/width)
 
     if shape_dim == 2:
         im = misc.imresize(image, (new_height, new_width))
     elif shape_dim == 3:
         im = misc.imresize(image, (new_height, new_width, image.shape[2]))
-
     return im
 
 
@@ -50,7 +49,7 @@ def random_crop_to_size(image, crop_size):
     height = im_shape[0]
     width = im_shape[1]
     assert height >= crop_size[0] and width >= crop_size[1],\
-    'Image must be larger than crop size!'
+    'Image must be larger than crop size! {}'.format(im_shape)
 
     s_h = int(np.floor((height - crop_size[0] + 1) * np.random.rand()))
     s_w = int(np.floor((width - crop_size[1] + 1) * np.random.rand()))
