@@ -183,6 +183,16 @@ class ImageFromFile(DataFromFile):
     def size(self):
         return self._im_list.shape[0]
 
+    def get_data_list(self):
+        return self._im_list
+
+    def set_data_list(self, new_list):
+        self._im_list = new_list
+
+
+    def suffle_data(self):
+        self._suffle_file_list()
+
 class ImageLabelFromFolder(ImageFromFile):
     """ read image data with label in subfolder name """
     def __init__(self, ext_name, data_dir='', 
@@ -287,6 +297,12 @@ class ImageLabelFromFolder(ImageFromFile):
 
     def size(self):
         return self._im_list.shape[0]
+
+    def get_label_list(self):
+        return self._label_list
+
+    def set_label_list(self, new_list):
+        self._label_list = new_list
 
     # def _get_im_size(self):
     #     im = load_image(self._im_list[0], read_channel = self._read_channel)
