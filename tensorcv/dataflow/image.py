@@ -126,7 +126,8 @@ class ImageFromFile(DataFromFile):
                  num_channel=None,
                  shuffle=True, normalize=None,
                  normalize_fnc=identity,
-                 resize=None, resize_crop=None):
+                 resize=None, resize_crop=None,
+                 pf=identity):
     
         if num_channel is not None:
             self.num_channels = num_channel
@@ -136,6 +137,7 @@ class ImageFromFile(DataFromFile):
 
         self._resize = get_shape2D(resize)
         self._resize_crop = resize_crop
+        self._pf = pf
 
         super(ImageFromFile, self).__init__(ext_name, 
                                         data_dir=data_dir,
@@ -159,7 +161,9 @@ class ImageFromFile(DataFromFile):
         for k in range(start, end):
             im_path = self._im_list[k]
             im = load_image(im_path, read_channel=self._read_channel,
-                            resize=self._resize, resize_crop=self._resize_crop)
+                            resize=self._resize,
+                            resize_crop=self._resize_crop,
+                            pf=self._pf)
             input_im_list.extend(im)
 
         # TODO to be modified 
@@ -170,11 +174,13 @@ class ImageFromFile(DataFromFile):
 
     def _get_sample_data(self):
         return load_image(self._im_list[0], read_channel=self._read_channel,
-                          resize=self._resize, resize_crop=self._resize_crop)
+                          resize=self._resize, resize_crop=self._resize_crop,
+                          pf=self._pf)
 
     def _get_im_size(self):
         im = load_image(self._im_list[0], read_channel=self._read_channel,
-                        resize=self._resize, resize_crop=self._resize_crop)
+                        resize=self._resize, resize_crop=self._resize_crop,
+                        pf=self._pf)
         if self._read_channel is None:
             self.num_channels = im.shape[3]
         self.im_size = [im.shape[1], im.shape[2]]
@@ -187,7 +193,7 @@ class ImageFromFile(DataFromFile):
         return self._im_list
 
     def set_data_list(self, new_list):
-        self._im_list = new_list
+        self._im_list = np.array(new_list)
 
 
     def suffle_data(self):
@@ -200,7 +206,8 @@ class ImageLabelFromFolder(ImageFromFile):
                  label_dict=None, num_class=None,
                  one_hot=False,
                  shuffle=True, normalize=None,
-                 resize=None, resize_crop=None):
+                 resize=None, resize_crop=None,
+                 pf=identity):
         """
         Args:
            label_dict (dict): empty or full
@@ -221,7 +228,8 @@ class ImageLabelFromFolder(ImageFromFile):
                                         shuffle=shuffle, 
                                         normalize=normalize,
                                         resize=resize,
-                                        resize_crop=resize_crop)
+                                        resize_crop=resize_crop,
+                                        pf=pf)
         
         self.label_dict_reverse = reverse_label_dict(self.label_dict)
 
@@ -267,7 +275,9 @@ class ImageLabelFromFolder(ImageFromFile):
         for k in range(start, end):
             im_path = self._im_list[k]
             im = load_image(im_path, read_channel=self._read_channel, 
-                            resize=self._resize, resize_crop=self._resize_crop)
+                            resize=self._resize,
+                            resize_crop=self._resize_crop,
+                            pf=self._pf)
 
             # if self._cv_read is not None:
             #     im = cv2.imread(im_path, self._cv_read)
@@ -302,7 +312,7 @@ class ImageLabelFromFolder(ImageFromFile):
         return self._label_list
 
     def set_label_list(self, new_list):
-        self._label_list = new_list
+        self._label_list = np.array(new_list)
 
     # def _get_im_size(self):
     #     im = load_image(self._im_list[0], read_channel = self._read_channel)
@@ -328,7 +338,8 @@ class ImageLabelFromFile(ImageLabelFromFolder):
                  num_channel=None, one_hot=False,
                  label_dict={}, num_class=None,
                  shuffle=True, normalize=None,
-                 resize=None, resize_crop=None):
+                 resize=None, resize_crop=None,
+                 pf=identity):
 
         self._label_file_name = label_file_name
         super(ImageLabelFromFile, self).__init__(ext_name, 
@@ -340,7 +351,8 @@ class ImageLabelFromFile(ImageLabelFromFolder):
                                     shuffle=shuffle, 
                                     normalize=normalize,
                                     resize=resize,
-                                    resize_crop=resize_crop)
+                                    resize_crop=resize_crop,
+                                    pf=pf)
         
     def _get_label_list(self):
         label_file = open(os.path.join(self.data_dir, 
@@ -415,10 +427,14 @@ class ImageDenseLabel(ImageFromFile):
         input_gt_list = []
         for k in range(start, end):
             im = load_image(self._im_list[k], read_channel=self._read_channel,
-                            resize=self._resize, resize_crop=self._resize_crop)
+                            resize=self._resize,
+                            resize_crop=self._resize_crop,
+                            pf=self._pf)
             input_im_list.extend(im)
             gt = load_image(self._gt_list[k], read_channel=1,
-                            resize=self._resize, resize_crop=self._resize_crop)
+                            resize=self._resize,
+                            resize_crop=self._resize_crop,
+                            pf=self._pf)
             if self._is_binary:
                 gt = gt / np.amax(gt)
             input_gt_list.extend(gt)

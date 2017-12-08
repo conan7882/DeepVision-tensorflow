@@ -7,6 +7,7 @@ from scipy import misc
 import numpy as np 
 
 from .preprocess import resize_image_with_smallest_side, random_crop_to_size
+from .normalization import identity
 
 
 def get_file_list(file_dir, file_ext, sub_name=None):
@@ -69,7 +70,14 @@ def reverse_label_dict(label_dict):
         label_dict_reverse[value] = key
     return label_dict_reverse
 
-def load_image(im_path, read_channel=None, resize=None, resize_crop=None):
+def load_image(im_path, read_channel=None, pf=identity, resize=None, resize_crop=None):
+    if resize is not None:
+        print_warning('[load_image] resize will be unused in the future!\
+                      Use pf (preprocess_fnc) instead.')
+    if resize_crop is not None:
+        print_warning('[load_image] resize_crop will be unused in the future!\
+                      Use pf (preprocess_fnc) instead.')
+
     # im = cv2.imread(im_path, self._cv_read)
     if read_channel is None:
         im = misc.imread(im_path)
@@ -86,6 +94,7 @@ def load_image(im_path, read_channel=None, resize=None, resize_crop=None):
         if resize_crop is not None:
             im = resize_image_with_smallest_side(im, resize_crop)
             im = random_crop_to_size(im, resize_crop)
+        im = pf(im)
         im = np.reshape(im, [1, im.shape[0], im.shape[1], 1])
     else:
         try:
@@ -95,6 +104,7 @@ def load_image(im_path, read_channel=None, resize=None, resize_crop=None):
         if resize_crop is not None:
             im = resize_image_with_smallest_side(im, resize_crop)
             im = random_crop_to_size(im, resize_crop)
+        im = pf(im)
         im = np.reshape(im, [1, im.shape[0], im.shape[1], im.shape[2]])
     return im
 

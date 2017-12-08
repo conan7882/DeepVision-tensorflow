@@ -7,6 +7,10 @@ import numpy as np
 from scipy import misc
 
 
+def image_fliplr(image):
+    return np.fliplr(image)
+
+
 def resize_image_with_smallest_side(image, small_size):
     """
     Resize single image array with smallest side = small_size and
