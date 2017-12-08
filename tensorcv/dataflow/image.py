@@ -195,6 +195,8 @@ class ImageFromFile(DataFromFile):
     def set_data_list(self, new_list):
         self._im_list = np.array(new_list)
 
+    def set_pf(self, pf):
+        self._pf = pf
 
     def suffle_data(self):
         self._suffle_file_list()
