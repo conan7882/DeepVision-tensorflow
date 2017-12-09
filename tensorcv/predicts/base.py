@@ -69,7 +69,16 @@ class Predictor(object):
         for pred in self._config.predictions:
             pred.after_finish_predict()
 
+        self.after_prediction()
+
     def _predict_step(self):
         """ Run predictions. Defined in subclass.
         """
         pass
+
+    def after_prediction(self):
+        self._after_prediction()
+
+    def _after_prediction(self):
+        pass
+

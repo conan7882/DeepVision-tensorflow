@@ -51,6 +51,12 @@ class Callback(object):
     def _before_train(self):
         pass
 
+    def before_inference(self):
+        self._before_inference()
+
+    def _before_inference(self):
+        pass
+
     def after_train(self):
         self._after_train()
 
@@ -99,6 +105,9 @@ class ProxyCallback(Callback):
 
     def _before_train(self):
         self.cb.before_train()
+
+    def _before_inference(self):
+        self.cb.before_inference()
 
     def _setup_graph(self):
         with tf.name_scope(None):

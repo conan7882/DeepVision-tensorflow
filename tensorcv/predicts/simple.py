@@ -27,10 +27,17 @@ class SimpleFeedPredictor(Predictor):
 
     def _predict_step(self):
         while self._input.epochs_completed < 1:
-            cur_batch = self._input.next_batch()
+            try:
+                cur_batch = self._input.next_batch()
+            except AttributeError:
+                cur_batch = self._input.next_batch()
+
             feed = dict(zip(self._plhs, cur_batch))
             self.hooked_sess.run(fetches=[], feed_dict=feed)
         self._input.reset_epochs_completed(0)
+
+    def _after_prediction(self):
+        self._input.after_reading()
 
  
 

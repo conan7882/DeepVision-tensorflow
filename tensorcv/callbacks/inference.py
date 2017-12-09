@@ -110,10 +110,15 @@ class InferenceBase(Callback):
     def inference_step(self):
         # TODO to be modified
         self.model.set_is_training(False)
+        self._cbs.before_inference()
         self._inference_step()
 
     def _inference_step(self, extra_feed):
         self.hooked_sess.run(fetches = [], feed_dict = extra_feed)
+
+    def _after_train(self):
+        self._cbs.after_train()
+
         
 class FeedInference(InferenceBase):
     """

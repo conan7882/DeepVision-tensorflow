@@ -28,6 +28,14 @@ class FeedInput(Callback):
 
     # def _setup_graph(self):
     #     pass
+    def _setup_graph(self):
+        self.dataflow._setup(num_epoch=self.trainer.config.max_epoch)
+
+    def _before_train(self):
+        self.dataflow.before_read_setup()
+
+    def _before_inference(self):
+        self._before_train()
 
     def _before_run(self, _):
         cur_batch = self.dataflow.next_batch()
@@ -38,6 +46,9 @@ class FeedInput(Callback):
 
         feed = dict(zip(self.placeholders, cur_batch))
         return tf.train.SessionRunArgs(fetches=[], feed_dict=feed)
+
+    def _after_train(self):
+        self.dataflow.after_reading()
 
 
 

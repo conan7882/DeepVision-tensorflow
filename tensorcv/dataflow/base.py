@@ -10,13 +10,16 @@ class DataFlow(object):
     """ base class for dataflow """
     # self._epochs_completed = 0
 
-    def setup(self, epoch_val, batch_size):
+    def before_read_setup(self, **kwargs):
+        pass
+
+    def setup(self, epoch_val, batch_size, **kwargs):
         self.reset_epochs_completed(epoch_val)
         self.set_batch_size(batch_size)
         self.reset_state()
         self._setup()
 
-    def _setup(self):
+    def _setup(self, **kwargs):
         pass
 
     # @property
@@ -62,6 +65,9 @@ class DataFlow(object):
         self._reset_state()
 
     def _reset_state(self):
+        pass
+
+    def after_reading(self):
         pass
 
 class RNGDataFlow(DataFlow):
