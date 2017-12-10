@@ -18,7 +18,8 @@ class DataFromTfrecord(DataFlow):
                  raw_types,
                  decode_fncs,
                  batch_dict_name,
-                 data_shape=None,
+                 data_shape=[],
+                 feature_len_list=None,
                  pf=identity):
 
         if not isinstance(tfname, list):
@@ -40,6 +41,14 @@ class DataFromTfrecord(DataFlow):
         assert len(record_types) == len(record_names)
         assert len(record_types) == len(batch_dict_name)
 
+        if feature_len_list is None:
+            feature_len_list = [[] for i in range(0, len(record_names))]
+        elif not isinstance(feature_len_list, list):
+            feature_len_list = [feature_len_list]
+        self._feat_len_list = feature_len_list
+        if len(self._feat_len_list) < len(record_names):
+            self._feat_len_list.extend([[] for i in range(0, len(record_names) - len(self._feat_len_list))])
+
         self.record_names = record_names
         self.record_types = record_types
         self.raw_types = raw_types
@@ -48,9 +57,10 @@ class DataFromTfrecord(DataFlow):
         self._tfname = tfname
         self._batch_dict_name = batch_dict_name
 
-        self._batch_step = 0
-        self.reset_epochs_completed(0)
+        # self._batch_step = 0
+        # self.reset_epochs_completed(0)
         # self.set_batch_size(batch_size)
+        self.setup(epoch_val=0, batch_size=1)
 
 
     def set_batch_size(self, batch_size):
@@ -77,10 +87,10 @@ class DataFromTfrecord(DataFlow):
 
     def _setup(self, **kwargs):
         # n_epoch = kwargs['num_epoch']
-
+        
         feature = {}
-        for record_name, r_type in zip(self.record_names, self.record_types):
-            feature[record_name] = tf.FixedLenFeature([], r_type)
+        for record_name, r_type, cur_size in zip(self.record_names, self.record_types, self._feat_len_list):
+            feature[record_name] = tf.FixedLenFeature(cur_size, r_type)
         # filename_queue = tf.train.string_input_producer(self._tfname, num_epochs=n_epoch)
         filename_queue = tf.train.string_input_producer(self._tfname)
         reader = tf.TFRecordReader()
