@@ -8,5 +8,5 @@ setup(name='tensorcv',
       author_email='geqian1001@gmail.com',
       packages=['tensorcv', 'tensorcv.utils', 'tensorcv.algorithms', 'tensorcv.callbacks',
                 'tensorcv.data', 'tensorcv.dataflow', 'tensorcv.dataflow.dataset',
-                'tensorcv.models', 'tensorcv.predicts', 'tensorcv.train'],
+                'tensorcv.models', 'tensorcv.predicts', 'tensorcv.train', 'tensorcv.tfdataflow'],
       zip_safe=False)
