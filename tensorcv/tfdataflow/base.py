@@ -76,7 +76,8 @@ class DataFromTfrecord(DataFlow):
         feature = {}
         for record_name, r_type in zip(self.record_names, self.record_types):
             feature[record_name] = tf.FixedLenFeature([], r_type)
-        filename_queue = tf.train.string_input_producer(self._tfname, num_epochs=n_epoch)
+        # filename_queue = tf.train.string_input_producer(self._tfname, num_epochs=n_epoch)
+        filename_queue = tf.train.string_input_producer(self._tfname)
         reader = tf.TFRecordReader()
         _, serialized_example = reader.read(filename_queue)
         features = tf.parse_single_example(serialized_example, features=feature)
