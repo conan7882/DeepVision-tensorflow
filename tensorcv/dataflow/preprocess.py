@@ -60,6 +60,38 @@ def random_crop_to_size(image, crop_size):
 
     return image[s_h:s_h + crop_size[0], s_w:s_w + crop_size[1]]
 
+def four_connor_crop(image, crop_size):
+    crop_size = get_shape2D(crop_size)
+    im_shape = image.shape
+    shape_dim = len(im_shape)
+    assert shape_dim <= 3 and shape_dim >= 2, 'Wrong format of image!'
+    height = im_shape[0]
+    width = im_shape[1]
+    assert height >= crop_size[0] and width >= crop_size[1],\
+    'Image must be larger than crop size! {}'.format(im_shape)
+
+    crop_im = []
+    crop_im.append(image[: crop_size[0], : crop_size[1]])
+    crop_im.append(image[: crop_size[0], width - crop_size[1]:])
+    crop_im.append(image[height - crop_size[0]:, : crop_size[1]])
+    crop_im.append(image[height - crop_size[0]:, width - crop_size[1]:])
+
+    return crop_im
+
+
+def center_crop(image, crop_size):
+    crop_size = get_shape2D(crop_size)
+    im_shape = image.shape
+    shape_dim = len(im_shape)
+    assert shape_dim <= 3 and shape_dim >= 2, 'Wrong format of image!'
+    height = im_shape[0]
+    width = im_shape[1]
+    assert height >= crop_size[0] and width >= crop_size[1],\
+    'Image must be larger than crop size! {}'.format(im_shape)
+
+    return image[(height - crop_size[0])//2:(height + crop_size[0])//2, 
+                 (width - crop_size[1])//2:(width + crop_size[1])//2]
+
 
 def get_shape2D(in_val):
     """
