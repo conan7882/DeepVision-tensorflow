@@ -55,6 +55,9 @@ class DataFlow(object):
     def next_batch(self):
         return
 
+    def next_batch_dict(self):
+        print('Need to be implemented!')
+
     def set_batch_size(self, batch_size):
         self._batch_size = batch_size
 

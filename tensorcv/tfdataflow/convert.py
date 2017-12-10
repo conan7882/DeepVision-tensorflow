@@ -21,6 +21,10 @@ def convert_image(image):
     return bytes_feature(tf.compat.as_bytes(image.tostring()))
 
 
+def float_feature(value):
+    return tf.train.Feature(float_list=tf.train.FloatList(value=value))
+
+
 def dataflow2tfrecord(dataflow, tfname, record_names, c_fncs):
     assert_type(dataflow, DataFlow)
     dataflow.setup(epoch_val=0, batch_size=1)

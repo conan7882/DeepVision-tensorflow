@@ -17,6 +17,7 @@ class DataFromTfrecord(DataFlow):
                  record_types,
                  raw_types,
                  decode_fncs,
+                 batch_dict_name,
                  data_shape=None,
                  pf=identity):
 
@@ -34,7 +35,10 @@ class DataFromTfrecord(DataFlow):
             assert_type(raw_type, tf.DType)
         if not isinstance(decode_fncs, list):
             decode_fncs = [decode_fncs]
+        if not isinstance(batch_dict_name, list):
+            batch_dict_name = [batch_dict_name]   
         assert len(record_types) == len(record_names)
+        assert len(record_types) == len(batch_dict_name)
 
         self.record_names = record_names
         self.record_types = record_types
@@ -42,6 +46,7 @@ class DataFromTfrecord(DataFlow):
         self.decode_fncs = decode_fncs
         self.data_shape = data_shape
         self._tfname = tfname
+        self._batch_dict_name = batch_dict_name
 
         self._batch_step = 0
         self.reset_epochs_completed(0)
@@ -71,7 +76,7 @@ class DataFromTfrecord(DataFlow):
         self._batch_step = 0
 
     def _setup(self, **kwargs):
-        n_epoch = kwargs['num_epoch']
+        # n_epoch = kwargs['num_epoch']
 
         feature = {}
         for record_name, r_type in zip(self.record_names, self.record_types):
@@ -111,6 +116,15 @@ class DataFromTfrecord(DataFlow):
         if self._batch_step % self._step_per_epoch == 0:
             self._epochs_completed += 1
         return batch_data
+
+    def next_batch_dict(self):
+        sess = tf.get_default_session()
+        batch_data = sess.run(self._data)
+        self._batch_step += 1
+        if self._batch_step % self._step_per_epoch == 0:
+            self._epochs_completed += 1
+        batch_dict = {name: data for name, data in zip(self._batch_dict_name, batch_data)}
+        return batch_dict
 
     def after_reading(self):
         self.coord.request_stop()
