@@ -5,6 +5,9 @@
 
 import tensorflow as tf
 
+from ..utils.utils import assert_type 
+from ..dataflow.base import DataFlow
+
 
 def int64_feature(value):
   return tf.train.Feature(int64_list=tf.train.Int64List(value=[value]))
@@ -34,7 +37,7 @@ def dataflow2tfrecord(dataflow, tfname, record_names, c_fncs):
     while dataflow.epochs_completed < 1:
         batch_data = dataflow.next_batch()
         feature = {}
-        for record_name, convert_fnc, data in
+        for record_name, convert_fnc, data in\
         	zip(record_names, c_fncs, batch_data):
             feature[record_name] = convert_fnc(data[0])
 

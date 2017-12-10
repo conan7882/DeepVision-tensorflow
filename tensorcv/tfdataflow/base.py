@@ -4,10 +4,12 @@
 # Author: Qian Ge <geqian1001@gmail.com>
 
 import tensorflow as tf
+from tensorflow.python.lib.io import file_io
 
-from tensorcv.dataflow.base import DataFlow
-from tensorcv.utils.utils import assert_type
-from tensorcv.dataflow.normalization import identity
+from ..dataflow.base import DataFlow
+from ..dataflow.normalization import identity
+from ..utils.utils import assert_type
+
 
 class DataFromTfrecord(DataFlow):
     def __init__(self, tfname,
@@ -41,6 +43,7 @@ class DataFromTfrecord(DataFlow):
         self.data_shape = data_shape
         self._tfname = tfname
 
+        self._batch_step = 0
         self.reset_epochs_completed(0)
         # self.set_batch_size(batch_size)
 
@@ -48,6 +51,7 @@ class DataFromTfrecord(DataFlow):
     def set_batch_size(self, batch_size):
         self._batch_size = batch_size
         self.updata_data_op(batch_size)
+        self.updata_step_per_epoch(batch_size)
 
     def updata_data_op(self, batch_size):
         try:
@@ -61,6 +65,10 @@ class DataFromTfrecord(DataFlow):
             # print(self._data)
         except AttributeError:
             pass
+
+    def reset_epochs_completed(self, val):
+        self._epochs_completed  = val
+        self._batch_step = 0
 
     def _setup(self, **kwargs):
         n_epoch = kwargs['num_epoch']
@@ -88,14 +96,19 @@ class DataFromTfrecord(DataFlow):
         except AttributeError:
             self.set_batch_size(batch_size=1)
 
+    def updata_step_per_epoch(self, batch_size):
+        self._step_per_epoch = int(self.size() / batch_size)
+
     def before_read_setup(self):
         self.coord = tf.train.Coordinator()
         self.threads = tf.train.start_queue_runners(coord=self.coord)
 
     def next_batch(self):
         sess = tf.get_default_session()
-            
         batch_data = sess.run(self._data)
+        self._batch_step += 1
+        if self._batch_step % self._step_per_epoch == 0:
+            self._epochs_completed += 1
         return batch_data
 
     def after_reading(self):
@@ -103,4 +116,9 @@ class DataFromTfrecord(DataFlow):
         self.coord.join(self.threads)
 
     def size(self):
-        print('tfrecord data...')
+        try:
+            return self._size
+        except AttributeError:
+            self._size = sum(1 for f in self._tfname for _ in tf.python_io.tf_record_iterator(f))
+            return self._size
+        
