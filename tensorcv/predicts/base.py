@@ -60,10 +60,10 @@ class Predictor(object):
         load_model_path = os.path.join(self._config.model_dir,
                                        self._config.model_name)
         if self._restore_vars is not None:
-            variables = tf.contrib.framework.get_variables_to_restore()
-            variables_to_restore = [v for v in variables if v.name.split('/')[0] in self._restore_vars]
-            print(variables_to_restore) 
-            saver = tf.train.Saver(variables_to_restore)
+            # variables = tf.contrib.framework.get_variables_to_restore()
+            # variables_to_restore = [v for v in variables if v.name.split('/')[0] in self._restore_vars]
+            # print(variables_to_restore) 
+            saver = tf.train.Saver(self._restore_vars)
         else:
             saver = tf.train.Saver()
         saver.restore(self.sess, load_model_path)
