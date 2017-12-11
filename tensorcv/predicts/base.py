@@ -44,6 +44,7 @@ class Predictor(object):
         # TODO to be modified
         self._model.set_is_training(False)
         self._model.create_graph()
+        self._restore_vars = self._model.restore_vars
 
         # pass saving directory to predictions
         for pred in self._config.predictions:
@@ -58,7 +59,10 @@ class Predictor(object):
         # load pre-trained parameters
         load_model_path = os.path.join(self._config.model_dir,
                                        self._config.model_name)
-        saver = tf.train.Saver()
+        if self._restore_vars is not None:
+            saver = tf.train.Saver(self._restore_vars)
+        else:
+            saver = tf.train.Saver()
         saver.restore(self.sess, load_model_path)
 
     def run_predict(self):

@@ -19,6 +19,7 @@ class PridectConfig(object):
     def __init__(self, 
                  dataflow=None, model=None,
                  model_dir=None, model_name='',
+                 restore_vars=None,
                  session_creator=None,
                  predictions=None,
                  batch_size=1,
@@ -38,6 +39,12 @@ class PridectConfig(object):
             check_dir(self.result_dir)
         except AttributeError:
             raise AttributeError('result_dir is not set!')
+
+        if restore_vars is not None:
+            if not isinstance(restore_vars, list):
+                restore_vars = [restore_vars]
+        self.restore_vars = restore_vars
+
 
         assert dataflow is not None, "dataflow cannot be None!"
         assert_type(dataflow, DataFlow)
