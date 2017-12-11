@@ -44,7 +44,7 @@ class Predictor(object):
         # TODO to be modified
         self._model.set_is_training(False)
         self._model.create_graph()
-        self._restore_vars = self._model.restore_vars
+        self._restore_vars = self._config.restore_vars
 
         # pass saving directory to predictions
         for pred in self._config.predictions:
