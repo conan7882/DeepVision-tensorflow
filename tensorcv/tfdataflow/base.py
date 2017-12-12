@@ -18,6 +18,7 @@ class DataFromTfrecord(DataFlow):
                  raw_types,
                  decode_fncs,
                  batch_dict_name,
+                 shuffle=True,
                  data_shape=[],
                  feature_len_list=None,
                  pf=identity):
@@ -57,6 +58,8 @@ class DataFromTfrecord(DataFlow):
         self._tfname = tfname
         self._batch_dict_name = batch_dict_name
 
+        self._shuffle = shuffle
+
         # self._batch_step = 0
         # self.reset_epochs_completed(0)
         # self.set_batch_size(batch_size)
@@ -70,8 +73,12 @@ class DataFromTfrecord(DataFlow):
         self.updata_step_per_epoch(batch_size)
 
     def updata_data_op(self, batch_size):
+        if self._shuffle:
+            batch_fnc = tf.train.shuffle_batch
+        else:
+            batch_fnc = tf.train.batch
         try:
-            self._data = tf.train.shuffle_batch(
+            self._data = batch_fnc(
                 self._decode_data,
                 batch_size=batch_size,
                 capacity=batch_size * 4,
