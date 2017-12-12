@@ -86,7 +86,7 @@ class DataFromTfrecord(DataFlow):
                 self._data = tf.train.batch(
                     self._decode_data,
                     batch_size=batch_size,
-                    capacity=batch_size * 4,
+                    capacity=batch_size,
                     num_threads=1,
                     allow_smaller_final_batch=True)
             # self._data = self._decode_data[0]
