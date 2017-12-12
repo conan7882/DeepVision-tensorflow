@@ -74,9 +74,18 @@ class DataFromTfrecord(DataFlow):
 
     def updata_data_op(self, batch_size):
         if self._shuffle:
-            batch_fnc = tf.train.shuffle_batch
+            self._data = tf.train.shuffle_batch(
+                self._decode_data,
+                batch_size=batch_size,
+                capacity=batch_size * 4,
+                num_threads=2,
+                min_after_dequeue=batch_size * 2)
         else:
-            batch_fnc = tf.train.batch
+            self._data = tf.train.batch(
+                self._decode_data,
+                batch_size=batch_size,
+                capacity=batch_size * 4,
+                num_threads=2)
         try:
             self._data = batch_fnc(
                 self._decode_data,
