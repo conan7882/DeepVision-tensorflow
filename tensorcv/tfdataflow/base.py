@@ -139,6 +139,7 @@ class DataFromTfrecord(DataFlow):
         self._batch_step += 1
         if self._batch_step % self._step_per_epoch == 0:
             self._epochs_completed += 1
+        print(batch_data[2])
         return batch_data
 
     def next_batch_dict(self):
