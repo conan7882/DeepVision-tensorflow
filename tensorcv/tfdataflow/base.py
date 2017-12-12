@@ -73,26 +73,20 @@ class DataFromTfrecord(DataFlow):
         self.updata_step_per_epoch(batch_size)
 
     def updata_data_op(self, batch_size):
-        if self._shuffle:
-            self._data = tf.train.shuffle_batch(
-                self._decode_data,
-                batch_size=batch_size,
-                capacity=batch_size * 4,
-                num_threads=2,
-                min_after_dequeue=batch_size * 2)
-        else:
-            self._data = tf.train.batch(
-                self._decode_data,
-                batch_size=batch_size,
-                capacity=batch_size * 4,
-                num_threads=2)
         try:
-            self._data = batch_fnc(
-                self._decode_data,
-                batch_size=batch_size,
-                capacity=batch_size * 4,
-                num_threads=2,
-                min_after_dequeue=batch_size * 2)
+            if self._shuffle:
+                self._data = tf.train.shuffle_batch(
+                    self._decode_data,
+                    batch_size=batch_size,
+                    capacity=batch_size * 4,
+                    num_threads=2,
+                    min_after_dequeue=batch_size * 2)
+            else:
+                self._data = tf.train.batch(
+                    self._decode_data,
+                    batch_size=batch_size,
+                    capacity=batch_size * 4,
+                    num_threads=2)
             # self._data = self._decode_data[0]
             # print(self._data)
         except AttributeError:
