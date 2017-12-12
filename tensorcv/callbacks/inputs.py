@@ -29,6 +29,7 @@ class FeedInput(Callback):
     # def _setup_graph(self):
     #     pass
     def _setup_graph(self):
+        pass
         # self.dataflow._setup(num_epoch=self.trainer.config.max_epoch)
 
     def _before_train(self):
