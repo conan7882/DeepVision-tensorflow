@@ -72,6 +72,7 @@ class Predictor(object):
         """
         Run predictions and the process after finishing predictions.
         """
+        self._input.before_read_setup()
         with self.sess.as_default():
             self._predict_step()
             for pred in self._config.predictions:
