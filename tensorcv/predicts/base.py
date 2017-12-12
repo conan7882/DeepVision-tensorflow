@@ -72,11 +72,12 @@ class Predictor(object):
         """
         Run predictions and the process after finishing predictions.
         """
-        self._predict_step()
-        for pred in self._config.predictions:
-            pred.after_finish_predict()
+        with self.sess.as_default():
+            self._predict_step()
+            for pred in self._config.predictions:
+                pred.after_finish_predict()
 
-        self.after_prediction()
+            self.after_prediction()
 
     def _predict_step(self):
         """ Run predictions. Defined in subclass.
