@@ -60,6 +60,7 @@ class DataFromTfrecord(DataFlow):
         # self._batch_step = 0
         # self.reset_epochs_completed(0)
         # self.set_batch_size(batch_size)
+        self.setup_decode_data()
         self.setup(epoch_val=0, batch_size=1)
 
 
@@ -85,7 +86,8 @@ class DataFromTfrecord(DataFlow):
         self._epochs_completed  = val
         self._batch_step = 0
 
-    def _setup(self, **kwargs):
+    # def _setup(self, **kwargs):
+    def setup_decode_data(self):    
         # n_epoch = kwargs['num_epoch']
         
         feature = {}
@@ -106,7 +108,7 @@ class DataFromTfrecord(DataFlow):
 
         self._decode_data = decode_data
 
-        self._data = self._decode_data[0]
+        # self._data = self._decode_data[0]
         try:
             self.set_batch_size(batch_size=self._batch_size)
         except AttributeError:
