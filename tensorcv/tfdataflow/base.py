@@ -82,6 +82,7 @@ class DataFromTfrecord(DataFlow):
                     num_threads=2,
                     min_after_dequeue=batch_size * 2)
             else:
+                print('***** data is not shuffled *****')
                 self._data = tf.train.batch(
                     self._decode_data,
                     batch_size=batch_size,
