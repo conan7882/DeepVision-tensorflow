@@ -86,7 +86,8 @@ class DataFromTfrecord(DataFlow):
                     self._decode_data,
                     batch_size=batch_size,
                     capacity=batch_size * 4,
-                    num_threads=2)
+                    num_threads=2,
+                    allow_smaller_final_batch=True)
             # self._data = self._decode_data[0]
             # print(self._data)
         except AttributeError:
