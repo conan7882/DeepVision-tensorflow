@@ -8,6 +8,7 @@ import tensorflow as tf
 from ..dataflow.base import DataFlow
 from ..models.base import BaseModel
 from ..utils.utils import assert_type
+from .convert import float_feature
 
 
 class Bottleneck2TFrecord(object):
@@ -33,7 +34,7 @@ class Bottleneck2TFrecord(object):
             self._feat_ops.append(feat_preprocess(net.layer['conv_out']))
 
     def write(self, tfname, dataflow,
-              record_dataflow_keys, record_dataflow_names, c_fncs):
+              record_dataflow_keys=[], record_dataflow_names=[], c_fncs=[]):
         assert_type(dataflow, DataFlow)
         dataflow.setup(epoch_val=0, batch_size=1)
 
@@ -59,20 +60,35 @@ class Bottleneck2TFrecord(object):
                 batch_data = dataflow.next_batch_dict()
 
                 feats = []
-                for feat_op, feed_plh_key, net_input_dict in\
-                    zip(self._feat_ops, self._feed_plh_keys, self._net_input_dicts):
-                    feed_dict = {net_input_dict[key]: batch_data[key] for key in feed_plh_key}
+                for feat_op, feed_plh_key, net_input_dict in zip(self._feat_ops, self._feed_plh_keys, self._net_input_dicts):
+                    feed_dict = {net_input_dict[key]: batch_data[key]
+                                 for key in feed_plh_key}
                     feats.append(sess.run(feat_op, feed_dict=feed_dict))
 
-                feature = {}
-                for record_name, convert_fnc, key in zip(record_dataflow_names, c_fncs, record_dataflow_keys):
-                    feature[record_name] = convert_fnc(batch_data[key][0])
+                # feature = {}
+                # for record_name, convert_fnc, key in zip(record_dataflow_names, c_fncs, record_dataflow_keys):
+                #     feature[record_name] = convert_fnc(batch_data[key][0])
 
-                for record_name, feat in zip(self._w_f_names, feats):
-                    feature[record_name] = float_feature(feat.reshape(-1).tolist())
 
-                example = tf.train.Example(features=tf.train.Features(feature=feature))
-                writer.write(example.SerializeToString())
+                # for record_name, feat in zip(self._w_f_names, feats):
+                #     feature[record_name] = float_feature(feat.reshape(-1).tolist())
+
+                # feature_list = []
+                batch_size = len(feats[0])
+                for idx in range(0, batch_size):
+                    feature = {}
+                    for record_name, convert_fnc, key in zip(record_dataflow_names, c_fncs, record_dataflow_keys):
+                        feature[record_name] = convert_fnc(
+                            batch_data[key][idx])
+
+                    for record_name, feat in zip(self._w_f_names, feats):
+                        feature[record_name] =\
+                            float_feature(feat[idx].reshape(-1).tolist())
+
+                    example = tf.train.Example(
+                        features=tf.train.Features(feature=feature))
+                    writer.write(example.SerializeToString())
+
                 cnt += 1
             dataflow.after_reading()
 
