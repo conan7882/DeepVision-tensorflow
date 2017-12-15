@@ -17,6 +17,7 @@ class DataFromFile(RNGDataFlow):
     def __init__(self, ext_name, data_dir='', 
                  num_channel=None,
                  shuffle=True, normalize=None,
+                 batch_dict_name=None,
                  normalize_fnc=identity):
 
         check_dir(data_dir)
@@ -24,6 +25,10 @@ class DataFromFile(RNGDataFlow):
         self._shuffle = shuffle
         self._normalize = normalize
         self._normalize_fnc = normalize_fnc
+
+        if not isinstance(batch_dict_name, list):
+            batch_dict_name = [batch_dict_name]
+        self._batch_dict_name = batch_dict_name
 
         self.setup(epoch_val=0, batch_size=1)
 
@@ -72,6 +77,11 @@ class DataFromFile(RNGDataFlow):
             if self._shuffle:
                 self._suffle_file_list()
         return batch_data
+
+    def next_batch_dict(self):
+        batch_data = self.next_batch()
+        batch_dict = {name: data for name, data in zip(self._batch_dict_name, batch_data)}
+        return batch_dict
 
     # def next_batch(self):
     #     assert self._batch_size <= self.size(), \
@@ -127,6 +137,7 @@ class ImageFromFile(DataFromFile):
                  shuffle=True, normalize=None,
                  normalize_fnc=identity,
                  resize=None, resize_crop=None,
+                 batch_dict_name=None,
                  pf=identity):
     
         if num_channel is not None:
@@ -143,6 +154,7 @@ class ImageFromFile(DataFromFile):
                                         data_dir=data_dir,
                                         shuffle=shuffle, 
                                         normalize=normalize,
+                                        batch_dict_name=batch_dict_name,
                                         normalize_fnc=normalize_fnc)
 
     def _load_file_list(self, ext_name):
@@ -201,6 +213,7 @@ class ImageFromFile(DataFromFile):
     def suffle_data(self):
         self._suffle_file_list()
 
+
 class ImageLabelFromFolder(ImageFromFile):
     """ read image data with label in subfolder name """
     def __init__(self, ext_name, data_dir='', 
@@ -209,6 +222,7 @@ class ImageLabelFromFolder(ImageFromFile):
                  one_hot=False,
                  shuffle=True, normalize=None,
                  resize=None, resize_crop=None,
+                 batch_dict_name=None,
                  pf=identity):
         """
         Args:
@@ -231,6 +245,7 @@ class ImageLabelFromFolder(ImageFromFile):
                                         normalize=normalize,
                                         resize=resize,
                                         resize_crop=resize_crop,
+                                        batch_dict_name=batch_dict_name,
                                         pf=pf)
         
         self.label_dict_reverse = reverse_label_dict(self.label_dict)
@@ -341,6 +356,7 @@ class ImageLabelFromFile(ImageLabelFromFolder):
                  label_dict={}, num_class=None,
                  shuffle=True, normalize=None,
                  resize=None, resize_crop=None,
+                 batch_dict_name=None,
                  pf=identity):
 
         self._label_file_name = label_file_name
@@ -354,6 +370,7 @@ class ImageLabelFromFile(ImageLabelFromFolder):
                                     normalize=normalize,
                                     resize=resize,
                                     resize_crop=resize_crop,
+                                    batch_dict_name=batch_dict_name,
                                     pf=pf)
         
     def _get_label_list(self):
@@ -396,6 +413,7 @@ class ImageDenseLabel(ImageFromFile):
                  normalize_fnc=identity,
                  resize=None,
                  resize_crop=None,
+                 batch_dict_name=None,
                  is_binary=False):
 
         self._im_pre = im_pre.lower()
@@ -409,7 +427,8 @@ class ImageDenseLabel(ImageFromFile):
                                               normalize=normalize,
                                               normalize_fnc=normalize_fnc,
                                               resize=resize,
-                                              resize_crop=resize_crop)
+                                              resize_crop=resize_crop,
+                                              batch_dict_name=batch_dict_name)
     def _load_file_list(self, ext_name):
         im_dir = os.path.join(self.data_dir)
         gt_dir = os.path.join(self.data_dir)
