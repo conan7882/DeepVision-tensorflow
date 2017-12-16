@@ -80,7 +80,7 @@ def k_fold_based_class(dataflow, k, shuffle=True):
             label_key * np.ones(len(cur_im_list) - nelem * (k - 1),
                                 dtype=np.int8))
 
-    data_folds = [copy.copy(dataflow) for i in range(0, k)]
+    data_folds = [copy.deepcopy(dataflow) for i in range(0, k)]
     for cur_fold, cur_im_list, cur_label_list in zip(data_folds,
                                                      fold_im_list,
                                                      fold_label_list):
