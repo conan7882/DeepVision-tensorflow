@@ -202,10 +202,12 @@ class ImageFromFile(DataFromFile):
         return self._im_list.shape[0]
 
     def get_data_list(self):
-        return self._im_list
+        return [self._im_list]
 
-    def set_data_list(self, new_list):
-        self._im_list = np.array(new_list)
+    def set_data_list(self, new_data_list):
+        assert isinstance(new_data_list, list)
+        assert len(new_data_list) == 1
+        self._im_list = np.array(new_data_list[0])
 
     def set_pf(self, pf):
         self._pf = pf
@@ -327,9 +329,6 @@ class ImageLabelFromFolder(ImageFromFile):
 
     def get_label_list(self):
         return self._label_list
-
-    def set_label_list(self, new_list):
-        self._label_list = np.array(new_list)
 
     # def _get_im_size(self):
     #     im = load_image(self._im_list[0], read_channel = self._read_channel)

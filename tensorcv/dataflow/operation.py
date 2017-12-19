@@ -10,7 +10,7 @@ from .base import DataFlow
 from ..utils.utils import assert_type
 
 
-def display_dataflow(dataflow, data_name, simple=False):
+def display_dataflow(dataflow, data_name='data', simple=False):
     assert_type(dataflow, DataFlow)
 
     n_sample = dataflow.size()
@@ -93,14 +93,14 @@ def k_fold_based_class(dataflow, k, shuffle=True):
 
 
 def combine_dataflow(dataflows, shuffle=True):
-    """Combine several dataflow into one
+    """Combine several dataflow into the first input dataflow
 
     Args:
         dataflows (DataFlow list): list of DataFlow to be combined
         shuffle (bool): data will be shuffled after combined if is true
 
     Return:
-        DataFlow: Combined DataFlow
+        DataFlow: Combined DataFlow saved in the first input dataflow
     """
     if not isinstance(dataflows, list):
         dataflows = [dataflows]
