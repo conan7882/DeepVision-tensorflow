@@ -50,42 +50,46 @@ def k_fold_based_class(dataflow, k, shuffle=True):
     assert_type(dataflow, DataFlow)
     k = int(k)
     assert k > 0, 'k must be an integer grater than 0!'
+    dataflow_data_list = dataflow.get_data_list()
+    if not isinstance(dataflow_data_list, list):
+        dataflow_data_list = [dataflow_data_list]
+
     label_list = dataflow.get_label_list()
-    im_list = dataflow.get_data_list()
+    # im_list = dataflow.get_data_list()
 
     if shuffle:
         dataflow.suffle_data()
 
     class_dict = {}
-    for cur_im, cur_label in zip(im_list, label_list):
+    for idx, cur_label in enumerate(label_list):
         try:
-            class_dict[cur_label] += [cur_im, ]
+            for data_idx, data in enumerate(dataflow_data_list):
+                class_dict[cur_label][data_idx] += [data[idx], ]
         except KeyError:
-            class_dict[cur_label] = [cur_im, ]
+            class_dict[cur_label] = [[] for i in range(0, len(dataflow_data_list))]
+            for data_idx, data in enumerate(dataflow_data_list):
+                class_dict[cur_label][data_idx] = [data[idx], ]
+            # class_dict[cur_label] = [cur_im, ]
 
-    fold_im_list = [[] for i in range(0, k)]
-    fold_label_list = [[] for i in range(0, k)]
+    # fold_im_list = [[] for i in range(0, k)]
+    fold_data_list = [[[] for j in range(0, len(dataflow_data_list))] for i in range(0, k)]
+    # fold_label_list = [[] for i in range(0, k)]
     for label_key in class_dict:
-        cur_im_list = class_dict[label_key]
-        nelem = int(len(cur_im_list) / k)
+        cur_data_list = class_dict[label_key]
+        nelem = int(len(cur_data_list[0]) / k)
         start_id = 0
         for fold_id in range(0, k-1):
-            fold_im_list[fold_id].extend(
-                cur_im_list[start_id:start_id + nelem])
-            fold_label_list[fold_id].extend(
-                label_key * np.ones(nelem, dtype=np.int8))
+            for data_idx, data_list in enumerate(cur_data_list):
+                fold_data_list[fold_id][data_idx].extend(data_list[start_id : start_id + nelem])
             start_id += nelem
-        fold_im_list[k - 1].extend(cur_im_list[start_id:])
-        fold_label_list[k - 1].extend(
-            label_key * np.ones(len(cur_im_list) - nelem * (k - 1),
-                                dtype=np.int8))
+        for data_idx, data_list in enumerate(cur_data_list):
+            fold_data_list[k - 1][data_idx].extend(data_list[start_id :])
 
     data_folds = [copy.deepcopy(dataflow) for i in range(0, k)]
-    for cur_fold, cur_im_list, cur_label_list in zip(data_folds,
-                                                     fold_im_list,
-                                                     fold_label_list):
-        cur_fold.set_data_list(cur_im_list)
-        cur_fold.set_label_list(cur_label_list)
+
+    for cur_fold, cur_data_list in zip(data_folds, fold_data_list):
+        cur_fold.set_data_list(cur_data_list)
+
         if shuffle:
             cur_fold.suffle_data()
 
@@ -93,35 +97,33 @@ def k_fold_based_class(dataflow, k, shuffle=True):
 
 
 def combine_dataflow(dataflows, shuffle=True):
-    """Combine several dataflow into the first input dataflow
+    """Combine several dataflow into one
 
     Args:
         dataflows (DataFlow list): list of DataFlow to be combined
         shuffle (bool): data will be shuffled after combined if is true
 
     Return:
-        DataFlow: Combined DataFlow saved in the first input dataflow
+        DataFlow: Combined DataFlow
     """
     if not isinstance(dataflows, list):
         dataflows = [dataflows]
+
+    data_list = []
     for cur_dataflow in dataflows:
         assert_type(cur_dataflow, DataFlow)
+        cur_data_list = cur_dataflow.get_data_list()
+        if not isinstance(cur_data_list, list):
+            cur_data_list = [cur_data_list]
+        data_list.append(cur_data_list)
 
-    combine_im_list = []
-    combine_label_list = []
-    for cur_dataflow in dataflows:
-        try:
-            combine_label_list.extend(cur_dataflow.get_label_list())
-        except AttributeError:
-            pass
-        combine_im_list.extend(cur_dataflow.get_data_list())
+    num_data_type = len(data_list[0])
+    combined_data_list = [[] for i in range(0, num_data_type)]
+    for cur_data_list in data_list:
+        for i in range(0, num_data_type):
+            combined_data_list[i].extend(cur_data_list[i])
 
-    dataflows[0].set_data_list(combine_im_list)
-    try:
-        dataflows[0].set_label_list(combine_label_list)
-    except AttributeError:
-        pass
-
+    dataflows[0].set_data_list(combined_data_list)
     if shuffle:
         dataflows[0].suffle_data()
 
