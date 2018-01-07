@@ -6,8 +6,6 @@
 import numpy as np
 from scipy import misc
 
-from .common import get_shape2D
-
 
 def image_fliplr(image):
     """ Generate mirror image
@@ -178,3 +176,23 @@ def random_mirror_resize_crop(image, crop_size, scale_range, mirror_rate=0.5):
         image = image_fliplr(image)
 
     return image
+
+
+def get_shape2D(in_val):
+    """
+    Return a 2D shape 
+
+    Args:
+        in_val (int or list with length 2) 
+
+    Returns:
+        list with length 2
+    """
+    if in_val is None:
+        return None
+    if isinstance(in_val, int):
+        return [in_val, in_val]
+    if isinstance(in_val, list):
+        assert len(in_val) == 2
+        return in_val
+    raise RuntimeError('Illegal shape: {}'.format(in_val))

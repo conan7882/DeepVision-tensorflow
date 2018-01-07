@@ -112,25 +112,3 @@ def load_image(im_path, read_channel=None, pf=identity, resize=None, resize_crop
 def print_warning(warning_str):
     print('[**** warning ****] {}'.format(warning_str))
 
-
-def get_shape2D(in_val):
-    """
-    Return a 2D shape 
-
-    Args:
-        in_val (int or list with length 2) 
-
-    Returns:
-        list with length 2
-    """
-    if in_val is None:
-        return None
-    if isinstance(in_val, int):
-        return [in_val, in_val]
-    if isinstance(in_val, list):
-        assert len(in_val) == 2
-        return in_val
-    raise RuntimeError('Illegal shape: {}'.format(in_val))
-    
-
-
