@@ -4,6 +4,7 @@
 # Author: Qian Ge <geqian1001@gmail.com>
 
 import numpy as np
+import collections
 
 from .base import DataFlow
 from .normalization import identity
@@ -63,3 +64,20 @@ class SeqDataflow(DataFlow):
 
     def get_entire_seq(self):
         pass
+
+
+class SepWord(SeqDataflow):
+    def __init__(self, data_dir='',
+                 word_dict=None,
+                 batch_dict_name=None,
+                 normalize_fnc=identity):
+        self.word_dict = word_dict
+        super(SepWord, self).__init__(data_dir=data_dir,
+                                      batch_dict_name=batch_dict_name,
+                                      normalize_fnc=normalize_fnc)
+
+    def gen_word_dict(self, word_data):
+        counter = collections.Counter(word_data)
+        count_pairs = sorted(counter.items(), key=lambda x: (-x[1], x[0]))
+        words, _ = list(zip(*count_pairs))
+        self.word_dict = dict(zip(words, range(len(words))))
