@@ -31,7 +31,7 @@ class SeqDataflow(DataFlow):
         self._data_id = 0
 
     def size(self):
-        return len(self._entire_seq)
+        return len(self.get_entire_seq())
 
     def setup_seq_para(self, win_size, stride):
         self._win_size = win_size
@@ -44,7 +44,7 @@ class SeqDataflow(DataFlow):
         start_id = self._data_id
         while batch_id < self._batch_size:
             end_id = start_id + self._win_size
-            if end_id > self.size():
+            if end_id + 1 > self.size():
                 start_id = 0
                 end_id = start_id + self._win_size
                 self._epochs_completed += 1
@@ -52,10 +52,11 @@ class SeqDataflow(DataFlow):
             batch_data.append(cur_data)
             start_id = start_id + self._stride
             batch_id += 1
-        return np.array(batch_data)
+        return np.array(batch_data).transpose(1, 0, 2)
 
     def load_data(self, start_id, end_id):
         pass
+        # return self.get_entire_seq()[start_id: end_id]
 
     def load_entire_seq(self):
         pass
