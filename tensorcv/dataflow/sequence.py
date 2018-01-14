@@ -15,8 +15,10 @@ class SeqDataflow(DataFlow):
      
     """
     def __init__(self, data_dir='',
+                 predict_step=0,
                  batch_dict_name=None,
                  normalize_fnc=identity):
+        self._pred_step = predict_step
         self._data_dir = data_dir
         self._normalize_fnc = normalize_fnc
 
@@ -25,35 +27,66 @@ class SeqDataflow(DataFlow):
         self._batch_dict_name = batch_dict_name
 
         self.setup(epoch_val=0, batch_size=1)
-        self.setup_seq_para(win_size=10, stride=1)
+        self.setup_seq_para(num_step=10, stride=1)
 
         self.load_entire_seq()
+        self._updata_batch_partition_len()
 
         self._data_id = 0
+
+    def _updata_batch_partition_len(self):
+        try:
+            self._batch_partition_len = self.size() // self._batch_size
+        except AttributeError:
+            pass
+
+    def set_batch_size(self, batch_size):
+        self._batch_size = batch_size
+        self._updata_batch_partition_len()
 
     def size(self):
         return len(self.get_entire_seq())
 
-    def setup_seq_para(self, win_size, stride):
-        self._win_size = win_size
+    def setup_seq_para(self, num_step, stride):
+        self._num_step = num_step
         self._stride = stride
 
     def next_batch(self):
-        assert self.size() > self._batch_size * self._stride + self._win_size - self._stride
-        batch_data = []
-        batch_id = 0
+        b_size = self._batch_size
+        bp_len = self._batch_partition_len
+        assert b_size * self._num_step <= self.size()
+        
+        if self._data_id + bp_len * (b_size - 1) + self._num_step + self._pred_step > self.size():
+            self._data_id = 0
+            self._epochs_completed += 1
         start_id = self._data_id
-        while batch_id < self._batch_size:
-            end_id = start_id + self._win_size
-            if end_id + 1 > self.size():
-                start_id = 0
-                end_id = start_id + self._win_size
-                self._epochs_completed += 1
+
+        batch_data = []
+        for i in range(b_size):
+            start_id = self._data_id + bp_len * i
+            end_id = start_id + self._num_step
             cur_data = self.load_data(start_id, end_id)
             batch_data.append(cur_data)
-            start_id = start_id + self._stride
-            batch_id += 1
+
+        self._data_id += self._num_step
         return np.array(batch_data).transpose(1, 0, 2)
+
+    # def next_batch(self):
+    #     assert self.size() > self._batch_size * self._stride + self._num_step - self._stride
+    #     batch_data = []
+    #     batch_id = 0
+    #     start_id = self._data_id
+    #     while batch_id < self._batch_size:
+    #         end_id = start_id + self._num_step
+    #         if end_id + 1 > self.size():
+    #             start_id = 0
+    #             end_id = start_id + self._num_step
+    #             self._epochs_completed += 1
+    #         cur_data = self.load_data(start_id, end_id)
+    #         batch_data.append(cur_data)
+    #         start_id = start_id + self._stride
+    #         batch_id += 1
+    #     return np.array(batch_data).transpose(1, 0, 2)
 
     def load_data(self, start_id, end_id):
         pass
@@ -68,11 +101,13 @@ class SeqDataflow(DataFlow):
 
 class SepWord(SeqDataflow):
     def __init__(self, data_dir='',
+                 predict_step=1,
                  word_dict=None,
                  batch_dict_name=None,
                  normalize_fnc=identity):
         self.word_dict = word_dict
         super(SepWord, self).__init__(data_dir=data_dir,
+                                      predict_step=predict_step,
                                       batch_dict_name=batch_dict_name,
                                       normalize_fnc=normalize_fnc)
 
