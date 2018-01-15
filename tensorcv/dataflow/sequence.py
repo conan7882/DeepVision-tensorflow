@@ -58,9 +58,9 @@ class SeqDataflow(DataFlow):
         
         if self._data_id + bp_len * (b_size - 1) + self._num_step + self._pred_step > self.size():
             self._epochs_completed += 1
-            self._data_id  = 0
+            # self._data_id  = 0
             # self._data_id = self._epochs_completed
-            # self._data_id = self._epochs_completed % bp_len
+            self._data_id = self._epochs_completed % bp_len
         start_id = self._data_id
 
         batch_data = []
