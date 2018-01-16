@@ -26,13 +26,13 @@ class SeqDataflow(DataFlow):
             batch_dict_name = [batch_dict_name]
         self._batch_dict_name = batch_dict_name
 
-        self.setup(epoch_val=0, batch_size=1)
-        self.setup_seq_para(num_step=10, stride=1)
-
         self.load_entire_seq()
-        self._updata_batch_partition_len()
 
         self._data_id = 0
+
+        self.setup(epoch_val=0, batch_size=1)
+        self.setup_seq_para(num_step=10, stride=1)
+        self._updata_batch_partition_len()
 
     def _updata_batch_partition_len(self):
         try:
@@ -55,12 +55,12 @@ class SeqDataflow(DataFlow):
         b_size = self._batch_size
         bp_len = self._batch_partition_len
         assert b_size * self._num_step <= self.size()
-        
         if self._data_id + bp_len * (b_size - 1) + self._num_step + self._pred_step > self.size():
             self._epochs_completed += 1
             # self._data_id  = 0
             # self._data_id = self._epochs_completed
-            self._data_id = self._epochs_completed % bp_len
+            self._data_id = self._epochs_completed % self._num_step
+            # self._data_id = self._epochs_completed % (bp_len - self._num_step - self._pred_step)
         start_id = self._data_id
 
         batch_data = []
@@ -72,7 +72,16 @@ class SeqDataflow(DataFlow):
 
         self._data_id += self._num_step
         # self._data_id += 
-        return np.array(batch_data).transpose(1, 0, 2)
+        # print(np.array(batch_data).shape)
+        return self._batch_transform(batch_data)
+
+    def _batch_transform(self, batch_data):
+        return batch_data
+
+        # if len(np.array(batch_data).shape) == 3:
+        #     return np.array(batch_data).transpose(1, 0, 2)
+        # else:
+        #     return np.array(batch_data).transpose(1, 0, 2, 3)
 
     # def next_batch(self):
     #     assert self.size() > self._batch_size * self._stride + self._num_step - self._stride
@@ -119,3 +128,24 @@ class SepWord(SeqDataflow):
         count_pairs = sorted(counter.items(), key=lambda x: (-x[1], x[0]))
         words, _ = list(zip(*count_pairs))
         self.word_dict = dict(zip(words, range(len(words))))
+
+
+class SeqNumber(SeqDataflow):
+    def _scale(self, data):
+        max_data = np.amax(data)
+        min_data = np.amin(data)
+        return (data - min_data) / (max_data - min_data)
+
+    def load_data(self, start_id, end_id):
+        feature_seq = self.get_entire_seq()[start_id: end_id]
+        label = self.get_label_seq()[start_id + 1: end_id + 1]
+        return [feature_seq, label]
+
+    def load_entire_seq(self):
+        pass
+
+    def get_entire_seq(self):
+        pass
+
+    def get_label_seq(self):
+        pass
