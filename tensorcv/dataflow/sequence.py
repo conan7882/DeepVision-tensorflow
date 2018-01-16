@@ -138,7 +138,7 @@ class SeqNumber(SeqDataflow):
 
     def load_data(self, start_id, end_id):
         feature_seq = self.get_entire_seq()[start_id: end_id]
-        label = self.get_label_seq()[start_id + 1: end_id + 1]
+        label = self.get_label_seq()[start_id + self._pred_step: end_id + self._pred_step]
         return [feature_seq, label]
 
     def load_entire_seq(self):
