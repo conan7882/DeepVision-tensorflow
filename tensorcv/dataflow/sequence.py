@@ -15,12 +15,14 @@ class SeqDataflow(DataFlow):
      
     """
     def __init__(self, data_dir='',
+                 load_ratio=1,
                  predict_step=0,
                  batch_dict_name=None,
                  normalize_fnc=identity):
         self._pred_step = predict_step
         self._data_dir = data_dir
         self._normalize_fnc = normalize_fnc
+        self._load_ratio = load_ratio
 
         if not isinstance(batch_dict_name, list):
             batch_dict_name = [batch_dict_name]
