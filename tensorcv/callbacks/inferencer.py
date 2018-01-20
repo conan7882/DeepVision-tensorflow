@@ -175,7 +175,7 @@ class InferScalars(InferencerBase):
         if summary_dict is not None:
             for key, val in summary_dict.items():
                 s = tf.Summary()
-                s.value.add(tag = key, simple_value = val)
+                s.value.add(tag=key, simple_value=val)
                 self.trainer.monitors.process_summary(s)
                 print('[infer] '+ key + ': ' + str(val))
         # return {name: np.mean(val) for name, val 

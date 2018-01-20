@@ -134,9 +134,16 @@ class SepWord(SeqDataflow):
 
 class SeqNumber(SeqDataflow):
     def _scale(self, data):
-        max_data = np.amax(data)
-        min_data = np.amin(data)
-        return (data - min_data) / (max_data - min_data)
+        normal_dict = self._normalize_fnc(data)
+        try:
+            self.scale_dict = normal_dict['scale_dict'] 
+        except KeyError:
+            pass
+        return normal_dict['data']
+
+        # max_data = np.amax(data)
+        # min_data = np.amin(data)
+        # return (data - min_data) / (max_data - min_data)
 
     def load_data(self, start_id, end_id):
         feature_seq = self.get_entire_seq()[start_id: end_id]
