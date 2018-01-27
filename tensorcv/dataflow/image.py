@@ -545,6 +545,7 @@ class ImageDenseLabel(ImageFromFile):
                 mask = np.squeeze(mask, axis=-1)
                 mask = mask / np.amax(mask)
                 input_mask_list.extend(mask)
+                print(self._im_list[k], self._gt_list[k], self._mask_list[k])
 
         # TODO to be modified 
         input_im_list = self._normalize_fnc(np.array(input_im_list), 
