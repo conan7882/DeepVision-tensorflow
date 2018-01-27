@@ -17,11 +17,11 @@ def get_file_list(file_dir, file_ext, sub_name=None):
     if sub_name is None:
         return np.array([os.path.join(root, name)
             for root, dirs, files in os.walk(file_dir) 
-            for name in files if name.lower().endswith(file_ext)])
+            for name in sorted(files) if name.lower().endswith(file_ext)])
     else:
         return np.array([os.path.join(root, name)
             for root, dirs, files in os.walk(file_dir) 
-            for name in files if name.lower().endswith(file_ext) and sub_name.lower() in name.lower()])
+            for name in sorted(files) if name.lower().endswith(file_ext) and sub_name.lower() in name.lower()])
     # for root, dirs, files in os.walk(file_dir):
     #     for name in files:
     #         if name.lower().endswith(file_ext):
