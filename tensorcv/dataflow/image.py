@@ -9,6 +9,7 @@ from .common import *
 from .normalization import *
 from .base import RNGDataFlow
 from ..utils.utils import check_dir
+from .preprocess import get_shape2D
 
 __all__ = ['ImageData', 'DataFromFile', 'ImageLabelFromFolder', 'ImageLabelFromFile', 'ImageFromFile', 'ImageDenseLabel']
 
@@ -474,7 +475,8 @@ class ImageLabelFromCSVFile(ImageLabelFromFile):
 
 
 class ImageDenseLabel(ImageFromFile):
-    def __init__(self, ext_name, im_pre, label_pre, 
+    def __init__(self, ext_name, im_pre, label_pre,
+                 mask_pre=None,
                  data_dir='',
                  num_channel=None,
                  shuffle=True, normalize=None,
@@ -486,6 +488,7 @@ class ImageDenseLabel(ImageFromFile):
 
         self._im_pre = im_pre.lower()
         self._label_pre = label_pre.lower()
+        self._mask_pre = mask_pre
         self._is_binary = is_binary
 
         super(ImageDenseLabel, self).__init__(ext_name=ext_name, 
@@ -500,8 +503,11 @@ class ImageDenseLabel(ImageFromFile):
     def _load_file_list(self, ext_name):
         im_dir = os.path.join(self.data_dir)
         gt_dir = os.path.join(self.data_dir)
+        mask_dir = os.path.join(self.data_dir)
         self._im_list = get_file_list(im_dir, ext_name, sub_name=self._im_pre)
         self._gt_list = get_file_list(gt_dir, ext_name, sub_name=self._label_pre)
+        if self._mask_pre is not None:
+            self._mask_list = get_file_list(mask_dir, ext_name, sub_name=self._mask_pre)
         if self._shuffle:
             self._suffle_file_list()
 
@@ -510,10 +516,13 @@ class ImageDenseLabel(ImageFromFile):
         self.rng.shuffle(idxs)
         self._im_list = self._im_list[idxs]
         self._gt_list = self._gt_list[idxs]
+        if self._mask_pre is not None:
+            self._mask_list = self._mask_list[idxs]
 
     def _load_data(self, start, end):
         input_im_list = []
         input_gt_list = []
+        input_mask_list = []
         for k in range(start, end):
             im = load_image(self._im_list[k], read_channel=self._read_channel,
                             resize=self._resize,
@@ -524,15 +533,27 @@ class ImageDenseLabel(ImageFromFile):
                             resize=self._resize,
                             resize_crop=self._resize_crop,
                             pf=self._pf)
+            gt = np.squeeze(gt, axis=-1)
             if self._is_binary:
                 gt = gt / np.amax(gt)
             input_gt_list.extend(gt)
+            if self._mask_pre is not None:
+                mask = load_image(self._mask_list[k], read_channel=1,
+                            resize=self._resize,
+                            resize_crop=self._resize_crop,
+                            pf=self._pf)
+                mask = np.squeeze(mask, axis=-1)
+                mask = mask / np.amax(mask)
+                input_mask_list.extend(mask)
 
         # TODO to be modified 
         input_im_list = self._normalize_fnc(np.array(input_im_list), 
                                           self._get_max_in_val(), 
                                           self._get_half_in_val())
-        return [input_im_list, input_gt_list]
+        if self._mask_pre is not None:
+            return [input_im_list, input_gt_list, input_mask_list]
+        else:
+            return [input_im_list, input_gt_list]
 
     def get_label_list(self):
         return self._gt_list

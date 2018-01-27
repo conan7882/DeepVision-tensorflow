@@ -103,6 +103,7 @@ class ModelDes(object):
         self._ex_setup_graph()
 
     def create_model(self, inputs=None):
+        print('**[warning]** consider use dictionary input.')
         """ only called when defined inside other model"""
         assert inputs is not None, 'inputs cannot be None!'
         if not isinstance(inputs, list):

@@ -61,6 +61,7 @@ def conv(x, filter_size, out_dim,
         # output = nl(out)
         return output
 
+@add_arg_scope
 def dconv(x, filter_size, out_dim=None, 
          out_shape=None,
          out_shape_by_tensor=None,
@@ -124,6 +125,7 @@ def dconv(x, filter_size, out_dim=None,
     filter_shape = get_shape2D(filter_size) + [out_dim, in_dim]
 
     with tf.variable_scope(name) as scope:
+
         weights = new_weights('weights', 0, filter_shape, initializer=init_w,
                              data_dict=data_dict, trainable=trainable, wd=wd)
         biases = new_biases('biases', 1, [out_dim], initializer=init_b,

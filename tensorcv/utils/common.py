@@ -78,6 +78,7 @@ def deconv_size(input_height, input_width, stride=2):
     Return:
         (int, int): Height and width of feature after filtering.
     """
+    print('***** WARNING ********: deconv_size is moved to models.utils.py')
     return int(math.ceil(float(input_height) / float(stride))),\
         int(math.ceil(float(input_width) / float(stride)))
 
