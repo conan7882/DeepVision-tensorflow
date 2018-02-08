@@ -151,7 +151,8 @@ def fc(x, out_dim, name='fc', nl=tf.identity,
        init_w=None, init_b=None,
        data_dict=None,
        wd=None, 
-       trainable=True):
+       trainable=True,
+       re_dict=False):
     """ 
     Fully connected layer 
 
@@ -180,7 +181,10 @@ def fc(x, out_dim, name='fc', nl=tf.identity,
         act = tf.nn.xw_plus_b(x_flatten, weights, biases)
 
         output = nl(act, name='output')
-        return output
+        if re_dict is True:
+            return {'outputs': output, 'weights': weights, 'biases': biases}
+        else:
+            return output
 
 def max_pool(x, name='max_pool', filter_size=2, stride=None, padding='VALID'):
     """ 
